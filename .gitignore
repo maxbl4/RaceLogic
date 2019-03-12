@@ -1,0 +1,6 @@
+bin/
+obj/
+.idea/
+node_modules/
+.vs/
+*.sln.DotSettings.user
