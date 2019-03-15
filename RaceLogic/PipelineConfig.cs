@@ -10,7 +10,6 @@ namespace RaceLogic
         where TRiderId: IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
     {
         readonly Dictionary<Type, object> inputMaps = new Dictionary<Type, object>();
-        private CheckpointAggregator checkpointAggregator = new CheckpointAggregator();
         public void SetInputMap<TInput>(IInputMap<TInput, TRiderId> input)
         {
             inputMaps[typeof(TInput)] = input;
