@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.CSharp.RuntimeBinder;
+using RaceLogic.Model;
 using RaceLogic.ReferenceModel;
 using RaceLogic.Tests.Infrastructure;
 using Shouldly;
@@ -13,11 +15,11 @@ namespace RaceLogic.Tests
         [Fact]
         public void Compare_should_work()
         {
-            var ts1 = new DateTimeOffset(1, 1, 1, 1, 1, 1, TimeSpan.Zero);
-            var ts2 = new DateTimeOffset(1, 1, 1, 1, 2, 1, TimeSpan.Zero);
+            var ts1 = new DateTime(1, 1, 1, 1, 1, 1);
+            var ts2 = new DateTime(1, 1, 1, 1, 2, 1);
             ts1.CompareTo(ts2).ShouldBeLessThan(0);
-            var cp1 = new Checkpoint<int> {Timestamp = ts1};
-            var cp2 = new Checkpoint<int> {Timestamp = ts2};
+            var cp1 = new Checkpoint<int>(1, ts1);
+            var cp2 = new Checkpoint<int>(1, ts2);
             Checkpoint<int>.TimestampComparer.Compare(cp1, cp2).ShouldBeLessThan(0);
             Checkpoint<int>.TimestampComparer.Compare(cp2, cp1).ShouldBeGreaterThan(0);
         }
@@ -25,12 +27,12 @@ namespace RaceLogic.Tests
         [Fact]
         public void Sort_should_work()
         {
-            var ts1 = new DateTimeOffset(1, 1, 1, 1, 1, 1, TimeSpan.Zero);
-            var ts2 = new DateTimeOffset(1, 1, 1, 1, 2, 1, TimeSpan.Zero);
-            var ts3 = new DateTimeOffset(1, 1, 1, 1, 3, 1, TimeSpan.Zero);
-            var cp1 = new Checkpoint<int> {Timestamp = ts1};
-            var cp2 = new Checkpoint<int> {Timestamp = ts2};
-            var cp3 = new Checkpoint<int> {Timestamp = ts3};
+            var ts1 = new DateTime(1, 1, 1, 1, 1, 1);
+            var ts2 = new DateTime(1, 1, 1, 1, 2, 1);
+            var ts3 = new DateTime(1, 1, 1, 1, 3, 1);
+            var cp1 = new Checkpoint<int> (1, ts1);
+            var cp2 = new Checkpoint<int> (1, ts2);
+            var cp3 = new Checkpoint<int> (1, ts3);
             var lst = new List<Checkpoint<int>> { cp2, cp1, cp3};
             lst.Sort(Checkpoint<int>.TimestampComparer);
             lst[0].ShouldBeSameAs(cp1);
@@ -50,9 +52,20 @@ namespace RaceLogic.Tests
             TimeSpanExt.Parse(null).ShouldBe(TimeSpan.Zero);
             TimeSpanExt.Parse("").ShouldBe(TimeSpan.Zero);
             TimeSpanExt.Parse("10").ShouldBe(TimeSpan.FromSeconds(10));
+            TimeSpanExt.Parse("59").ShouldBe(TimeSpan.FromSeconds(59));
+            Assert.Throws<FormatException>(() => TimeSpanExt.Parse("60"));
             TimeSpanExt.Parse("1:10").ShouldBe(new TimeSpan(0, 0, 1,10));
             TimeSpanExt.Parse("15:10").ShouldBe(new TimeSpan(0, 0, 15,10));
             TimeSpanExt.Parse("12:15:10").ShouldBe(new TimeSpan(0, 12, 15,10));
+        }
+
+        [Fact]
+        public void TimeSpan_to_short_string_should_work()
+        {
+            TimeSpan.FromSeconds(9).ToShortString().ShouldBe("9");
+            TimeSpan.FromSeconds(59).ToShortString().ShouldBe("59");
+            TimeSpan.FromSeconds(60).ToShortString().ShouldBe("1:0");
+            TimeSpan.FromMinutes(60).ToShortString().ShouldBe("1:0:0");
         }
     }
 }

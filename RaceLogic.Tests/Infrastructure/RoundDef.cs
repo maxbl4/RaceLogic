@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using Microsoft.CSharp.RuntimeBinder;
+using RaceLogic.Extensions;
+using RaceLogic.Model;
 using RaceLogic.ReferenceModel;
 
 namespace RaceLogic.Tests.Infrastructure
@@ -10,108 +14,25 @@ namespace RaceLogic.Tests.Infrastructure
     public class RoundDef
     {
         public List<Checkpoint<int>> Checkpoints { get; } = new List<Checkpoint<int>>();
-        public List<RoundPosition> Rating { get; } = new List<RoundPosition>();
+        public List<RoundPosition<int>> Rating { get; } = new List<RoundPosition<int>>();
         public TimeSpan Duration { get; set; } = TimeSpan.Zero;
         public bool HasDuration => Duration > TimeSpan.Zero;
-        
-    }
 
-    public class Cps : IEnumerable<Checkpoint<int>>
-    {
-        public void Add(int riderId)
+        public static RoundDef Parse(string src)
         {
-            this[riderId] = "";
-        }
-        
-        public List<Checkpoint<int>> Checkpoints { get; } = new List<Checkpoint<int>>();
-        public string this[int riderId]
-        {
-            set
-            {
-                Checkpoints.Add(new Checkpoint<int>
-                {
-                    RiderId = riderId,
-                    Timestamp = DateTimeOffset.MinValue + TimeSpanExt.Parse(value)
-                });
-            }
+            return RoundDefParser.ParseRoundDef(src);
         }
 
-        public IEnumerator<Checkpoint<int>> GetEnumerator()
+        public override string ToString()
         {
-            return Checkpoints.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-
-    public class RoundDefParser
-    {
-        private const string Track = "Track";
-        private const string Rating = "Rating";
-        public static RoundDef ParseRoundDef(string src)
-        {
-            var lines = src.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
-            var mode = Track;
-            var rd = new RoundDef
-            {
-                Duration = ParseDuration(lines[0])
-            };
-            foreach (var line in lines.Skip(1))
-            {
-                if (line.StartsWith("#"))
-                    continue;
-                switch (mode)
-                {
-                    case Track:
-                        if (line.StartsWith(Rating))
-                            mode = Rating;
-                        else
-                        {
-                            rd.Checkpoints.AddRange(ParseCheckpoints(line));
-                        }
-                        break;
-                    case Rating:
-                        rd.Rating.Add(ParseRating(line));
-                        break;
-                }
-            }
-
-            return rd;
-        }
-
-        private static RoundPosition ParseRating(string line)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static TimeSpan ParseDuration(string trackHeader)
-        {
-            var parts = trackHeader.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length > 1)
-                return TimeSpanExt.Parse(parts[1]);
-            return TimeSpan.Zero;
-        }
-        
-        public static IEnumerable<Checkpoint<int>> ParseCheckpoints(string line)
-        {
-            var stringCps = line.Split(new[] {' ', '\t', ','}, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var stringCp in stringCps)
-            {
-                yield return ParseCheckpoint(stringCp);
-            }
-        }
-
-        public static Checkpoint<int> ParseCheckpoint(string stringCp)
-        {
-            var parts = stringCp.Split(new[] {'[', ']'});
-            var cp = new Checkpoint<int>();
-            cp.RiderId = int.Parse(parts[0]);
-            if (parts.Length > 1)
-                cp.Timestamp = DateTimeOffset.MinValue + TimeSpanExt.Parse(parts[1]);
-            return cp;
+            var sb = new StringBuilder();
+            sb.Append(RoundDefParser.Track);
+            if (HasDuration)
+                sb.Append(" " + Duration.ToShortString());
+            sb.AppendLine(Checkpoints.FormatCheckpoints());
+            sb.AppendLine(RoundDefParser.Rating);
+            sb.Append(string.Join("\r\n", Rating.Select(x => x.ToDefString())));
+            return sb.ToString();
         }
     }
 }

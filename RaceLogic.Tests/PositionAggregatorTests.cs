@@ -129,11 +129,6 @@ namespace RaceLogic.Tests
             return riders.Select((x, i) => new RefPosition {RiderId = x, Points = riders.Length - i, Position = i + 1})
                 .ToList();
         }
-
-        RefPosition MapPosition(int riderId, int points, int position, List<RefPosition> pos)
-        {
-            return new RefPosition { RiderId = riderId, Points = points, Position = position };
-        }
     }
 
     static class Ext

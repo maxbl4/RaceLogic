@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using RaceLogic.Model;
+using RaceLogic.Model.Mutations;
 using RaceLogic.ReferenceModel;
 using Shouldly;
 using Xunit;
@@ -231,8 +233,8 @@ namespace RaceLogic.Tests
             session1.Gates[0].RiderId.ShouldBe(111);
             //session1.Gates[0].Rider.ShouldBeNull();
 
-            session1.Gates[0].RiderId = 11;
-            session1.UpdateGate(session1.Gates[0], DateTime.Now);
+            session1.Gates[0] = session1.Gates[0].WithRiderId(11);
+            session1.UpdateGate(session1.Gates[0], DateTime.UtcNow);
             //session1.Gates[0].Rider.ShouldNotBeNull();
 
             ValidateRiderPositions(11, 12, 13);
@@ -259,8 +261,8 @@ namespace RaceLogic.Tests
             session1.Gates[0].RiderId.ShouldBe(11);
             //session1.Gates[0].Rider.ShouldNotBeNull();
 
-            session1.Gates[0].RiderId = 111;
-            session1.UpdateGate(session1.Gates[0], DateTime.Now);
+            session1.Gates[0] = session1.Gates[0].WithRiderId(111);
+            session1.UpdateGate(session1.Gates[0], DateTime.UtcNow);
             //session1.Gates[0].Rider.ShouldBeNull();
 
             ValidateRiderPositions(12, 13, 111, 11);
@@ -285,8 +287,8 @@ namespace RaceLogic.Tests
             ValidateRiderLaps(2, 2, 2);
             ValidateRiderLapTimes(session1.Rating[1], 4, sessionDuration.TotalMinutes + 3);
 
-            session1.Gates[1].Timestamp = session1.StartTime + TimeSpan.FromMinutes(3);
-            session1.UpdateGate(session1.Gates[1], DateTime.Now);
+            session1.Gates[1] = session1.Gates[1].WithTimestamp(session1.StartTime + TimeSpan.FromMinutes(3));
+            session1.UpdateGate(session1.Gates[1], DateTime.UtcNow);
 
             ValidateRiderPositions(11, 12, 13);
             ValidateRiderLaps(2, 2, 2);
@@ -309,8 +311,8 @@ namespace RaceLogic.Tests
             ValidateRiderLaps(2, 2, 2);
             ValidateRiderLapTimes(session1.Rating[1], 4, sessionDuration.TotalMinutes + 3);
 
-            session1.Gates[4].Timestamp = session1.StartTime + sessionDuration + TimeSpan.FromMinutes(1);
-            session1.UpdateGate(session1.Gates[4], DateTime.Now);
+            session1.Gates[4] = session1.Gates[4].WithTimestamp(session1.StartTime + sessionDuration + TimeSpan.FromMinutes(1));
+            session1.UpdateGate(session1.Gates[4], DateTime.UtcNow);
 
             ValidateRiderPositions(12, 11, 13);
             ValidateRiderLaps(2, 2, 2);
@@ -336,8 +338,8 @@ namespace RaceLogic.Tests
             ValidateRiderLaps(3, 3, 3);
             ValidateRiderLapTimes(session1.Rating[1], 4, 10, sessionDuration.TotalMinutes + 3);
 
-            session1.Gates[4].Timestamp = session1.StartTime + sessionDuration + TimeSpan.FromMinutes(10);
-            session1.UpdateGate(session1.Gates[4], DateTime.Now);
+            session1.Gates[4] = session1.Gates[4].WithTimestamp(session1.StartTime + sessionDuration + TimeSpan.FromMinutes(10));
+            session1.UpdateGate(session1.Gates[4], DateTime.UtcNow);
 
             ValidateRiderPositions(11, 13, 12);
             ValidateRiderLaps(3, 3, 2);
@@ -364,8 +366,8 @@ namespace RaceLogic.Tests
             ValidateRiderLaps(3, 3, 2);
             ValidateRiderLapTimes(session1.Rating[2], 4, sessionDuration.TotalMinutes + 3);
 
-            session1.Gates[8].Timestamp = session1.StartTime + TimeSpan.FromMinutes(10);
-            session1.UpdateGate(session1.Gates[8], DateTime.Now);
+            session1.Gates[8] = session1.Gates[8].WithTimestamp(session1.StartTime + TimeSpan.FromMinutes(10));
+            session1.UpdateGate(session1.Gates[8], DateTime.UtcNow);
 
             ValidateRiderPositions(11, 12, 13);
             ValidateRiderLaps(3, 3, 3);
@@ -373,12 +375,12 @@ namespace RaceLogic.Tests
         }
 
 
-        void ValidateRiderPositions(params int[] RiderIds)
+        void ValidateRiderPositions(params int[] riderIds)
         {
-            session1.Rating.Count.ShouldBe(RiderIds.Length);
-            for (int i = 0; i < RiderIds.Length; i++)
+            session1.Rating.Count.ShouldBe(riderIds.Length);
+            for (int i = 0; i < riderIds.Length; i++)
             {
-                var n = RiderIds[i];
+                var n = riderIds[i];
                 session1.Rating[i].RiderId.ShouldBe(n, $"Rider {n} should be on position {i + 1}. Actual {session1.Rating[i].RiderId}");
                 session1.Rating[i].Position.ShouldBe(i + 1);
             }
@@ -394,7 +396,7 @@ namespace RaceLogic.Tests
             }
         }
 
-        void ValidateRiderLapTimes(RoundPosition record, params double[] riderLapTimes)
+        void ValidateRiderLapTimes(RoundPosition<int> record, params double[] riderLapTimes)
         {
             record.Laps.Count.ShouldBe(riderLapTimes.Length);
             for (int i = 0; i < riderLapTimes.Length; i++)
@@ -409,39 +411,30 @@ namespace RaceLogic.Tests
     {
         public bool IsRunning { get; private set; }
         public bool EveryoneFinished { get; private set; }
-        public DateTimeOffset StartTime { get; } = new DateTime(1, 1, 1, 11, 30, 0);
+        public DateTime StartTime { get; } = new DateTime(1, 1, 1, 11, 30, 0);
         public List<Checkpoint<int>> Checkpoints { get; } = new List<Checkpoint<int>>();
         public List<Checkpoint<int>> Gates => Checkpoints;
         public TimeSpan SessionDuration { get; }
-        public List<RoundPosition> Rating { get; private set; } = new List<RoundPosition>();
+        public List<RoundPosition<int>> Rating { get; private set; } = new List<RoundPosition<int>>();
 
         public Session(TimeSpan sessionDuration)
         {
             SessionDuration = sessionDuration;
         }
-        public void Log(int RiderId, double offset)
+        public void Log(int riderId, double offset)
         {
-            Checkpoints.Add(new Checkpoint<int>
-            {
-                RiderId = RiderId, Timestamp = StartTime + TimeSpan.FromMinutes(offset)
-            });
+            Checkpoints.Add(new Checkpoint<int>(riderId, StartTime + TimeSpan.FromMinutes(offset)));
             Calculate();
         }
-        public void Log(int RiderId, DateTimeOffset timestamp)
+        public void Log(int riderId, DateTime timestamp)
         {
-            Checkpoints.Add(new Checkpoint<int>
-            {
-                RiderId = RiderId, Timestamp = timestamp
-            });
+            Checkpoints.Add(new Checkpoint<int>(riderId, timestamp));
             Calculate();
         }
         
         public void LogFinish(int RiderId, double offset)
         {
-            Checkpoints.Add(new Checkpoint<int>
-            {
-                RiderId = RiderId, Timestamp = StartTime + SessionDuration + TimeSpan.FromMinutes(offset)
-            });
+            Checkpoints.Add(new Checkpoint<int>(RiderId, StartTime + SessionDuration + TimeSpan.FromMinutes(offset)));
             Calculate();
         }
 
@@ -454,17 +447,15 @@ namespace RaceLogic.Tests
             Calculate();
         }
 
-        public void UpdateGate(Checkpoint<int> checkpoint, DateTimeOffset timestamp)
+        public void UpdateGate(Checkpoint<int> checkpoint, DateTime timestamp)
         {
-            //checkpoint.Timestamp = timestamp;
-            //Checkpoints.Sort(Checkpoint<int>.TimestampComparer);
             Calculate();
         }
 
         public void Calculate()
         {
             Checkpoints.Sort(Checkpoint<int>.TimestampComparer);
-            var strategy = new ClassicRoundResultStrategy<int, Checkpoint<int>, RoundPosition, Lap>();
+            var strategy = new ClassicRoundResultStrategy<int>();
             var result = strategy.Process(Checkpoints, new HashSet<int>{11,12,13}, StartTime, SessionDuration);
             this.EveryoneFinished = result.EveryoneFinished;
             if (EveryoneFinished)

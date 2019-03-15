@@ -15,5 +15,12 @@ namespace RaceLogic.Tests.Infrastructure
                 @"%s",
             }, CultureInfo.InvariantCulture);
         }
+
+        public static string ToShortString(this TimeSpan ts)
+        {
+            if (ts.TotalSeconds <= 59) return ts.ToString("%s");
+            if (ts.TotalMinutes < 60) return ts.ToString(@"%m\:%s");
+            return ts.ToString(@"%h\:%m\:%s");
+        }
     }
 }

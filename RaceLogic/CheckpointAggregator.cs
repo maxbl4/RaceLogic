@@ -13,15 +13,15 @@ namespace RaceLogic
         /// </summary>
         /// <param name="rawRecords"></param>
         /// <param name="minLap"></param>
-        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TRiderId"></typeparam>
         /// <typeparam name="TCheckpoint"></typeparam>
         /// <returns></returns>
-        public List<TCheckpoint> AggregateByMinLap<TKey, TCheckpoint>(IEnumerable<TCheckpoint> rawRecords, TimeSpan minLap)
-            where TKey : struct, IComparable, IComparable<TKey>, IEquatable<TKey>
-            where TCheckpoint: class, IAggCheckpoint<TKey>
+        public List<TCheckpoint> AggregateByMinLap<TRiderId, TCheckpoint>(IEnumerable<TCheckpoint> rawRecords, TimeSpan minLap)
+            where TRiderId : IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
+            where TCheckpoint: class, IAggCheckpoint<TRiderId>
         {
             var result = new List<TCheckpoint>();
-            var aggRecords = new Dictionary<TKey, TCheckpoint>();
+            var aggRecords = new Dictionary<TRiderId, TCheckpoint>();
             foreach (var record in rawRecords)
             {
                 var agg = aggRecords.Get(record.RiderId);
@@ -40,16 +40,16 @@ namespace RaceLogic
             }
 
             result.AddRange(aggRecords.Values);
-            result.Sort(TimestampRelationalComparer<TKey, TCheckpoint>.Instance);
+            result.Sort(TimestampRelationalComparer<TRiderId, TCheckpoint>.Instance);
             return result;
         }
         
-        private sealed class TimestampRelationalComparer<TKey, TCheckpoint> : Comparer<TCheckpoint>
-            where TKey : struct, IComparable, IComparable<TKey>, IEquatable<TKey>
-            where TCheckpoint: ICheckpoint<TKey> 
+        private sealed class TimestampRelationalComparer<TRiderId, TCheckpoint> : Comparer<TCheckpoint>
+            where TRiderId : IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
+            where TCheckpoint: ICheckpoint<TRiderId> 
         {
-            public static readonly TimestampRelationalComparer<TKey, TCheckpoint> Instance = 
-                new TimestampRelationalComparer<TKey, TCheckpoint>();
+            public static readonly TimestampRelationalComparer<TRiderId, TCheckpoint> Instance = 
+                new TimestampRelationalComparer<TRiderId, TCheckpoint>();
             public override int Compare(TCheckpoint x, TCheckpoint y)
             {
                 if (ReferenceEquals(x, y)) return 0;

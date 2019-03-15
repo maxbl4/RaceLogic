@@ -3,74 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using RaceLogic.Extensions;
 using RaceLogic.Interfaces;
+using RaceLogic.Model;
 
 namespace RaceLogic
 {
-    public class ClassicRoundResultStrategyResult<TRiderId, TCheckpoint, TPosition, TLap>
-        where TRiderId: struct, IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
-        where TCheckpoint: ICheckpoint<TRiderId>
-        where TPosition: IRoundPosition<TRiderId, TLap, TCheckpoint>, new()
-        where TLap: ILap<TRiderId, TCheckpoint>, new()
+    public class ClassicRoundResultStrategyResult<TRiderId>
+        where TRiderId: IEquatable<TRiderId>
     {
         public bool EveryoneFinished { get; set; }
-        public DateTimeOffset StopTime { get; set; }
-        public List<TPosition> Rating { get; set; } = new List<TPosition>();
-        public List<TCheckpoint> Checkpoints { get; set; }
+        public DateTime StopTime { get; set; }
+        public List<RoundPosition<TRiderId>> Rating { get; set; } = new List<RoundPosition<TRiderId>>();
+        public List<Checkpoint<TRiderId>> Checkpoints { get; set; }
     }
 
-    public class ClassicRoundResultStrategy<TRiderId, TCheckpoint, TPosition, TLap>
-        where TRiderId: struct, IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
-        where TCheckpoint: ICheckpoint<TRiderId>
-        where TPosition: IRoundPosition<TRiderId, TLap, TCheckpoint>, new()
-        where TLap: ILap<TRiderId, TCheckpoint>, new()
+    public class ClassicRoundResultStrategy<TRiderId>
+        where TRiderId: IEquatable<TRiderId>
     {
         private readonly Settings settings;
-        private readonly Func<TPosition, TPosition> onNewPosition;
-        private readonly Func<TLap, TLap> onNewLap;
-
         public ClassicRoundResultStrategy(Settings settings = null)
         {
             this.settings = settings ?? Settings.Default;
-            this.onNewPosition = this.settings.OnNewPosition ?? (x => x);
-            this.onNewLap = this.settings.OnNewLap ?? (x => x);
         }
 
-        public ClassicRoundResultStrategyResult<TRiderId, TCheckpoint, TPosition, TLap> Process(List<TCheckpoint> checkpoints, HashSet<TRiderId> riderIds, 
-            DateTimeOffset roundStartTime, TimeSpan roundDuration)
+        public ClassicRoundResultStrategyResult<TRiderId> Process(List<Checkpoint<TRiderId>> checkpoints, HashSet<TRiderId> riderIds, 
+            DateTime roundStartTime, TimeSpan roundDuration)
         {
-            var result = new ClassicRoundResultStrategyResult<TRiderId, TCheckpoint, TPosition, TLap>();
+            var result = new ClassicRoundResultStrategyResult<TRiderId>();
             result.Checkpoints = checkpoints;
             //if (checkpoints.Count == 0) return result;
-            var records = new Dictionary<TRiderId, TPosition>();
+            var records = new Dictionary<TRiderId, RoundPosition<TRiderId>>();
             var leaderHasFinished = false;
             var maxLaps = 0;
             var leaderDuration = TimeSpan.MaxValue;
             foreach (var cp in checkpoints)
             {
                 //if (!riderIds.Contains(cp.RiderId)) continue;
-                var rec = records.GetOrAdd(cp.RiderId, n => new TPosition {
+                var rec = records.GetOrAdd(cp.RiderId, n => new RoundPosition<TRiderId> {
                     RiderId = cp.RiderId,
-                    Laps = new List<TLap>(),
                     Start = roundStartTime,
                     Started = true
                 });
-                rec = onNewPosition(rec);
+                //rec = onNewPosition(rec);
                 if (rec.Finished)
                 {
                     continue;
                 }
-                var lastTimestamp = rec.Laps.LastOrDefault()?.End ?? roundStartTime;
-                var lap = new TLap
-                          {
-                              Duration = cp.Timestamp - lastTimestamp,
-                              AggDuration = cp.Timestamp - roundStartTime,
-                              Start = lastTimestamp,
-                              Checkpoint = cp,
-                              RiderId = cp.RiderId,
-                              End = cp.Timestamp,
-                              Number = rec.LapsCount + 1
-                          };
-                lap = onNewLap(lap);
+                var lap = rec.Laps.LastOrDefault()?.CreateNext(cp) ?? new Lap<TRiderId>(cp, roundStartTime);
+                //lap = onNewLap(lap);
                 rec.Duration = lap.AggDuration;
                 rec.End = cp.Timestamp;
                 rec.Laps.Add(lap);
@@ -97,11 +76,15 @@ namespace RaceLogic
             var maxPoints = records.Values.Count(x => x.Finished);
             
             result.Rating = records.Values
-                .Concat(ridersWithoutLaps.Select(x => onNewPosition(new TPosition
-                    {
-                        RiderId = x,
-                        Laps = new List<TLap>(),
-                    })))
+//                .Concat(ridersWithoutLaps.Select(x => onNewPosition(new TPosition
+//                    {
+//                        RiderId = x,
+//                        Laps = new List<TLap>(),
+//                    })))
+                .Concat(ridersWithoutLaps.Select(x => new RoundPosition<TRiderId>
+                {
+                    RiderId = x,
+                }))
                 .OrderByDescending(x => x.Finished ? 1 : 0)
                 .ThenByDescending(x => x.LapsCount)
                 .ThenBy(x => x.Duration)
@@ -122,8 +105,8 @@ namespace RaceLogic
             /// In case the start is going through the gate, you may prefer to ignore first lap reading
             /// </summary>
             public bool SkipFirstLap { get; set; }
-            public Func<TPosition, TPosition> OnNewPosition { get; set; }
-            public Func<TLap, TLap> OnNewLap { get; set; }
+//            public Func<TPosition, TPosition> OnNewPosition { get; set; }
+//            public Func<TLap, TLap> OnNewLap { get; set; }
         }
     }
 }
