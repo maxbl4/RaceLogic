@@ -12,7 +12,7 @@ namespace RaceLogic.Tests.Infrastructure
         {
             var cp = RoundDefParser.ParseCheckpoint("11");
             cp.RiderId.ShouldBe(11);
-            cp.Timestamp.ShouldBe(DateTime.MinValue);
+            cp.Timestamp.ShouldBe(default(DateTime));
         }
         
         [Fact]
@@ -20,7 +20,7 @@ namespace RaceLogic.Tests.Infrastructure
         {
             var cp = RoundDefParser.ParseCheckpoint("11[04:50]");
             cp.RiderId.ShouldBe(11);
-            cp.Timestamp.ShouldBe(DateTime.MinValue + new TimeSpan(0, 4, 50));
+            cp.Timestamp.ShouldBe(default(DateTime) + new TimeSpan(0, 4, 50));
         }
         
         [Fact]
@@ -39,11 +39,11 @@ namespace RaceLogic.Tests.Infrastructure
             var cps = RoundDefParser.ParseCheckpoints("11[50] 12[52] 13[57]").ToList();
             cps.Count.ShouldBe(3);
             cps[0].RiderId.ShouldBe(11);
-            cps[0].Timestamp.ShouldBe(DateTime.MinValue + new TimeSpan(0, 0, 50));
+            cps[0].Timestamp.ShouldBe(default(DateTime) + new TimeSpan(0, 0, 50));
             cps[1].RiderId.ShouldBe(12);
-            cps[1].Timestamp.ShouldBe(DateTime.MinValue + new TimeSpan(0, 0, 52));
+            cps[1].Timestamp.ShouldBe(default(DateTime) + new TimeSpan(0, 0, 52));
             cps[2].RiderId.ShouldBe(13);
-            cps[2].Timestamp.ShouldBe(DateTime.MinValue + new TimeSpan(0, 0, 57));
+            cps[2].Timestamp.ShouldBe(default(DateTime) + new TimeSpan(0, 0, 57));
         }
 
         [Fact]
@@ -105,7 +105,7 @@ F13 L1 [4     ]");
             rd.Rating[0].LapsCount.ShouldBe(2);
             rd.Rating[0].Laps.Count.ShouldBe(2);
             rd.Rating[0].Laps[0].SequentialNumber.ShouldBe(1);
-            rd.Rating[0].Laps[0].Start.ShouldBe(DateTime.MinValue);
+            rd.Rating[0].Laps[0].Start.ShouldBe(default(DateTime));
             rd.Rating[0].Laps[0].End.ShouldBe(new DateTime(1, 1, 1, 0, 0, 2));
             rd.Rating[0].Laps[1].SequentialNumber.ShouldBe(2);
             rd.Rating[0].Laps[1].Start.ShouldBe(new DateTime(1, 1, 1, 0, 0, 2));

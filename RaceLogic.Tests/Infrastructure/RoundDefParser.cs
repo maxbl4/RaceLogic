@@ -57,8 +57,8 @@ namespace RaceLogic.Tests.Infrastructure
             rp.Laps.AddRange(parts.Skip(2)
                 .Select((x, i) =>
                 {
-                    var cp = new Checkpoint<int>(rp.RiderId, DateTime.MinValue + TimeSpanExt.Parse(x));
-                    var l = prevLap?.CreateNext(cp) ?? new Lap<int>(cp, DateTime.MinValue);
+                    var cp = new Checkpoint<int>(rp.RiderId, default(DateTime) + TimeSpanExt.Parse(x));
+                    var l = prevLap?.CreateNext(cp) ?? new Lap<int>(cp, default(DateTime));
                     prevLap = l;
                     return l;
                 }));
@@ -88,15 +88,15 @@ namespace RaceLogic.Tests.Infrastructure
         {
             var parts = stringCp.Split(new[] {'[', ']'});
             if (parts.Length > 1)
-                return new Checkpoint<int>(int.Parse(parts[0]), DateTime.MinValue + TimeSpanExt.Parse(parts[1]));
+                return new Checkpoint<int>(int.Parse(parts[0]), default(DateTime) + TimeSpanExt.Parse(parts[1]));
             return new Checkpoint<int>(int.Parse(parts[0]));
         }
 
         public static string ToDefString(this Checkpoint<int> cp)
         {
             if (cp == null) return "";
-            if (cp.Timestamp == DateTime.MinValue) return cp.RiderId.ToString();
-            return $"{cp.RiderId}[{(cp.Timestamp - DateTime.MinValue).ToShortString()}]";
+            if (cp.Timestamp == default(DateTime)) return cp.RiderId.ToString();
+            return $"{cp.RiderId}[{(cp.Timestamp - default(DateTime)).ToShortString()}]";
         }
         
         public static string ToDefString(this RoundPosition<int> rp)
@@ -107,7 +107,7 @@ namespace RaceLogic.Tests.Infrastructure
             sb.Append($"{rp.RiderId} L{rp.LapsCount}");
             if (rp.Laps.Count > 0)
             {
-                sb.Append($" [{string.Join(" ", rp.Laps.Select(x => (x.End - DateTime.MinValue).ToShortString()))}]");
+                sb.Append($" [{string.Join(" ", rp.Laps.Select(x => (x.End - default(DateTime)).ToShortString()))}]");
             }
             return sb.ToString();
         }

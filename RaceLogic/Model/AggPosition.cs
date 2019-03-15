@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RaceLogic.Extensions;
 using RaceLogic.Interfaces;
 
-namespace RaceLogic.CalculationModel
+namespace RaceLogic.Model
 {
     public class AggPosition<TKey,TPosition> : IPosition<TKey>, IComparable<AggPosition<TKey,TPosition>>, IComparable
         where TKey: struct, IComparable, IComparable<TKey>, IEquatable<TKey>
@@ -46,12 +46,12 @@ namespace RaceLogic.CalculationModel
             return this;
         }
 
-        private List<PositionHistogramItem> orderedHistogramItems;
-        List<PositionHistogramItem> GetOrderedHistogramItems(bool cached = true)
+        private List<(int Position, int Count)> orderedHistogramItems;
+        List<(int Position, int Count)> GetOrderedHistogramItems(bool cached = true)
         {
             if (cached && orderedHistogramItems != null) return orderedHistogramItems;
             return orderedHistogramItems = PositionHistogram
-                .Select(x => new PositionHistogramItem {Position = x.Key, Count = x.Value})
+                .Select(x => (Position: x.Key, Count: x.Value))
                 .OrderBy(x => x.Position).ToList();
         }
 
@@ -63,14 +63,6 @@ namespace RaceLogic.CalculationModel
             // 4. Compare places in last round
             if (ReferenceEquals(this, other)) return 0;
             if (ReferenceEquals(null, other)) return 1;
-            if ((new Guid("08d5cb28-d94f-75b3-b99d-f267fa74aae0").Equals(RiderId) &&
-                new Guid("08d5d14a-91c0-2abd-fb7f-bf760039ee03").Equals(other.RiderId)
-                ||new Guid("08d5cb28-d94f-75b3-b99d-f267fa74aae0").Equals(other.RiderId) &&
-                new Guid("08d5d14a-91c0-2abd-fb7f-bf760039ee03").Equals(RiderId))
-                && typeof(TPosition).Name == "ClassRiderResult")
-            {
-            }
-
             var points = other.Points.CompareTo(Points);
             if (points != 0) return points;
             var roundsCount = other.OriginalPositions.Count.CompareTo(OriginalPositions.Count);
@@ -114,11 +106,5 @@ namespace RaceLogic.CalculationModel
         {
             return CompareTo(obj as AggPosition<TKey,TPosition>);
         }
-    }
-
-    public class PositionHistogramItem
-    {
-        public int Position { get; set; }
-        public int Count { get; set; }
     }
 }

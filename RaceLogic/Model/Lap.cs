@@ -15,7 +15,7 @@ namespace RaceLogic.Model
         public Lap(Checkpoint<TRiderId> checkpoint, DateTime roundStartTime)
         {
             Checkpoint = checkpoint;
-            Start = roundStartTime;
+            Start = checkpoint.HasTimestamp ? roundStartTime: default(DateTime);
             End = checkpoint.Timestamp;
             Duration = AggDuration = End - Start;
             SequentialNumber = 1;

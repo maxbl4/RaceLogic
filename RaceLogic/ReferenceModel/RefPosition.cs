@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using RaceLogic.CalculationModel;
 using RaceLogic.Interfaces;
+using RaceLogic.Model;
 
 namespace RaceLogic.ReferenceModel
 {

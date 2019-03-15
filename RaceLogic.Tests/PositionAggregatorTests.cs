@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RaceLogic.CalculationModel;
 using RaceLogic.Interfaces;
+using RaceLogic.Model;
 using RaceLogic.ReferenceModel;
 using Shouldly;
 using Xunit;
