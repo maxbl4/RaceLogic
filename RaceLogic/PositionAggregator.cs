@@ -7,6 +7,7 @@ using RaceLogic.Model;
 
 namespace RaceLogic
 {
+    //TODO: Рефакторить PositionAggregator, чтобы он использовал обычный Position
     public class PositionAggregator
     {
         public List<AggPosition<TKey, TInput>> Aggregate<TKey, TInput>(List<List<TInput>> rounds)
