@@ -26,45 +26,48 @@ namespace RaceLogic
         }
 
         public ClassicRoundResultStrategyResult<TRiderId> Process(List<Checkpoint<TRiderId>> checkpoints, HashSet<TRiderId> riderIds, 
-            DateTime roundStartTime, TimeSpan roundDuration)
+            DateTime roundStartTime, TimeSpan roundDuration, bool forcedFinish)
         {
             var result = new ClassicRoundResultStrategyResult<TRiderId>();
             result.Checkpoints = checkpoints;
-            //if (checkpoints.Count == 0) return result;
+            HashSet<TRiderId> didNotFinish = null;
+            if (forcedFinish)
+            {
+                var finishTime = roundStartTime + roundDuration;
+                didNotFinish = new HashSet<TRiderId>(checkpoints.GroupBy(x => x.RiderId)
+                    .Where(x => x.All(cp => cp.Timestamp < finishTime))
+                    .Select(x => x.Key));
+            }
+
             var records = new Dictionary<TRiderId, RoundPosition<TRiderId>>();
             var leaderHasFinished = false;
             var maxLaps = 0;
             var leaderDuration = TimeSpan.MaxValue;
             foreach (var cp in checkpoints)
             {
-                //if (!riderIds.Contains(cp.RiderId)) continue;
-                var rec = records.GetOrAdd(cp.RiderId, n => new RoundPosition<TRiderId> {
-                    RiderId = cp.RiderId,
-                    Start = roundStartTime,
-                    Started = true
-                });
-                //rec = onNewPosition(rec);
+                var rec = records.GetOrAdd(cp.RiderId, n => RoundPosition<TRiderId>.FromStartTime(cp.RiderId, roundStartTime));
+                //TODO: onNewPosition(rec);
                 if (rec.Finished)
                 {
                     continue;
                 }
-                var lap = rec.Laps.LastOrDefault()?.CreateNext(cp) ?? new Lap<TRiderId>(cp, roundStartTime);
-                //lap = onNewLap(lap);
-                rec.Duration = lap.AggDuration;
-                rec.End = cp.Timestamp;
-                rec.Laps.Add(lap);
-                rec.LapsCount = rec.Laps.Count;
-                if (maxLaps < rec.LapsCount)
+                //TODO: onNewLap(lap);
+                records[cp.RiderId] = rec = rec.Append(cp);
+                if (!forcedFinish || !didNotFinish.Contains(cp.RiderId))
                 {
-                    maxLaps = Math.Max(maxLaps, rec.LapsCount);
-                    leaderDuration = rec.Duration;
+                    if (maxLaps < rec.LapsCount)
+                    {
+                        maxLaps = Math.Max(maxLaps, rec.LapsCount);
+                        leaderDuration = rec.Duration;
+                    }
+
+                    if (maxLaps == rec.LapsCount && leaderDuration > rec.Duration)
+                        leaderDuration = rec.Duration;
+                    if (maxLaps == rec.LapsCount && rec.Duration > roundDuration && rec.Duration <= leaderDuration)
+                        leaderHasFinished = true;
+                    if (leaderHasFinished && rec.Duration >= leaderDuration)
+                        records[cp.RiderId] = rec = rec.Finish();
                 }
-                if (maxLaps == rec.LapsCount && leaderDuration > rec.Duration)
-                    leaderDuration = rec.Duration;
-                if (maxLaps == rec.LapsCount && rec.Duration > roundDuration && rec.Duration <= leaderDuration && !leaderHasFinished)
-                    leaderHasFinished = true;
-                if (leaderHasFinished && rec.Duration >= leaderDuration)
-                    rec.Finished = true;
             }
             var ridersWithoutLaps = riderIds.Except(records.Keys);
             if (records.Any() && records.All(x => x.Value.Finished))
@@ -76,15 +79,7 @@ namespace RaceLogic
             var maxPoints = records.Values.Count(x => x.Finished);
             
             result.Rating = records.Values
-//                .Concat(ridersWithoutLaps.Select(x => onNewPosition(new TPosition
-//                    {
-//                        RiderId = x,
-//                        Laps = new List<TLap>(),
-//                    })))
-                .Concat(ridersWithoutLaps.Select(x => new RoundPosition<TRiderId>
-                {
-                    RiderId = x,
-                }))
+                .Concat(ridersWithoutLaps.Select(x => RoundPosition<TRiderId>.FromStartTime(x, roundStartTime))) //TODO: onNewPosition()
                 .OrderByDescending(x => x.Finished ? 1 : 0)
                 .ThenByDescending(x => x.LapsCount)
                 .ThenBy(x => x.Duration)
@@ -105,6 +100,10 @@ namespace RaceLogic
             /// In case the start is going through the gate, you may prefer to ignore first lap reading
             /// </summary>
             public bool SkipFirstLap { get; set; }
+            /// <summary>
+            /// For 15 minutes +1 lap logic. Set how many laps you want
+            /// </summary>
+            public int PlusLapsAfterRoundTime { get; set; }
 //            public Func<TPosition, TPosition> OnNewPosition { get; set; }
 //            public Func<TLap, TLap> OnNewLap { get; set; }
         }

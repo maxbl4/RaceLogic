@@ -44,11 +44,14 @@ namespace RaceLogic.Tests
         }
 
         [Fact]
-        public void Dnf_should_be_last_in_the_rating_2()
+        public void After_session_has_stopped_dnf_should_be_forced_for_leader()
         {
             session1.Start();
             session1.Log(11, 1);
             session1.LogFinish(12, 2);
+            ValidateRiderPositions(11, 12, 13);
+            ValidateRiderLaps(1, 1, 0);
+            session1.Stop();
             ValidateRiderPositions(12, 11, 13);
             ValidateRiderLaps(1, 1, 0);
         }
@@ -118,6 +121,18 @@ namespace RaceLogic.Tests
 
         [Fact]
         public void Should_support_calculation_without_timestamps()
+        {
+            throw new NotSupportedException();
+        }
+        
+        [Fact]
+        public void Should_support_calculation_of_time_plus_laps()
+        {
+            throw new NotSupportedException();
+        }
+        
+        [Fact]
+        public void Should_support_skip_first_lap()
         {
             throw new NotSupportedException();
         }
@@ -446,17 +461,22 @@ namespace RaceLogic.Tests
             EveryoneFinished = false;
             Calculate();
         }
+        
+        public void Stop()
+        {
+            Calculate(true);
+        }
 
         public void UpdateGate(Checkpoint<int> checkpoint, DateTime timestamp)
         {
             Calculate();
         }
 
-        public void Calculate()
+        public void Calculate(bool forcedFinish = false)
         {
             Checkpoints.Sort(Checkpoint<int>.TimestampComparer);
             var strategy = new ClassicRoundResultStrategy<int>();
-            var result = strategy.Process(Checkpoints, new HashSet<int>{11,12,13}, StartTime, SessionDuration);
+            var result = strategy.Process(Checkpoints, new HashSet<int>{11,12,13}, StartTime, SessionDuration, forcedFinish);
             this.EveryoneFinished = result.EveryoneFinished;
             if (EveryoneFinished)
                 IsRunning = false;

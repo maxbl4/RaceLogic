@@ -46,25 +46,22 @@ namespace RaceLogic.Tests.Infrastructure
         private static RoundPosition<int> ParseRating(string line)
         {
             var parts = line.Split(new[] {' ', '\t', '[', ']', 'L', 'F'}, StringSplitOptions.RemoveEmptyEntries);
-            var rp = new RoundPosition<int>
-            {
-                RiderId = int.Parse(parts[0]),
-                LapsCount = int.Parse(parts[1]),
-                Finished = line.StartsWith('F')
-            };
+            var riderId = int.Parse(parts[0]);
+            var finished = line.StartsWith('F');
+            if (parts.Length < 3)
+                return RoundPosition<int>.FromLapCount(riderId, int.Parse(parts[1]), finished);
 
             Lap<int> prevLap = null;
-            rp.Laps.AddRange(parts.Skip(2)
+            var laps = parts.Skip(2)
                 .Select((x, i) =>
                 {
-                    var cp = new Checkpoint<int>(rp.RiderId, default(DateTime) + TimeSpanExt.Parse(x));
+                    var cp = new Checkpoint<int>(riderId, default(DateTime) + TimeSpanExt.Parse(x));
                     var l = prevLap?.CreateNext(cp) ?? new Lap<int>(cp, default(DateTime));
                     prevLap = l;
                     return l;
-                }));
-            if (rp.Laps.Count > 0)
-                rp.LapsCount = rp.Laps.Count; 
-            return rp;
+                });
+            
+            return RoundPosition<int>.FromLaps(riderId, laps, finished);
         }
 
         public static TimeSpan ParseDuration(string trackHeader)
