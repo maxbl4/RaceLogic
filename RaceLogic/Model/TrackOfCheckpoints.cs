@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using RaceLogic.Extensions;
 
@@ -7,25 +8,51 @@ namespace RaceLogic.Model
 {
     public class TrackOfCheckpoints<TRiderId> where TRiderId: IEquatable<TRiderId>
     {
+        private bool finishForced;
+        private readonly FinishCriteria finishCriteria;
         readonly Dictionary<TRiderId, RoundPosition<TRiderId>> positions = new Dictionary<TRiderId, RoundPosition<TRiderId>>();
         readonly List<List<Checkpoint<TRiderId>>> track = new List<List<Checkpoint<TRiderId>>>();
         public DateTime RoundStartTime { get; }
 
-        public TrackOfCheckpoints(DateTime? roundStartTime = null)
+        public TrackOfCheckpoints(DateTime? roundStartTime = null, FinishCriteria finishCriteria = null)
         {
+            this.finishCriteria = finishCriteria;
             RoundStartTime = roundStartTime ?? default(DateTime);
         }
         
         public void Append(Checkpoint<TRiderId> cp)
         {
+            if (finishForced) return;
             var position = positions.GetOrAdd(cp.RiderId, x => RoundPosition<TRiderId>.FromStartTime(x, RoundStartTime));
+            if (position.Finished)
+                return;
             position.Append(cp);
             if (track.Count < position.LapsCount)
                 track.Add(new List<Checkpoint<TRiderId>>());
             track[position.LapsCount - 1].Add(cp);
+            if (finishCriteria?.HasFinished(position, GetSequence(), false) == true)
+            {
+                positions[cp.RiderId] = position.Finish();
+            }
+            sequence = null;
         }
 
-        public IEnumerable<RoundPosition<TRiderId>> GetRating()
+        public void ForceFinish()
+        {
+            finishForced = true;
+            foreach (var position in GetSequence())
+            {
+                if (finishCriteria?.HasFinished(position, GetSequence(), true) == true)
+                    positions[position.RiderId] = position.Finish();
+            }
+
+            sequence = null;
+        }
+
+        private List<RoundPosition<TRiderId>> sequence = null;
+        public List<RoundPosition<TRiderId>> Sequence => sequence ?? (sequence = GetSequence().ToList());
+
+        public IEnumerable<RoundPosition<TRiderId>> GetSequence()
         {
             IEnumerable<RoundPosition<TRiderId>> result = null;
             for (var i = track.Count - 1; i >= 0 ; i--)
