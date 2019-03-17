@@ -32,6 +32,7 @@ namespace RaceLogic.Model
         public bool HasFinished<TRiderId>(RoundPosition<TRiderId> current, IEnumerable<RoundPosition<TRiderId>> sequence, bool finishForced)
             where TRiderId: IEquatable<TRiderId>
         {
+            if (current.Finished) return true;
             var leader = GetLeader(sequence, finishForced);
             if (current.RiderId.Equals(leader.RiderId))
             {
@@ -44,7 +45,7 @@ namespace RaceLogic.Model
                 }
                 else
                 {
-                    var mainDurationComplete = current.Duration > duration;
+                    var mainDurationComplete = current.Duration >= duration;
                     var additionalLapsComplete = lapsAfterDuration == 0 || current.Laps.Count(x => x.AggDuration >= duration) >= lapsAfterDuration;
                     return mainDurationComplete && additionalLapsComplete;
                 }

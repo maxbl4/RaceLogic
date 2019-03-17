@@ -26,7 +26,7 @@ namespace RaceLogic.Model
             var position = positions.GetOrAdd(cp.RiderId, x => RoundPosition<TRiderId>.FromStartTime(x, RoundStartTime));
             if (position.Finished)
                 return;
-            position.Append(cp);
+            positions[cp.RiderId] = position = position.Append(cp);
             if (track.Count < position.LapsCount)
                 track.Add(new List<Checkpoint<TRiderId>>());
             track[position.LapsCount - 1].Add(cp);
@@ -57,7 +57,9 @@ namespace RaceLogic.Model
             IEnumerable<RoundPosition<TRiderId>> result = null;
             for (var i = track.Count - 1; i >= 0 ; i--)
             {
-                var partRating = track[i].Select(x => positions[x.RiderId]);
+                var lapIndex = i + 1;
+                var partRating = track[i].Select(x => positions[x.RiderId])
+                    .Where(x => x.LapsCount == lapIndex && (!finishForced || x.Finished));
                 result = result == null ? partRating : result.Concat(partRating);
             }
 
