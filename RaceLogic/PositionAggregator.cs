@@ -10,18 +10,18 @@ namespace RaceLogic
     //TODO: Рефакторить PositionAggregator, чтобы он использовал обычный Position
     public class PositionAggregator
     {
-        public List<AggPosition<TKey, TInput>> Aggregate<TKey, TInput>(List<List<TInput>> rounds)
-            where TKey: struct, IComparable, IComparable<TKey>, IEquatable<TKey>
-            where TInput: IPosition<TKey>
+        public List<AggPosition<TRiderId, TInput>> Aggregate<TRiderId, TInput>(List<List<TInput>> rounds)
+            where TRiderId: IEquatable<TRiderId>
+            where TInput: IPosition<TRiderId>
         {
-            var rating = new Dictionary<TKey,AggPosition<TKey, TInput>>();
+            var rating = new Dictionary<TRiderId,AggPosition<TRiderId, TInput>>();
             for (var i = 0; i < rounds.Count; i++)
             {
                 var round = rounds[i];
                 foreach (var position in round)
                 {
                     rating.UpdateOrAdd(position.RiderId,
-                        x => x.AddPosition(position, i), new AggPosition<TKey, TInput>(position.RiderId));
+                        x => x.AddPosition(position, i), new AggPosition<TRiderId, TInput>(position.RiderId));
                 }
             }
             var maxPoints = rating.Values.Count(x => x.Points > 0);

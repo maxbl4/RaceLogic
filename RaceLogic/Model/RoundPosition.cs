@@ -16,7 +16,6 @@ namespace RaceLogic.Model
         public DateTime End { get; }
         public bool Finished { get; }
         public bool Started => LapsCount > 0;
-        public bool Dsq { get; }
         public TRiderId RiderId { get; }
         
         private RoundPosition(TRiderId riderId, int lapsCount, bool finished)

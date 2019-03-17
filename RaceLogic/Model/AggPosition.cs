@@ -6,27 +6,27 @@ using RaceLogic.Interfaces;
 
 namespace RaceLogic.Model
 {
-    public class AggPosition<TKey,TPosition> : IPosition<TKey>, IComparable<AggPosition<TKey,TPosition>>, IComparable
-        where TKey: struct, IComparable, IComparable<TKey>, IEquatable<TKey>
-        where TPosition: IPosition<TKey>
+    public class AggPosition<TRiderId,TPosition> : IPosition<TRiderId>, IComparable<AggPosition<TRiderId,TPosition>>, IComparable
+        where TRiderId: IEquatable<TRiderId>
+        where TPosition: IPosition<TRiderId>
     {
         public int Points { get; set; }
         public int AggPoints { get; set; }
         public int Position { get; set; }
         public bool Dsq { get; set; }
-        public TKey RiderId { get; }
+        public TRiderId RiderId { get; }
         public int MaxRoundIndex { get; private set; }
         public int PositionInLastRound { get; private set; }
         public int PointsInLastRound { get; private set; }
         public Dictionary<int, int> PositionHistogram { get; } = new Dictionary<int, int>();
         public List<TPosition> OriginalPositions { get; set; } = new List<TPosition>();
 
-        public AggPosition(TKey riderId)
+        public AggPosition(TRiderId riderId)
         {
             RiderId = riderId;
         }
 
-        public AggPosition<TKey,TPosition> AddPosition(TPosition position, int roundIndex)
+        public AggPosition<TRiderId,TPosition> AddPosition(TPosition position, int roundIndex)
         {
             if (!RiderId.Equals(position.RiderId))
                 throw new ArgumentException($"RiderId should be same as initial ({RiderId}), but was ({position.RiderId})", nameof(position));
@@ -55,7 +55,7 @@ namespace RaceLogic.Model
                 .OrderBy(x => x.Position).ToList();
         }
 
-        public int CompareTo(AggPosition<TKey,TPosition> other)
+        public int CompareTo(AggPosition<TRiderId,TPosition> other)
         {
             // 1. Compare points
             // 2. Compare number of rounds
@@ -72,7 +72,7 @@ namespace RaceLogic.Model
             return CompareLastRound(other);
         }
 
-        public int ComparePointsHistogram(AggPosition<TKey,TPosition> other)
+        public int ComparePointsHistogram(AggPosition<TRiderId,TPosition> other)
         {
             var others = other.GetOrderedHistogramItems();
             var currents = GetOrderedHistogramItems();
@@ -90,7 +90,7 @@ namespace RaceLogic.Model
             return 0;
         }
 
-        public int CompareLastRound(AggPosition<TKey,TPosition> other)
+        public int CompareLastRound(AggPosition<TRiderId,TPosition> other)
         {
             if (other.MaxRoundIndex < MaxRoundIndex) return -1;
             if (other.MaxRoundIndex > MaxRoundIndex) return 1;
@@ -104,7 +104,7 @@ namespace RaceLogic.Model
 
         public int CompareTo(object obj)
         {
-            return CompareTo(obj as AggPosition<TKey,TPosition>);
+            return CompareTo(obj as AggPosition<TRiderId,TPosition>);
         }
     }
 }
