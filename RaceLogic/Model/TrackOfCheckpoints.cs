@@ -39,12 +39,12 @@ namespace RaceLogic.Model
 
         public void ForceFinish()
         {
-            finishForced = true;
             foreach (var position in GetSequence())
             {
                 if (finishCriteria?.HasFinished(position, GetSequence(), true) == true)
                     positions[position.RiderId] = position.Finish();
             }
+            finishForced = true;
 
             sequence = null;
         }
@@ -58,12 +58,17 @@ namespace RaceLogic.Model
             for (var i = track.Count - 1; i >= 0 ; i--)
             {
                 var lapIndex = i + 1;
-                var partRating = track[i].Select(x => positions[x.RiderId])
-                    .Where(x => x.LapsCount == lapIndex && (!finishForced || x.Finished));
+                var partRating = track[i].Select(x => positions[x.RiderId]).Where(x => x.LapsCount == lapIndex);
                 result = result == null ? partRating : result.Concat(partRating);
             }
+            if (result == null)
+                return new RoundPosition<TRiderId>[0];
 
-            return result;
+            return result.Select((x, i) => new
+                    {Position = x, Index = i, IndexOfStartAndFinish = x.IndexOfStartAndFinish()})
+                .OrderByDescending(x => x.IndexOfStartAndFinish)
+                .ThenBy(x => x.Index)
+                .Select(x => x.Position);
         }
     }
 }

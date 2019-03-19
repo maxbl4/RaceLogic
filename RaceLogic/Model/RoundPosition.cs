@@ -74,7 +74,7 @@ namespace RaceLogic.Model
         
         public override string ToString()
         {
-            return $"{RiderId} L:{LapsCount}";
+            return $"{(Finished?"F":"")}{RiderId} L:{LapsCount}";
         }
     }
 }

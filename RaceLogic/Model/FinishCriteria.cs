@@ -10,18 +10,29 @@ namespace RaceLogic.Model
         private readonly int? totalLaps;
         private readonly int lapsAfterDuration;
         private readonly bool skipStartingCheckpoint;
-        
-        private FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint)
+        private readonly bool forceFinishOnly;
+
+        private FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint, bool forceFinishOnly = false)
         {
             this.duration = duration;
             this.totalLaps = totalLaps;
             this.lapsAfterDuration = lapsAfterDuration;
             this.skipStartingCheckpoint = skipStartingCheckpoint;
+            this.forceFinishOnly = forceFinishOnly;
         }
 
         public static FinishCriteria FromDuration(TimeSpan duration, int lapsAfterDuration = 0)
         {
             return new FinishCriteria(duration, null, lapsAfterDuration, false);
+        }
+        
+        /// <summary>
+        /// Sets finished only with finishForced. Used for calculation without timestamps
+        /// </summary>
+        /// <returns></returns>
+        public static FinishCriteria FromForcedFinish()
+        {
+            return new FinishCriteria(TimeSpan.Zero, null, 0, false, true);
         }
         
         public static FinishCriteria FromTotalLaps(int totalLaps, TimeSpan duration, bool skipFirstLap = false)
@@ -32,6 +43,7 @@ namespace RaceLogic.Model
         public bool HasFinished<TRiderId>(RoundPosition<TRiderId> current, IEnumerable<RoundPosition<TRiderId>> sequence, bool finishForced)
             where TRiderId: IEquatable<TRiderId>
         {
+            if (forceFinishOnly && !finishForced) return false;
             if (current.Finished) return true;
             var leader = GetLeader(sequence, finishForced);
             if (current.RiderId.Equals(leader.RiderId))
@@ -51,7 +63,7 @@ namespace RaceLogic.Model
                 }
             }
             if (!leader.Finished) return false;
-            return current.Duration > leader.Duration;
+            return current.Duration >= leader.Duration;
         }
         
         public RoundPosition<TRiderId> GetLeader<TRiderId>(IEnumerable<RoundPosition<TRiderId>> sequence, bool finishForced)
