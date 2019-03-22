@@ -4,18 +4,22 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using RaceLogic.Extensions;
 
 namespace RaceLogic.Model
 {
     public class Checkpoint<TRiderId> where TRiderId: IEquatable<TRiderId>
     {
+        private static long nextSequence;
         public DateTime Timestamp { get; }
         public TRiderId RiderId { get; }
         public bool HasTimestamp => Timestamp > default(DateTime);
-        
+        public long Sequence { get; }
+
         public Checkpoint(TRiderId riderId, DateTime? timestamp = null)
         {
+            Sequence = Interlocked.Increment(ref nextSequence);
             RiderId = riderId;
             Timestamp = timestamp ?? default(DateTime);
         }

@@ -62,7 +62,7 @@ Rating
 11[5]  12[10] 13[15]
 11[30] 12[32] 13[33]
 Rating
-11 3 [5  30]
+11 2 [5  30]
 12 2 [10 32]
 13 2 [15 33]");
             var fc = FinishCriteria.FromDuration(TimeSpan.FromSeconds(30));

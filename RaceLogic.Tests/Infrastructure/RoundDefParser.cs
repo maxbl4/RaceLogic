@@ -50,11 +50,12 @@ namespace RaceLogic.Tests.Infrastructure
             var parts = line.Split(new[] {' ', '\t', '[', ']', 'L', 'F'}, StringSplitOptions.RemoveEmptyEntries);
             var riderId = int.Parse(parts[0]);
             var finished = line.StartsWith('F');
-            if (parts.Length < 2)
-                return RoundPosition<int>.FromLapCount(riderId, 0, false);
-            if (parts.Length < 3)
-                return RoundPosition<int>.FromLapCount(riderId, int.Parse(parts[1]), finished);
-
+            if (parts.Length == 1)
+                return RoundPosition<int>.FromLaps(riderId, new Lap<int>[0], false);
+            var lapCount = int.Parse(parts[1]);
+            if (parts.Length - lapCount < 2)
+                throw new FormatException($"Input should be in format: <rider_number> <number_of_laps> [<lap_time1> ... <lap_time_number_of_laps]. Found lapCount={lapCount} but {parts.Length-2} lap times");
+                
             Lap<int> prevLap = null;
             var laps = parts.Skip(2)
                 .Select((x, i) =>

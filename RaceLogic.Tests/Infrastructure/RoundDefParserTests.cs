@@ -68,9 +68,9 @@ namespace RaceLogic.Tests.Infrastructure
 # Comment
 11 12 13
 Rating
-F11 L2
-12 L2
-13 L2");
+F11 L2 [1 31]
+12 L2 [2 32]
+13 L2 [3 33]");
             rd.Duration.ShouldBe(TimeSpan.Zero);
             rd.Checkpoints.Count.ShouldBe(6);
             rd.Checkpoints[0].RiderId.ShouldBe(11);
@@ -83,14 +83,14 @@ F11 L2
             rd.Rating[0].RiderId.ShouldBe(11);
             rd.Rating[0].Finished.ShouldBeTrue();
             rd.Rating[0].LapsCount.ShouldBe(2);
-            rd.Rating[0].Laps.Count.ShouldBe(0);
+            rd.Rating[0].Laps.Count.ShouldBe(2);
             rd.Rating[1].RiderId.ShouldBe(12);
             rd.Rating[1].Finished.ShouldBeFalse();
             rd.Rating[1].LapsCount.ShouldBe(2);
-            rd.Rating[1].Laps.Count.ShouldBe(0);
+            rd.Rating[1].Laps.Count.ShouldBe(2);
             rd.Rating[2].RiderId.ShouldBe(13);
             rd.Rating[2].LapsCount.ShouldBe(2);
-            rd.Rating[2].Laps.Count.ShouldBe(0);
+            rd.Rating[2].Laps.Count.ShouldBe(2);
         }
         
         [Fact]
@@ -158,13 +158,8 @@ F13 L1 [4     ]");
             pos.Started.ShouldBeFalse();
             pos.Finished.ShouldBeFalse();
             pos.LapsCount.ShouldBe(0);
-            
-            pos = RoundDefParser.ParseRating("11 3", new DateTime(5000));
-            pos.RiderId.ShouldBe(11);
-            pos.Start.ShouldBe(DateTime.MinValue);
-            pos.Started.ShouldBeTrue();
-            pos.Finished.ShouldBeFalse();
-            pos.LapsCount.ShouldBe(3);
+
+            Assert.Throws<FormatException>(() => RoundDefParser.ParseRating("11 3", new DateTime(5000)));
             
             pos = RoundDefParser.ParseRating("F11 2 [1 2]", new DateTime(5000));
             pos.RiderId.ShouldBe(11);
@@ -172,6 +167,8 @@ F13 L1 [4     ]");
             pos.Started.ShouldBeTrue();
             pos.Finished.ShouldBeTrue();
             pos.LapsCount.ShouldBe(2);
+            pos.StartSequence.ShouldBeGreaterThan(0);
+            pos.EndSequence.ShouldBeGreaterThan(pos.StartSequence);
         }
 
         [Fact]

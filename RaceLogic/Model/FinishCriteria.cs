@@ -63,7 +63,7 @@ namespace RaceLogic.Model
                 }
             }
             if (!leader.Finished) return false;
-            return current.Duration >= leader.Duration;
+            return current.EndSequence > leader.EndSequence;
         }
         
         public RoundPosition<TRiderId> GetLeader<TRiderId>(IEnumerable<RoundPosition<TRiderId>> sequence, bool finishForced)
@@ -72,8 +72,12 @@ namespace RaceLogic.Model
             RoundPosition<TRiderId> first = null;
             foreach (var position in sequence)
             {
-                if (!finishForced)
+                if (!finishForced || position.Finished)
                     return position;
+                // The sequence is ordered by lap count and checkpoint sequence
+                // Finish may have to be forced if the leader by laps, have fallen from race
+                // and will not going to finish. When finish is forced, we look for
+                // the first rider who have completed main time and chose him as leader
                 if (first == null)
                     first = position;
                 if (position.Duration >= duration)

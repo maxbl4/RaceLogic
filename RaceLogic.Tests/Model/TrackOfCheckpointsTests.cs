@@ -16,7 +16,7 @@ namespace RaceLogic.Tests.Model
 11[5]  12[10] 13[15]
 11[30] 12[32] 13[33]
 Rating
-F11 3 [5  30]
+F11 2 [5  30]
 F12 2 [10 32]
 F13 2 [15 33]");
             var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
@@ -33,13 +33,13 @@ F13 2 [15 33]");
 11 12 13
 12 11
 Rating
-F12 2
-F11 2
- 13 1");
+F12 2 [1 32]
+F11 2 [2 31]
+ 13 1 [3]");
             var fc = FinishCriteria.FromForcedFinish();
             var track = def.CreateTrack(fc);
             track.ForceFinish();
-            def.VerifyTrack(track);
+            def.VerifyTrack(track, false);
         }
         
         [Fact]
@@ -64,18 +64,5 @@ F13 2 [6 32]
             def.VerifyTrack(track);
         }
         
-        [Fact]
-        public void Dns_should_be_last_in_the_rating()
-        {
-            var def = RoundDef.Parse(@"Track 2018-01-15 30
-12[1] 12[3] 13[4]
-12[31]
-Rating
-F12 3 [1 3 31]
-13 1 [4]
-11 0");
-            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
-            def.VerifyTrack(track);
-        }
     }
 }

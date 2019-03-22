@@ -17,14 +17,8 @@ namespace RaceLogic.Model
         public bool Finished { get; }
         public bool Started => LapsCount > 0;
         public TRiderId RiderId { get; }
-        
-        private RoundPosition(TRiderId riderId, int lapsCount, bool finished)
-        {
-            RiderId = riderId;
-            LapsCount = lapsCount;
-            Laps = new ReadOnlyCollection<Lap<TRiderId>>(new List<Lap<TRiderId>>());
-            Finished = finished;
-        }
+        public long StartSequence { get; }
+        public long EndSequence { get; }
         
         private RoundPosition(TRiderId riderId, bool finished, DateTime? start = null, IEnumerable<Lap<TRiderId>> laps = null)
         {
@@ -37,11 +31,8 @@ namespace RaceLogic.Model
             End = Laps.LastOrDefault()?.End ?? default(DateTime);
             Duration = End - Start;
             Finished = finished;
-        }
-        
-        public static RoundPosition<TRiderId> FromLapCount(TRiderId riderId, int lapCount, bool finished)
-        {
-            return new RoundPosition<TRiderId>(riderId, lapCount, finished);
+            StartSequence = Laps.FirstOrDefault()?.Checkpoint.Sequence ?? 0;
+            EndSequence = Laps.LastOrDefault()?.Checkpoint.Sequence ?? 0;
         }
         
         public static RoundPosition<TRiderId> FromStartTime(TRiderId riderId, DateTime? roundStartTime = null)
@@ -67,8 +58,6 @@ namespace RaceLogic.Model
         {
             if (LapsCount == 0)
                 return this;
-            if (Laps.Count == 0)
-                return FromLapCount(RiderId, LapsCount, true);
             return FromLaps(RiderId, Laps, true);
         }
         
