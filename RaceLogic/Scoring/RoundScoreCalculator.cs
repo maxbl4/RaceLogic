@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RaceLogic.Model;
 
-namespace RaceLogic
+namespace RaceLogic.Scoring
 {
     public class RoundScoreCalculator
     {

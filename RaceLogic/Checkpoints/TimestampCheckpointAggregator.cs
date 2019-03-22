@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
-using RaceLogic.Checkpoints;
 using RaceLogic.Extensions;
-using RaceLogic.Model;
 
-namespace RaceLogic
+namespace RaceLogic.Checkpoints
 {
     public class TimestampCheckpointAggregator<TRiderId> : IObserver<Checkpoint<TRiderId>>
         where TRiderId: IEquatable<TRiderId>

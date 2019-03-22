@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.Design;
 using System.Data.SqlTypes;
+using RaceLogic.Checkpoints;
 using RaceLogic.Model;
 using RaceLogic.Tests.Infrastructure;
 using Shouldly;

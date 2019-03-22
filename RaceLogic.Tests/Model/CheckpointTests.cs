@@ -1,6 +1,6 @@
 using System;
-using RaceLogic.Model;
-using RaceLogic.Model.Mutations;
+using RaceLogic.Checkpoints;
+using RaceLogic.Checkpoints.Mutations;
 using Shouldly;
 using Xunit;
 

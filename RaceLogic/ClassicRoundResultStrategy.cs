@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RaceLogic.Checkpoints;
 using RaceLogic.Extensions;
 using RaceLogic.Interfaces;
 using RaceLogic.Model;

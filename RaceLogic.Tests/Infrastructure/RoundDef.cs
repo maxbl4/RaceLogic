@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.CSharp.RuntimeBinder;
+using RaceLogic.Checkpoints;
 using RaceLogic.Extensions;
 using RaceLogic.Model;
 using RaceLogic.ReferenceModel;

@@ -1,3 +1,4 @@
+using RaceLogic.Checkpoints;
 using RaceLogic.Model;
 using Shouldly;
 using Xunit;

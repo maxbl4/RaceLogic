@@ -1,6 +1,6 @@
 using System;
 
-namespace RaceLogic.Model.Mutations
+namespace RaceLogic.Checkpoints.Mutations
 {
     public static class Checkpoint
     {

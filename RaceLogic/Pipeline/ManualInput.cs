@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using RaceLogic.Checkpoints;
 using RaceLogic.Extensions;
 using RaceLogic.Interfaces;
 using RaceLogic.Model;
@@ -9,16 +10,16 @@ using RaceLogic.ReferenceModel;
 
 namespace RaceLogic.Pipeline
 {
-    public interface IPipelineInput<out TRiderId>
-        where TRiderId: IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
+    public interface IPipelineInput<TRiderId>
+        where TRiderId: IEquatable<TRiderId>
     {
-        IObservable<ICheckpoint<TRiderId>> Checkpoints { get; }  
+        IObservable<Checkpoint<TRiderId>> Checkpoints { get; }  
     }
     
     public class ManualInput<TRiderId>: IPipelineInput<TRiderId>
         where TRiderId: IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
     {
-        public IObservable<ICheckpoint<TRiderId>> Checkpoints { get; }  
+        public IObservable<Checkpoint<TRiderId>> Checkpoints { get; }  
     }
 
     public interface IInputMap<in TInput, TRiderId> where TRiderId : IComparable, IComparable<TRiderId>, IEquatable<TRiderId>

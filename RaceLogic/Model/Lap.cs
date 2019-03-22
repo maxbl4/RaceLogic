@@ -1,4 +1,5 @@
 using System;
+using RaceLogic.Checkpoints;
 using RaceLogic.Interfaces;
 
 namespace RaceLogic.Model
