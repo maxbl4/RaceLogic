@@ -58,7 +58,7 @@ namespace RaceLogic.Model
                 else
                 {
                     var mainDurationComplete = current.Duration >= duration;
-                    var additionalLapsComplete = lapsAfterDuration == 0 || current.Laps.Count(x => x.AggDuration >= duration) >= lapsAfterDuration;
+                    var additionalLapsComplete = lapsAfterDuration == 0 || current.Laps.Count(x => x.AggDuration >= duration) > lapsAfterDuration;
                     return mainDurationComplete && additionalLapsComplete;
                 }
             }
