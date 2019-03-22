@@ -120,24 +120,6 @@ namespace RaceLogic.Tests
         }
 
         [Fact]
-        public void Should_support_calculation_without_timestamps()
-        {
-            throw new NotSupportedException();
-        }
-        
-        [Fact]
-        public void Should_support_calculation_of_time_plus_laps()
-        {
-            throw new NotSupportedException();
-        }
-        
-        [Fact]
-        public void Should_support_skip_first_lap()
-        {
-            throw new NotSupportedException();
-        }
-
-        [Fact]
         public void Everyone_started_and_finished()
         {
             session1.IsRunning.ShouldBe(false);

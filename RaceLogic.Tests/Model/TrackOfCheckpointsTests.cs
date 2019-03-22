@@ -26,9 +26,6 @@ F13 2 [15 33]");
         [Fact]
         public void In_lack_of_timestamps_should_set_finish_to_leader()
         {
-//            Реализовать подсчёт без меток времени в виде отдельного класса!
-//            Это частный случай, который сильно отличается от всех вариантов с метками времени.
-//            В остальных местах требовать ненулевые метки
             var def = RoundDef.Parse(@"Track
 11 12 13
 12 11
@@ -40,6 +37,21 @@ F11 2 [2 31]
             var track = def.CreateTrack(fc);
             track.ForceFinish();
             def.VerifyTrack(track, false);
+        }
+        
+        [Fact]
+        public void Force_finish_when_lap_leader_is_down()
+        {
+            var def = RoundDef.Parse(@"Track 30
+11[1] 11[2] 11[3] 12[4]
+12[34]
+Rating
+F12 2 [4 34]
+11 3 [1 2 3]");
+            var fc = FinishCriteria.FromDuration(def.Duration);
+            var track = def.CreateTrack(fc);
+            track.ForceFinish();
+            def.VerifyTrack(track);
         }
         
         [Fact]
@@ -64,5 +76,33 @@ F13 2 [6 32]
             def.VerifyTrack(track);
         }
         
+        [Fact]
+        public void Sequence_of_checkpoints_should_prevail_over_timestamps()
+        {
+            var def = RoundDef.Parse(@"Track 30
+11[10] 12[8]
+11[40] 12[32]
+Rating
+F11 2 [10 40]
+F12 2 [8 32]");
+            var fc = FinishCriteria.FromDuration(def.Duration);
+            var track = def.CreateTrack(fc);
+            def.VerifyTrack(track);
+        }
+        
+        [Fact]
+        public void Force_finish_should_not_affect_rating_with_normal_finish()
+        {
+            var def = RoundDef.Parse(@"Track 30
+11[5]  12[10] 13[15]
+11[30] 12[32]
+Rating
+F11 2 [5  30]
+F12 2 [10 32]
+ 13 1 [15]");
+            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
+            track.ForceFinish();
+            def.VerifyTrack(track);
+        }
     }
 }
