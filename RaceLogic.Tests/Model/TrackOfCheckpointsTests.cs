@@ -1,8 +1,5 @@
-using System;
-using System.Linq;
 using RaceLogic.Model;
 using RaceLogic.Tests.Infrastructure;
-using Shouldly;
 using Xunit;
 
 namespace RaceLogic.Tests.Model
@@ -73,6 +70,21 @@ F11 4 [1 2 3 31]
 F13 2 [6 32]
  12 2 [4 5]");
             track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
+            def.VerifyTrack(track);
+        }
+        
+        [Fact]
+        public void Dnf_should_be_last_in_the_rating_2()
+        {
+            var def = RoundDef.Parse(@"Track 30
+11[1] 12[2] 11[3] 12[4] 11[5] 12[6]
+13[7]
+11[31] 13[32] 
+Rating
+F11 4 [1 3 5 31]
+F13 2 [7 32]
+ 12 3 [2 4 6]");
+            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
             def.VerifyTrack(track);
         }
         
