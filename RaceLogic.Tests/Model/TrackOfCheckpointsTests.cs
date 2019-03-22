@@ -104,5 +104,20 @@ F12 2 [10 32]
             track.ForceFinish();
             def.VerifyTrack(track);
         }
+        
+        [Fact]
+        public void Checkpoints_after_finish_should_be_ignored()
+        {
+            var def = RoundDef.Parse(@"Track 30
+11[5]  12[10]
+11[30] 12[32]
+11[35] 12[37]
+Rating
+F11 2 [5  30]
+F12 2 [10 32]");
+            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
+            track.ForceFinish();
+            def.VerifyTrack(track);
+        }
     }
 }
