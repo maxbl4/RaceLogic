@@ -17,17 +17,17 @@ namespace RaceLogic.Pipeline
     }
     
     public class ManualInput<TRiderId>: IPipelineInput<TRiderId>
-        where TRiderId: IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
+        where TRiderId: IEquatable<TRiderId>
     {
         public IObservable<Checkpoint<TRiderId>> Checkpoints { get; }  
     }
 
-    public interface IInputMap<in TInput, TRiderId> where TRiderId : IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
+    public interface IInputMap<in TInput, TRiderId> where TRiderId : IEquatable<TRiderId>
     {
         IEnumerable<Checkpoint<TRiderId>> Map(TInput input);
     }
 
-    public class InputMap<TInput, TRiderId> : IInputMap<TInput, TRiderId> where TRiderId: IComparable, IComparable<TRiderId>, IEquatable<TRiderId>
+    public class InputMap<TInput, TRiderId> : IInputMap<TInput, TRiderId> where TRiderId: IEquatable<TRiderId>
     {
         private readonly IDictionary<TInput, IEnumerable<TRiderId>> initialMap;
 

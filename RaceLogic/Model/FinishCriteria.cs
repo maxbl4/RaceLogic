@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace RaceLogic.Model
 {
-    public class FinishCriteria
+    public class FinishCriteria : IFinishCriteria
     {
         private readonly TimeSpan duration;
         private readonly int? totalLaps;

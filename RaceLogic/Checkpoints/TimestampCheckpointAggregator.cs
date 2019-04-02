@@ -6,7 +6,13 @@ using RaceLogic.Extensions;
 
 namespace RaceLogic.Checkpoints
 {
-    public class TimestampCheckpointAggregator<TRiderId> : IObserver<Checkpoint<TRiderId>>
+    public interface ICheckpointAggregator<TRiderId> : IObserver<Checkpoint<TRiderId>>, IObservable<Checkpoint<TRiderId>>
+        where TRiderId : IEquatable<TRiderId>
+    {
+        IObservable<AggCheckpoint<TRiderId>> AggregatedCheckpoints { get; }
+    }
+
+    public class TimestampCheckpointAggregator<TRiderId> : ICheckpointAggregator<TRiderId>
         where TRiderId: IEquatable<TRiderId>
     {
         private readonly TimeSpan window;
@@ -90,6 +96,11 @@ namespace RaceLogic.Checkpoints
             {
                 aggregationCache[cp.RiderId] = agg.Add(cp);
             }
+        }
+
+        public IDisposable Subscribe(IObserver<Checkpoint<TRiderId>> observer)
+        {
+            return checkpoints.Subscribe(observer);
         }
     }
 }

@@ -10,12 +10,12 @@ namespace RaceLogic.Model
     public class TrackOfCheckpoints<TRiderId> where TRiderId: IEquatable<TRiderId>
     {
         private bool finishForced;
-        private readonly FinishCriteria finishCriteria;
+        private readonly IFinishCriteria finishCriteria;
         readonly Dictionary<TRiderId, RoundPosition<TRiderId>> positions = new Dictionary<TRiderId, RoundPosition<TRiderId>>();
         readonly List<List<Checkpoint<TRiderId>>> track = new List<List<Checkpoint<TRiderId>>>();
         public DateTime RoundStartTime { get; }
 
-        public TrackOfCheckpoints(DateTime? roundStartTime = null, FinishCriteria finishCriteria = null)
+        public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
         {
             this.finishCriteria = finishCriteria;
             RoundStartTime = roundStartTime ?? default(DateTime);
