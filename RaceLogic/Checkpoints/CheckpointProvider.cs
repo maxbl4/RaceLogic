@@ -1,10 +1,11 @@
 using System;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using RaceLogic.RiderIdResolving;
 
 namespace RaceLogic.Checkpoints
 {
-    public class CheckpointProvider<TInput, TRiderId> : IObserver<TInput>, IObservable<Checkpoint<TRiderId>>
+    public class CheckpointProvider<TInput, TRiderId> : IObservable<Checkpoint<TRiderId>>
         where TRiderId: IEquatable<TRiderId>
     {
         private readonly IRiderIdResolver<TInput, TRiderId> riderIdResolver;
@@ -15,28 +16,13 @@ namespace RaceLogic.Checkpoints
             this.riderIdResolver = riderIdResolver;
         }
 
-        public void OnCompleted()
-        {
-            checkpoints.OnCompleted();
-        }
-
-        public void OnError(Exception error)
-        {
-            checkpoints.OnError(error);
-        }
-
-        public async void OnNext(TInput value)
+        public async Task ProvideInput(TInput value, DateTime? timeStamp = null)
         {
             if (!riderIdResolver.Resolve(value, out var riderId))
             {
                 riderId = await riderIdResolver.ResolveCreateWhenMissing(value);
             }
-            checkpoints.OnNext(new Checkpoint<TRiderId>(riderId, SetTimestamp()));
-        }
-
-        public virtual DateTime? SetTimestamp()
-        {
-            return DateTime.UtcNow;
+            checkpoints.OnNext(new Checkpoint<TRiderId>(riderId, timeStamp));
         }
 
         public IDisposable Subscribe(IObserver<Checkpoint<TRiderId>> observer)

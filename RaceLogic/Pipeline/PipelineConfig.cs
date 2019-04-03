@@ -47,6 +47,8 @@ namespace RaceLogic.Pipeline
         private readonly IFinishCriteria finishCriteria;
         readonly CompositeDisposable disposable;
         private TrackOfCheckpoints<TRiderId> track;
+        readonly Subject<List<RoundPosition<TRiderId>>> sequence = new Subject<List<RoundPosition<TRiderId>>>();
+        public IObservable<List<RoundPosition<TRiderId>>> Sequence => sequence;
 
         public Pipeline(IEnumerable<IObservable<Checkpoint<TRiderId>>> checkpointProviders,
             IFinishCriteria finishCriteria,
@@ -78,6 +80,7 @@ namespace RaceLogic.Pipeline
             if (track == null)
                 StartRound(cp.Timestamp);
             track.Append(cp);
+            sequence.OnNext(track.Sequence);
         }
 
         public void Dispose()
