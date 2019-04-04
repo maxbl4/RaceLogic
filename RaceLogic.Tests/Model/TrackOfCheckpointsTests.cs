@@ -1,4 +1,4 @@
-using RaceLogic.Model;
+using RaceLogic.RoundTiming;
 using RaceLogic.Tests.Infrastructure;
 using Xunit;
 

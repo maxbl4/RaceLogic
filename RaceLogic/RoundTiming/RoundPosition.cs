@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using RaceLogic.Checkpoints;
 
-namespace RaceLogic.Model
+namespace RaceLogic.RoundTiming
 {
     public class RoundPosition<TRiderId> where TRiderId: IEquatable<TRiderId>
     {

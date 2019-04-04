@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Microsoft.CSharp.RuntimeBinder;
 using RaceLogic.Checkpoints;
-using RaceLogic.Model;
-using RaceLogic.ReferenceModel;
 using RaceLogic.Tests.Infrastructure;
 using Shouldly;
 using Xunit;

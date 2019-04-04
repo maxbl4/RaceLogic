@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using RaceLogic.Checkpoints;
 using RaceLogic.Extensions;
-using RaceLogic.Model;
-using RaceLogic.ReferenceModel;
+using RaceLogic.RoundTiming;
 
 namespace RaceLogic.Tests.Infrastructure
 {

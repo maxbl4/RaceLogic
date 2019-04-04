@@ -1,44 +1,72 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using RaceLogic.Extensions;
 
-namespace RaceLogic.Model
+namespace RaceLogic.Scoring
 {
     public class AggRoundScore<TRiderId> : RoundScore<TRiderId>, IComparable<AggRoundScore<TRiderId>>, IComparable
         where TRiderId: IEquatable<TRiderId>
     {
-        public int AggPoints { get; set; }
-        public bool Dsq { get; set; }
-        public int MaxRoundIndex { get; private set; }
-        public int PositionInLastRound { get; private set; }
-        public int PointsInLastRound { get; private set; }
-        public Dictionary<int, int> PositionHistogram { get; } = new Dictionary<int, int>();
-        public List<RoundScore<TRiderId>> OriginalPositions { get; set; } = new List<RoundScore<TRiderId>>();
+        public int AggPoints { get; }
+        public int MaxRoundIndex { get; }
+        public int PositionInLastRound { get; }
+        public int PointsInLastRound { get; }
+        public ReadOnlyDictionary<int, int> PositionHistogram { get; }
+        public ReadOnlyCollection<RoundScore<TRiderId>> OriginalScores { get; }
+        
+        private AggRoundScore(RoundScore<TRiderId> score) 
+            : base(score.RiderId, 0, score.Points) { }
 
-        public AggRoundScore(RoundPosition<TRiderId> detailsPosition, int position, int points) 
-            : base(detailsPosition, position, points)
-        {
+        public AggRoundScore(TRiderId riderId) 
+            : base(riderId, 0, 0) 
+        { 
+            OriginalScores = new ReadOnlyCollection<RoundScore<TRiderId>>(new RoundScore<TRiderId>[0]);
+            PositionHistogram = new ReadOnlyDictionary<int, int>(new Dictionary<int, int>());
         }
-
-        public AggRoundScore<TRiderId> AddScore(RoundScore<TRiderId> position, int roundIndex)
-        {
-            if (!RiderId.Equals(position.RiderId))
-                throw new ArgumentException($"RiderId should be same as initial ({RiderId}), but was ({position.RiderId})", nameof(position));
-            //Points += position.Points;
-            if (position.Points > 0) // Ignore positions with 0 points
+        
+        public AggRoundScore(AggRoundScore<TRiderId> baseScore, RoundScore<TRiderId> score, int roundIndex) 
+            : base(baseScore.RiderId, 0, baseScore.Points + score.Points) 
+        { 
+            if (!baseScore.RiderId.Equals(score.RiderId))
+                throw new ArgumentException($"RiderId should be same as initial ({RiderId}), but was ({score.RiderId})", nameof(score));
+            if (score.Points > 0) // Ignore positions with 0 points
             {
-                OriginalPositions.Add(position);
-                PositionHistogram.UpdateOrAdd(position.Position, v => v + 1);
+                var scores = baseScore.OriginalScores.ToList();
+                scores.Add(score);
+                OriginalScores = new ReadOnlyCollection<RoundScore<TRiderId>>(scores);
+                var histogram = baseScore.PositionHistogram.ToDictionary(x => x.Key, x => x.Value);
+                histogram.UpdateOrAdd(score.Position, v => v + 1);
+                PositionHistogram = new ReadOnlyDictionary<int, int>(histogram);
             }
-
+            else
+            {
+                OriginalScores = baseScore.OriginalScores;
+                PositionHistogram = baseScore.PositionHistogram;
+            }
             if (MaxRoundIndex <= roundIndex)
             {
                 MaxRoundIndex = roundIndex;
-                PointsInLastRound = position.Points;
-                PositionInLastRound = position.Position;
+                PointsInLastRound = score.Points;
+                PositionInLastRound = score.Position;
             }
-            return this;
+        }
+
+        public AggRoundScore(AggRoundScore<TRiderId> baseScore, int position, int points, int aggPoints)
+            : base(baseScore.RiderId, position, points)
+        {
+            OriginalScores = baseScore.OriginalScores;
+            PositionHistogram = baseScore.PositionHistogram;
+            MaxRoundIndex = baseScore.MaxRoundIndex;
+            PointsInLastRound = baseScore.PointsInLastRound;
+            PositionInLastRound = baseScore.PositionInLastRound;
+            AggPoints = aggPoints;
+        }
+
+        public AggRoundScore<TRiderId> AddScore(RoundScore<TRiderId> score, int roundIndex)
+        {
+            return new AggRoundScore<TRiderId>(this, score, roundIndex);
         }
 
         private List<(int Position, int Count)> orderedHistogramItems;
@@ -60,7 +88,7 @@ namespace RaceLogic.Model
             if (ReferenceEquals(null, other)) return 1;
             var points = other.Points.CompareTo(Points);
             if (points != 0) return points;
-            var roundsCount = other.OriginalPositions.Count.CompareTo(OriginalPositions.Count);
+            var roundsCount = other.OriginalScores.Count.CompareTo(OriginalScores.Count);
             if (roundsCount != 0) return roundsCount;
             var pointsHistogram = ComparePointsHistogram(other);
             if (pointsHistogram != 0) return pointsHistogram;

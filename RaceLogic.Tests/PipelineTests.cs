@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RaceLogic.Checkpoints;
-using RaceLogic.Model;
 using RaceLogic.Pipeline;
-using RaceLogic.ReferenceModel;
 using RaceLogic.RiderIdResolving;
+using RaceLogic.RoundTiming;
 using Shouldly;
 using Xunit;
 

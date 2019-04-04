@@ -1,5 +1,5 @@
 using System;
-using RaceLogic.Model;
+using RaceLogic.RoundTiming;
 
 namespace RaceLogic.Extensions
 {

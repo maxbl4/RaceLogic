@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RaceLogic.Model
+namespace RaceLogic.RoundTiming
 {
     public class FinishCriteria : IFinishCriteria
     {

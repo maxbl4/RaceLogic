@@ -1,6 +1,6 @@
 using System;
 using RaceLogic.Checkpoints;
-using RaceLogic.Model;
+using RaceLogic.RoundTiming;
 using Shouldly;
 using Xunit;
 

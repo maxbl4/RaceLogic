@@ -1,15 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using RaceLogic.Interfaces;
-using RaceLogic.Model;
-using RaceLogic.ReferenceModel;
+using RaceLogic.Scoring;
 using Shouldly;
 using Xunit;
 
 namespace RaceLogic.Tests
 {
-    public class PositionAggregatorTests
+    public class ScoreAggregatorTests
     {
         //TODO: implement cases:
         // 1. Two racers, two rounds. One racer in one round has zero points, but it is sent as round. But should be ignored. And racer with two rounds should win
@@ -18,7 +15,7 @@ namespace RaceLogic.Tests
         public void Test_no_ties()
         {
             var source = Rounds(R(1,2,3), R(3,1,2));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(3);
             rating[0].Check(1, 5, 3);
             rating[1].Check(3, 4, 2);
@@ -31,7 +28,7 @@ namespace RaceLogic.Tests
             var source = Rounds(
                 R(1,2,3), 
                 R(3,2,1));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(3);
             rating[0].Check(3, 4, 3);
             rating[1].Check(1, 4, 2);
@@ -44,14 +41,14 @@ namespace RaceLogic.Tests
             var source = Rounds(
                 R(1), 
                 R(2));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(2);
             rating[0].Check(2, 1, 2);
             rating[1].Check(1, 1, 1);
             source = Rounds(
                 R(1,3,4), 
                 R(2,3,4));
-            rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(4);
             rating[0].Check(3, 4, 4);
             rating[1].Check(2, 3, 3);
@@ -66,7 +63,7 @@ namespace RaceLogic.Tests
                 R(1,3,4), 
                 R(2,1,4),
                 R(4,2,3));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(4);
             rating[0].Check(4, 5, 4);
             rating[1].Check(2, 5, 3);
@@ -81,7 +78,7 @@ namespace RaceLogic.Tests
                 R(3,1,4), 
                 R(2,3,4),
                 R(1,2,3));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(4);
             rating[0].Check(3, 6, 4);
             rating[1].Check(1, 5, 3);
@@ -95,7 +92,7 @@ namespace RaceLogic.Tests
             var source = Rounds(
                 R(1,2,3,4,5), 
                 R(3,5,2,1,4));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(5);
             rating[0].Check(3, 8, 5);
             rating[1].Check(1, 7, 4);
@@ -110,7 +107,7 @@ namespace RaceLogic.Tests
             var source = Rounds(
                 R(1,2,3,4), 
                 R(5,4,3,2,1));
-            var rating = new PositionAggregator().Aggregate<int, RefPosition>(source);
+            var rating = new ScoreAggregator().Aggregate<int>(source);
             rating.Count.ShouldBe(5);
             rating[0].Check(1, 5, 5);
             rating[1].Check(4, 5, 4);
@@ -119,21 +116,21 @@ namespace RaceLogic.Tests
             rating[4].Check(5, 5, 1);
         }
 
-        List<List<RefPosition>> Rounds(params List<RefPosition>[] rounds)
+        List<List<RoundScore<int>>> Rounds(params List<RoundScore<int>>[] rounds)
         {
             return rounds.ToList();
         }
 
-        List<RefPosition> R(params int[] riders)
+        List<RoundScore<int>> R(params int[] riders)
         {
-            return riders.Select((x, i) => new RefPosition {RiderId = x, Points = riders.Length - i, Position = i + 1})
+            return riders.Select((x, i) => new RoundScore<int>(x, i + 1, riders.Length - i))
                 .ToList();
         }
     }
 
     static class Ext
     {
-        public static void Check(this AggPosition<int, RefPosition> position, int rider, int aggPoints, int points)
+        public static void Check(this AggRoundScore<int> position, int rider, int aggPoints, int points)
         {
             position.RiderId.ShouldBe(rider);
             position.AggPoints.ShouldBe(aggPoints, $"Rider {position.RiderId}");

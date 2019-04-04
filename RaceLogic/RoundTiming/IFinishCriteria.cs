@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RaceLogic.Model
+namespace RaceLogic.RoundTiming
 {
     public interface IFinishCriteria
     {

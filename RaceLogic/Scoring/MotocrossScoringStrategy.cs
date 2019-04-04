@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RaceLogic.Model;
+using RaceLogic.RoundTiming;
 
 namespace RaceLogic.Scoring
 {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RaceLogic.Checkpoints;
-using RaceLogic.Model;
+using RaceLogic.RoundTiming;
 using RaceLogic.Scoring;
 using Shouldly;
 using Xunit;

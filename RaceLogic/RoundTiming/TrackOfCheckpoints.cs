@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using RaceLogic.Checkpoints;
 using RaceLogic.Extensions;
 
-namespace RaceLogic.Model
+namespace RaceLogic.RoundTiming
 {
     public class TrackOfCheckpoints<TRiderId> where TRiderId: IEquatable<TRiderId>
     {

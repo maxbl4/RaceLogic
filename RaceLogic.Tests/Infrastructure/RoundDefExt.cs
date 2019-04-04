@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.Design;
 using System.Linq;
-using RaceLogic.Model;
+using RaceLogic.RoundTiming;
 using Shouldly;
 
 namespace RaceLogic.Tests.Infrastructure
