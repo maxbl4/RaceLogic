@@ -8,8 +8,6 @@ namespace RaceLogic.RoundTiming
 {
     public class RoundPosition<TRiderId> where TRiderId: IEquatable<TRiderId>
     {
-        public int Points { get; set; }
-        public int Position { get; set; }
         public int LapsCount { get; }
         public ReadOnlyCollection<Lap<TRiderId>> Laps { get; }
         public TimeSpan Duration { get; }
