@@ -28,7 +28,7 @@ namespace RaceLogic.Tests.Infrastructure
                 sb.Append(" " + Duration.ToShortString());
             sb.AppendLine(this.FormatCheckpoints());
             sb.AppendLine(RoundDefParser.Rating);
-            sb.Append(string.Join("\r\n", Rating.Select(x => x.ToDefString())));
+            sb.Append(string.Join(Environment.NewLine, Rating.Select(x => x.ToDefString())));
             return sb.ToString();
         }
     }
