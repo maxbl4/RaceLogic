@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceLogic", "RaceLogic\Race
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceLogic.Tests", "RaceLogic.Tests\RaceLogic.Tests.csproj", "{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimingServices", "TimingServices\TimingServices.csproj", "{30290D5B-888D-48E9-A1FE-AF2B3761C733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30290D5B-888D-48E9-A1FE-AF2B3761C733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30290D5B-888D-48E9-A1FE-AF2B3761C733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30290D5B-888D-48E9-A1FE-AF2B3761C733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30290D5B-888D-48E9-A1FE-AF2B3761C733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
