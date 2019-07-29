@@ -1,6 +1,6 @@
 namespace maxbl4.RaceLogic.LogManagement.EntryTypes
 {
-    public class ManualCheckpoint
+    public class ManualCheckpoint : Checkpoint
     {
         
     }

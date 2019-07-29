@@ -1,6 +1,6 @@
 namespace maxbl4.RaceLogic.LogManagement.EntryTypes
 {
-    public class RfidCheckpoint
+    public class RfidCheckpoint : Checkpoint
     {
         
     }

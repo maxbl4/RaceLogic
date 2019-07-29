@@ -1,36 +1,71 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using maxbl4.RaceLogic.LogManagement.EntryTypes;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace maxbl4.RaceLogic.LogManagement
 {
     public class LogWriter
     {
+        private readonly TextWriter textWriter = null;
         private readonly string filename;
-        private readonly JsonSerializer serializer;
+        private readonly JsonSerializer serializer = new SerializerFactory().Create();
 
+        public LogWriter(TextWriter textWriter)
+        {
+            this.textWriter = textWriter;
+        }
+        
         public LogWriter(string filename)
         {
             this.filename = filename;
-            serializer = SetupSerializer();
         }
 
-        public void Append(object entry)
+        public void Append(Entry entry)
         {
-            using (var sw = new StreamWriter(filename))
+            if (textWriter != null)
+                AppendImpl(textWriter, entry);
+            else
             {
-                serializer.Serialize(sw, entry);
-                sw.WriteLine();
+                using (var tw = new StreamWriter(filename, true))
+                {
+                    AppendImpl(tw, entry);
+                }
             }
         }
 
-        private JsonSerializer SetupSerializer()
+        void AppendImpl(TextWriter tw, Entry entry)
         {
-            return new JsonSerializer
+            serializer.Serialize(tw, entry);
+            tw.WriteLine();
+            tw.Flush();
+        }
+    }
+    
+    public class LogReader
+    {
+        private readonly JsonSerializer serializer = new SerializerFactory().Create();
+
+        public List<Entry> ReadAll(string filename)
+        {
+            using (var sr = new StreamReader(filename))
+                return ReadAll(sr);
+        }
+        
+        public List<Entry> ReadAll(TextReader tr)
+        {
+            var result = new List<Entry>();
+            string s;
+            while ((s = tr.ReadLine()) != null)
             {
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                SerializationBinder = NameMapSerializationBinder.CreateDefault(),
-                TypeNameHandling = TypeNameHandling.All
-            };
+                var o = serializer.Deserialize(new JsonTextReader(new StringReader(s)));
+                if (o is Entry entry)
+                    result.Add(entry);
+            }
+            return result;
         }
     }
 }
