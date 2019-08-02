@@ -1,6 +1,4 @@
 using System;
-using System.ComponentModel.Design;
-using System.Data.SqlTypes;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RaceLogic.RoundTiming;
 using maxbl4.RaceLogic.Tests.Infrastructure;

@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
+using maxbl4.RaceLogic.Checkpoints;
 
 namespace maxbl4.RaceLogic.LogManagement.EntryTypes
 {
-    public class Checkpoint: Entry
+    public class Checkpoint: Entry, ICheckpoint
     {
         public string RiderId { get; set; }
 

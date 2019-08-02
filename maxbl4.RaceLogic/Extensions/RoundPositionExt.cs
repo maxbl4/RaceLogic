@@ -1,4 +1,3 @@
-using System;
 using maxbl4.RaceLogic.RoundTiming;
 
 namespace maxbl4.RaceLogic.Extensions

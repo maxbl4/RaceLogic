@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using maxbl4.RaceLogic.Checkpoints;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Shouldly;
 using Xunit;
 

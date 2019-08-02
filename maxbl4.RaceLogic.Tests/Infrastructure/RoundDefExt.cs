@@ -1,5 +1,3 @@
-using System;
-using System.ComponentModel.Design;
 using System.Linq;
 using maxbl4.RaceLogic.RoundTiming;
 using Shouldly;
