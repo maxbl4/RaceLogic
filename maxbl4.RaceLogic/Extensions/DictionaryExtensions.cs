@@ -5,7 +5,7 @@ namespace maxbl4.RaceLogic.Extensions
 {
     public static class DictionaryExtensions
     {
-        public static TV Get<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV defaultValue = default(TV))
+        public static TV Get<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV defaultValue = default)
         {
             TV val;
             if (dict.TryGetValue(key, out val))
@@ -22,7 +22,7 @@ namespace maxbl4.RaceLogic.Extensions
             return val;
         }
 
-        public static TV UpdateOrAdd<TK, TV>(this IDictionary<TK, TV> dict, TK key, Func<TV, TV> updateFunc, TV defaultValue = default(TV))
+        public static TV UpdateOrAdd<TK, TV>(this IDictionary<TK, TV> dict, TK key, Func<TV, TV> updateFunc, TV defaultValue = default)
         {
             TV val;
             if (!dict.TryGetValue(key, out val))

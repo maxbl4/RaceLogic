@@ -21,15 +21,15 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
         [Fact]
         public void Can_parse_checkpoint_without_timestamp()
         {
-            var cp = RoundDefParser.ParseCheckpoint("11", default(DateTime));
+            var cp = RoundDefParser.ParseCheckpoint("11", default);
             cp.RiderId.ShouldBe("11");
-            cp.Timestamp.ShouldBe(default(DateTime));
+            cp.Timestamp.ShouldBe(default);
         }
         
         [Fact]
         public void Can_parse_checkpoint_with_timestamp()
         {
-            var cp = RoundDefParser.ParseCheckpoint("11[04:50]", default(DateTime));
+            var cp = RoundDefParser.ParseCheckpoint("11[04:50]", default);
             cp.RiderId.ShouldBe("11");
             cp.Timestamp.ShouldBe(default(DateTime) + new TimeSpan(0, 4, 50));
         }
@@ -37,7 +37,7 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
         [Fact]
         public void Can_parse_checkpoints_line_without_timestamps()
         {
-            var cps = RoundDefParser.ParseCheckpoints("11 \t12, 13", default(DateTime)).ToList();
+            var cps = RoundDefParser.ParseCheckpoints("11 \t12, 13", default).ToList();
             cps.Count.ShouldBe(3);
             cps[0].RiderId.ShouldBe("11");
             cps[1].RiderId.ShouldBe("12");
@@ -117,7 +117,7 @@ F13 L1 [4     ]");
             rd.Rating[0].LapsCount.ShouldBe(2);
             rd.Rating[0].Laps.Count.ShouldBe(2);
             rd.Rating[0].Laps[0].SequentialNumber.ShouldBe(1);
-            rd.Rating[0].Laps[0].Start.ShouldBe(default(DateTime));
+            rd.Rating[0].Laps[0].Start.ShouldBe(default);
             rd.Rating[0].Laps[0].End.ShouldBe(new DateTime(1, 1, 1, 0, 0, 2));
             rd.Rating[0].Laps[1].SequentialNumber.ShouldBe(2);
             rd.Rating[0].Laps[1].Start.ShouldBe(new DateTime(1, 1, 1, 0, 0, 2));

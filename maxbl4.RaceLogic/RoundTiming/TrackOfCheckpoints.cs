@@ -17,7 +17,7 @@ namespace maxbl4.RaceLogic.RoundTiming
         public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
         {
             this.finishCriteria = finishCriteria;
-            RoundStartTime = roundStartTime ?? default(DateTime);
+            RoundStartTime = roundStartTime ?? default;
         }
         
         public void Append(Checkpoint cp)

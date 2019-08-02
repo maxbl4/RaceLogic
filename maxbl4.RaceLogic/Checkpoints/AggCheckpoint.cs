@@ -66,8 +66,8 @@ namespace maxbl4.RaceLogic.Checkpoints
                 histogram.UpdateOrAdd(cp.GetType().Name, x => x + 1);
             }
             if (count == 0)
-                return new AggCheckpoint(default(string), 
-                    default(DateTime), default(DateTime), 
+                return new AggCheckpoint(default, 
+                    default, default, 
                     0);
             return new AggCheckpoint(riderId, timestamp, lastSeen, count, histogram);
         }

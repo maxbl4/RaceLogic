@@ -22,12 +22,12 @@ namespace maxbl4.RaceLogic.RoundTiming
         private RoundPosition(string riderId, bool finished, DateTime? start = null, IEnumerable<Lap> laps = null)
         {
             RiderId = riderId;
-            Start = start ?? default(DateTime);
+            Start = start ?? default;
             Laps = new ReadOnlyCollection<Lap>(laps?.ToList() ?? new List<Lap>());
             LapsCount = Laps.Count;
-            if (Start == default(DateTime) && Laps.Count > 0 && Laps[0].Start != default(DateTime))
+            if (Start == default && Laps.Count > 0 && Laps[0].Start != default)
                 Start = Laps[0].Start;
-            End = Laps.LastOrDefault()?.End ?? default(DateTime);
+            End = Laps.LastOrDefault()?.End ?? default;
             Duration = End - Start;
             Finished = finished;
             StartSequence = Laps.FirstOrDefault()?.Checkpoint.Sequence ?? 0;

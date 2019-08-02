@@ -99,7 +99,7 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
         public static string ToDefString(this Checkpoint cp, DateTime roundStartTime)
         {
             if (cp == null) return "";
-            if (cp.Timestamp == default(DateTime)) return cp.RiderId.ToString();
+            if (cp.Timestamp == default) return cp.RiderId.ToString();
             return $"{cp.RiderId}[{(cp.Timestamp - roundStartTime).ToShortString()}]";
         }
         

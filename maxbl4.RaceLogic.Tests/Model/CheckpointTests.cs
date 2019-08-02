@@ -17,7 +17,7 @@ namespace maxbl4.RaceLogic.Tests.Model
             
             cp = new Checkpoint("456");
             cp.RiderId.ShouldBe("456");
-            cp.Timestamp.ShouldBe(default(DateTime));
+            cp.Timestamp.ShouldBe(default);
         }
         
         [Fact]
