@@ -57,7 +57,7 @@ namespace maxbl4.RaceLogic.Checkpoints
                     riderId = cp.RiderId;
                     timestamp = lastSeen = cp.Timestamp;
                 }
-                else if (!riderId.Equals(cp.RiderId))
+                else if (cp.RiderId != riderId)
                 {
                     throw new ArgumentException($"Found checkpoints with different RiderIds {riderId} {cp.RiderId}", nameof(checkpoints));
                 }
@@ -74,7 +74,7 @@ namespace maxbl4.RaceLogic.Checkpoints
 
         public AggCheckpoint Add(Checkpoint cp)
         {
-            if (!RiderId.Equals(cp.RiderId))
+            if (RiderId != cp.RiderId)
                 throw new ArgumentException($"Found checkpoints with different RiderIds {RiderId} {cp.RiderId}", nameof(cp));
             var record = new []{new KeyValuePair<string, int>(cp.GetType().Name, 1)};
             

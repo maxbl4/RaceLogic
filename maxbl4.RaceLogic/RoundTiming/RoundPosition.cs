@@ -46,7 +46,7 @@ namespace maxbl4.RaceLogic.RoundTiming
 
         public RoundPosition Append(Checkpoint cp, bool finish = false)
         {
-            if (!RiderId.Equals(cp.RiderId))
+            if (RiderId != cp.RiderId)
                 throw new ArgumentException($"Found checkpoints with different RiderIds {RiderId} {cp.RiderId}", nameof(cp));
             
             var newLaps = Laps.Concat(new []{Laps.LastOrDefault()?.CreateNext(cp) ?? new Lap(cp, Start)});

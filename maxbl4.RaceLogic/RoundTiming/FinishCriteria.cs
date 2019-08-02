@@ -45,7 +45,7 @@ namespace maxbl4.RaceLogic.RoundTiming
             if (forceFinishOnly && !finishForced) return false;
             if (current.Finished) return true;
             var leader = GetLeader(sequence, finishForced);
-            if (current.RiderId.Equals(leader.RiderId))
+            if (current.RiderId == leader.RiderId)
             {
                 if (totalLaps.HasValue)
                 {

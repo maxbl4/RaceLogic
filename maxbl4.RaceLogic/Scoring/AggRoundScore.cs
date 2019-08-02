@@ -28,7 +28,7 @@ namespace maxbl4.RaceLogic.Scoring
         public AggRoundScore(AggRoundScore baseScore, RoundScore score, int roundIndex) 
             : base(baseScore.RiderId, 0, baseScore.Points + score.Points) 
         { 
-            if (!baseScore.RiderId.Equals(score.RiderId))
+            if (baseScore.RiderId != score.RiderId)
                 throw new ArgumentException($"RiderId should be same as initial ({RiderId}), but was ({score.RiderId})", nameof(score));
             if (score.Points > 0) // Ignore positions with 0 points
             {
