@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace maxbl4.RaceLogic.LogManagement
+namespace maxbl4.RaceLogic.LogManagement.IO
 {
     public class SerializerFactory
     {

@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using maxbl4.RaceLogic.LogManagement.EntryTypes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
-namespace maxbl4.RaceLogic.LogManagement
+namespace maxbl4.RaceLogic.LogManagement.IO
 {
     public class LogWriter
     {
@@ -42,30 +38,6 @@ namespace maxbl4.RaceLogic.LogManagement
             serializer.Serialize(tw, entry);
             tw.WriteLine();
             tw.Flush();
-        }
-    }
-    
-    public class LogReader
-    {
-        private readonly JsonSerializer serializer = new SerializerFactory().Create();
-
-        public List<Entry> ReadAll(string filename)
-        {
-            using (var sr = new StreamReader(filename))
-                return ReadAll(sr);
-        }
-        
-        public List<Entry> ReadAll(TextReader tr)
-        {
-            var result = new List<Entry>();
-            string s;
-            while ((s = tr.ReadLine()) != null)
-            {
-                var o = serializer.Deserialize(new JsonTextReader(new StringReader(s)));
-                if (o is Entry entry)
-                    result.Add(entry);
-            }
-            return result;
         }
     }
 }

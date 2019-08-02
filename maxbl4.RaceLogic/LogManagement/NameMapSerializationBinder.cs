@@ -37,6 +37,7 @@ namespace maxbl4.RaceLogic.LogManagement
                 {"manual", typeof(ManualCheckpoint)},
                 {"rfid", typeof(RfidCheckpoint)},
                 {"start", typeof(SessionStart)},
+                {"comment", typeof(Comment)},
             });
         }
     }

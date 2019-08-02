@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-using maxbl4.RaceLogic.LogManagement;
+using System.Linq;
 using maxbl4.RaceLogic.LogManagement.EntryTypes;
+using maxbl4.RaceLogic.LogManagement.IO;
 using Shouldly;
 using Xunit;
 
@@ -45,7 +46,7 @@ namespace maxbl4.RaceLogic.Tests.LogManagement
         {
             var sr = new StringReader(simpleLog1);
             var logReader = new LogReader();
-            var entries = logReader.ReadAll(sr);
+            var entries = logReader.Read(sr).ToList();
             
             entries.Count.ShouldBe(3);
             entries[0].ShouldBeOfType<SessionStart>();
