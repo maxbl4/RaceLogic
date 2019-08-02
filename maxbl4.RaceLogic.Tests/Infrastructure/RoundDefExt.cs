@@ -8,15 +8,15 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
 {
     public static class RoundDefExt
     {
-        public static TrackOfCheckpoints<int> CreateTrack(this RoundDef def, FinishCriteria fc)
+        public static TrackOfCheckpoints CreateTrack(this RoundDef def, FinishCriteria fc)
         {
-            var track = new TrackOfCheckpoints<int>(def.RoundStartTime, fc);
+            var track = new TrackOfCheckpoints(def.RoundStartTime, fc);
             foreach (var checkpoint in def.Checkpoints)
                 track.Append(checkpoint);
             return track;
         }
 
-        public static void VerifyTrack(this RoundDef def, TrackOfCheckpoints<int> track, bool verifyTime = true)
+        public static void VerifyTrack(this RoundDef def, TrackOfCheckpoints track, bool verifyTime = true)
         {
             var rating = track.GetSequence().ToList();
             for (var i = 0; i < def.Rating.Count; i++)

@@ -3,25 +3,25 @@ using maxbl4.RaceLogic.Checkpoints;
 
 namespace maxbl4.RaceLogic.RoundTiming
 {
-    public class Lap<TRiderId> where TRiderId: IEquatable<TRiderId>
+    public class Lap
     {
-        public Checkpoint<TRiderId> Checkpoint { get; }
+        public Checkpoint Checkpoint { get; }
         public DateTime Start { get; }
         public DateTime End { get; }
         public TimeSpan Duration { get; }
         public TimeSpan AggDuration { get; }
         public int SequentialNumber { get; }
 
-        public Lap(Checkpoint<TRiderId> checkpoint, DateTime roundStartTime)
+        public Lap(Checkpoint checkpoint, DateTime roundStartTime)
         {
             Checkpoint = checkpoint;
-            Start = checkpoint.HasTimestamp ? roundStartTime: default(DateTime);
+            Start = roundStartTime;
             End = checkpoint.Timestamp;
             Duration = AggDuration = End - Start;
             SequentialNumber = 1;
         }
         
-        public Lap(Checkpoint<TRiderId> checkpoint, Lap<TRiderId> previousLap)
+        public Lap(Checkpoint checkpoint, Lap previousLap)
         {
             Checkpoint = checkpoint;
             Start = previousLap.End;
@@ -31,9 +31,9 @@ namespace maxbl4.RaceLogic.RoundTiming
             SequentialNumber = previousLap.SequentialNumber + 1;
         }
 
-        public Lap<TRiderId> CreateNext(Checkpoint<TRiderId> checkpoint)
+        public Lap CreateNext(Checkpoint checkpoint)
         {
-            return new Lap<TRiderId>(checkpoint, this);
+            return new Lap(checkpoint, this);
         }
     }
 }

@@ -5,27 +5,26 @@ using maxbl4.RaceLogic.RiderIdResolving;
 
 namespace maxbl4.RaceLogic.Checkpoints
 {
-    public class CheckpointProvider<TInput, TRiderId> : IObservable<Checkpoint<TRiderId>>
-        where TRiderId: IEquatable<TRiderId>
+    public class CheckpointProvider : IObservable<Checkpoint>
     {
-        private readonly IRiderIdResolver<TInput, TRiderId> riderIdResolver;
-        private readonly Subject<Checkpoint<TRiderId>> checkpoints = new Subject<Checkpoint<TRiderId>>();
+        private readonly IRiderIdResolver riderIdResolver;
+        private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
-        public CheckpointProvider(IRiderIdResolver<TInput, TRiderId> riderIdResolver)
+        public CheckpointProvider(IRiderIdResolver riderIdResolver)
         {
             this.riderIdResolver = riderIdResolver;
         }
 
-        public async Task ProvideInput(TInput value, DateTime? timeStamp = null)
+        public async Task ProvideInput(string value, DateTime? timeStamp = null)
         {
             if (!riderIdResolver.Resolve(value, out var riderId))
             {
                 riderId = await riderIdResolver.ResolveCreateWhenMissing(value);
             }
-            checkpoints.OnNext(new Checkpoint<TRiderId>(riderId, timeStamp));
+            checkpoints.OnNext(new Checkpoint(riderId, timeStamp));
         }
 
-        public IDisposable Subscribe(IObserver<Checkpoint<TRiderId>> observer)
+        public IDisposable Subscribe(IObserver<Checkpoint> observer)
         {
             return checkpoints.Subscribe(observer);
         }

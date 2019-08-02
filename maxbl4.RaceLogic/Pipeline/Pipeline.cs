@@ -8,24 +8,23 @@ using maxbl4.RaceLogic.RoundTiming;
 
 namespace maxbl4.RaceLogic.Pipeline
 {
-    public class Pipeline<TRiderId>: IDisposable
-        where TRiderId: IEquatable<TRiderId>
+    public class Pipeline: IDisposable
     {
         private readonly IFinishCriteria finishCriteria;
         readonly CompositeDisposable disposable;
-        private TrackOfCheckpoints<TRiderId> track;
-        readonly Subject<List<RoundPosition<TRiderId>>> sequence = new Subject<List<RoundPosition<TRiderId>>>();
-        public IObservable<List<RoundPosition<TRiderId>>> Sequence => sequence;
+        private TrackOfCheckpoints track;
+        readonly Subject<List<RoundPosition>> sequence = new Subject<List<RoundPosition>>();
+        public IObservable<List<RoundPosition>> Sequence => sequence;
 
-        public Pipeline(IEnumerable<IObservable<Checkpoint<TRiderId>>> checkpointProviders,
+        public Pipeline(IEnumerable<IObservable<Checkpoint>> checkpointProviders,
             IFinishCriteria finishCriteria,
-            ICheckpointAggregator<TRiderId> checkpointAggregator = null)
+            ICheckpointAggregator checkpointAggregator = null)
         {
             this.finishCriteria = finishCriteria;
             disposable = new CompositeDisposable(checkpointProviders.Select(x =>
             {
                 if (checkpointAggregator == null)
-                    return ObservableExtensions.Subscribe<Checkpoint<TRiderId>>(x, OnCheckpoint);
+                    return ObservableExtensions.Subscribe<Checkpoint>(x, OnCheckpoint);
                 return x.Subscribe(checkpointAggregator);
             }));
             if (checkpointAggregator != null)
@@ -34,7 +33,7 @@ namespace maxbl4.RaceLogic.Pipeline
 
         public void StartRound(DateTime roundStartTime)
         {
-            track = new TrackOfCheckpoints<TRiderId>(roundStartTime, finishCriteria);
+            track = new TrackOfCheckpoints(roundStartTime, finishCriteria);
         }
 
         public void StopRound()
@@ -42,7 +41,7 @@ namespace maxbl4.RaceLogic.Pipeline
             track?.ForceFinish();
         }
 
-        void OnCheckpoint(Checkpoint<TRiderId> cp)
+        void OnCheckpoint(Checkpoint cp)
         {
             if (track == null)
                 StartRound(cp.Timestamp);

@@ -18,22 +18,22 @@ namespace maxbl4.RaceLogic.Tests
             var roundDuration = TimeSpan.FromTicks(30);
             var minLap = TimeSpan.FromTicks(5);
             var roundStartTime = new DateTime(1000);
-            List<RoundPosition<string>> sequence = null;
+            List<RoundPosition> sequence = null;
             
-            var riderIdMap = new Dictionary<int, string>{{11, "Eleven"}, {12, "Twelve"}, {13, "Thirteen"}};
-            var riderIdResolver = new SimpleMapRiderIdResolver<int, string>(riderIdMap, 
+            var riderIdMap = new Dictionary<string, string>{{"11", "Eleven"}, {"12", "Twelve"}, {"13", "Thirteen"}};
+            var riderIdResolver = new SimpleMapRiderIdResolver(riderIdMap, 
                 input => Task.FromResult(riderIdMap[input] = input.ToString()));
-            var manualCheckpointProvider = new CheckpointProvider<int, string>(riderIdResolver);
-            var builder = new PipelineBuilder<string>()
+            var manualCheckpointProvider = new CheckpointProvider(riderIdResolver);
+            var builder = new PipelineBuilder()
                 .WithFinishCriteria(FinishCriteria.FromDuration(roundDuration))
-                .WithCheckpointAggregator(new TimestampCheckpointAggregator<string>(minLap))
+                .WithCheckpointAggregator(new TimestampCheckpointAggregator(minLap))
                 .WithCheckpointProvider(manualCheckpointProvider);
             var pp = builder.Build();
             pp.Sequence.Subscribe(x => sequence = x);
             
             pp.StartRound(roundStartTime);
-            await manualCheckpointProvider.ProvideInput(11, new DateTime(1001));
-            await manualCheckpointProvider.ProvideInput(15, new DateTime(1005));
+            await manualCheckpointProvider.ProvideInput("11", new DateTime(1001));
+            await manualCheckpointProvider.ProvideInput("15", new DateTime(1005));
             sequence.ShouldNotBeNull();
             sequence.Count.ShouldBe(2);
             sequence[0].RiderId.ShouldBe("Eleven");

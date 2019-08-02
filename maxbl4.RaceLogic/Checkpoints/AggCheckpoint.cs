@@ -5,8 +5,7 @@ using maxbl4.RaceLogic.Extensions;
 
 namespace maxbl4.RaceLogic.Checkpoints
 {
-    public class AggCheckpoint<TRiderId> : Checkpoint<TRiderId>
-        where TRiderId : IEquatable<TRiderId>
+    public class AggCheckpoint : Checkpoint
     {
         public DateTime LastSeen { get; }
         public int Count { get; }
@@ -16,7 +15,7 @@ namespace maxbl4.RaceLogic.Checkpoints
 
         public string Histogram { get; }
 
-        private AggCheckpoint(TRiderId riderId, DateTime timestamp, DateTime lastSeen, 
+        private AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
             int count, Dictionary<string,int> histogram) 
             : base(riderId, timestamp)
         {
@@ -26,7 +25,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             Histogram = ToHistogramString(this.histogram);
         }
         
-        private AggCheckpoint(TRiderId riderId, DateTime timestamp, DateTime lastSeen, 
+        private AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
             int count, IEnumerable<KeyValuePair<string,int>> histogram = null) 
                 : base(riderId, timestamp)
         {
@@ -38,14 +37,14 @@ namespace maxbl4.RaceLogic.Checkpoints
             Histogram = ToHistogramString(this.histogram);
         }
 
-        public static AggCheckpoint<TRiderId> From(Checkpoint<TRiderId> checkpoint)
+        public static AggCheckpoint From(Checkpoint checkpoint)
         {
             return From(new []{checkpoint});
         }
         
-        public static AggCheckpoint<TRiderId> From(IEnumerable<Checkpoint<TRiderId>> checkpoints)
+        public static AggCheckpoint From(IEnumerable<Checkpoint> checkpoints)
         {
-            var riderId = default(TRiderId);
+            var riderId = default(string);
             var timestamp = default(DateTime);
             var lastSeen = default(DateTime);
             var count = 0;
@@ -67,19 +66,19 @@ namespace maxbl4.RaceLogic.Checkpoints
                 histogram.UpdateOrAdd(cp.GetType().Name, x => x + 1);
             }
             if (count == 0)
-                return new AggCheckpoint<TRiderId>(default(TRiderId), 
+                return new AggCheckpoint(default(string), 
                     default(DateTime), default(DateTime), 
                     0);
-            return new AggCheckpoint<TRiderId>(riderId, timestamp, lastSeen, count, histogram);
+            return new AggCheckpoint(riderId, timestamp, lastSeen, count, histogram);
         }
 
-        public AggCheckpoint<TRiderId> Add(Checkpoint<TRiderId> cp)
+        public AggCheckpoint Add(Checkpoint cp)
         {
             if (!RiderId.Equals(cp.RiderId))
                 throw new ArgumentException($"Found checkpoints with different RiderIds {RiderId} {cp.RiderId}", nameof(cp));
             var record = new []{new KeyValuePair<string, int>(cp.GetType().Name, 1)};
             
-            return new AggCheckpoint<TRiderId>(RiderId, 
+            return new AggCheckpoint(RiderId, 
                 Timestamp.TakeSmaller(cp.Timestamp),
                 LastSeen.TakeLarger(cp.Timestamp),
                 Count + 1, histogram?.Concat(record) ?? record);

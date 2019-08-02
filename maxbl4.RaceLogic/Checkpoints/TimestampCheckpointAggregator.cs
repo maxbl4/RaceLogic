@@ -6,23 +6,21 @@ using maxbl4.RaceLogic.Extensions;
 
 namespace maxbl4.RaceLogic.Checkpoints
 {
-    public interface ICheckpointAggregator<TRiderId> : IObserver<Checkpoint<TRiderId>>, IObservable<Checkpoint<TRiderId>>
-        where TRiderId : IEquatable<TRiderId>
+    public interface ICheckpointAggregator : IObserver<Checkpoint>, IObservable<Checkpoint>
     {
-        IObservable<AggCheckpoint<TRiderId>> AggregatedCheckpoints { get; }
+        IObservable<AggCheckpoint> AggregatedCheckpoints { get; }
     }
 
-    public class TimestampCheckpointAggregator<TRiderId> : ICheckpointAggregator<TRiderId>
-        where TRiderId: IEquatable<TRiderId>
+    public class TimestampCheckpointAggregator : ICheckpointAggregator
     {
         private readonly TimeSpan window;
-        readonly Subject<AggCheckpoint<TRiderId>> aggregatedCheckpoints = new Subject<AggCheckpoint<TRiderId>>();
-        public IObservable<AggCheckpoint<TRiderId>> AggregatedCheckpoints => aggregatedCheckpoints;
+        readonly Subject<AggCheckpoint> aggregatedCheckpoints = new Subject<AggCheckpoint>();
+        public IObservable<AggCheckpoint> AggregatedCheckpoints => aggregatedCheckpoints;
 
-        readonly Subject<Checkpoint<TRiderId>> checkpoints = new Subject<Checkpoint<TRiderId>>();
-        public IObservable<Checkpoint<TRiderId>> Checkpoints => checkpoints;
+        readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
+        public IObservable<Checkpoint> Checkpoints => checkpoints;
 
-        readonly Dictionary<TRiderId, AggCheckpoint<TRiderId>> aggregationCache = new Dictionary<TRiderId, AggCheckpoint<TRiderId>>();
+        readonly Dictionary<string, AggCheckpoint> aggregationCache = new Dictionary<string, AggCheckpoint>();
 
         public TimestampCheckpointAggregator(TimeSpan window)
         {
@@ -45,11 +43,11 @@ namespace maxbl4.RaceLogic.Checkpoints
             aggregatedCheckpoints.OnError(error);
         }
 
-        public void OnNext(Checkpoint<TRiderId> cp)
+        public void OnNext(Checkpoint cp)
         {
             foreach (var c in ApplyWindow(cp, window, aggregationCache))
             {
-                if (c is AggCheckpoint<TRiderId> agg)
+                if (c is AggCheckpoint agg)
                     aggregatedCheckpoints.OnNext(agg);
                 else
                     checkpoints.OnNext(c);
@@ -63,34 +61,31 @@ namespace maxbl4.RaceLogic.Checkpoints
         /// </summary>
         /// <param name="checkpoints">All checkpoints should have Timestamp set</param>
         /// <param name="window"></param>
-        /// <typeparam name="TRiderId"></typeparam>
+        /// <typeparam name="string"></typeparam>
         /// <returns></returns>
-        public static List<AggCheckpoint<TRiderId>> AggregateOnce(List<Checkpoint<TRiderId>> checkpoints, TimeSpan window)
+        public static List<AggCheckpoint> AggregateOnce(List<Checkpoint> checkpoints, TimeSpan window)
         {
-            checkpoints.Sort(Checkpoint<TRiderId>.TimestampComparer);
-            var result = new List<AggCheckpoint<TRiderId>>();
-            var aggregationCache = new Dictionary<TRiderId, AggCheckpoint<TRiderId>>();
+            checkpoints.Sort(Checkpoint.TimestampComparer);
+            var result = new List<AggCheckpoint>();
+            var aggregationCache = new Dictionary<string, AggCheckpoint>();
             foreach (var cp in checkpoints)
             {
-                result.AddRange(ApplyWindow(cp, window, aggregationCache).OfType<AggCheckpoint<TRiderId>>());
+                result.AddRange(ApplyWindow(cp, window, aggregationCache).OfType<AggCheckpoint>());
             }
             result.AddRange(aggregationCache.Values);
-            result.Sort(Checkpoint<TRiderId>.TimestampComparer);
+            result.Sort(Checkpoint.TimestampComparer);
             return result;
         }
 
-        static IEnumerable<Checkpoint<TRiderId>> ApplyWindow(Checkpoint<TRiderId> cp, TimeSpan window, Dictionary<TRiderId, AggCheckpoint<TRiderId>> aggregationCache)
+        static IEnumerable<Checkpoint> ApplyWindow(Checkpoint cp, TimeSpan window, Dictionary<string, AggCheckpoint> aggregationCache)
         {
-            if (!cp.HasTimestamp)
-                throw new ArgumentException($"All checkpoints must have Timestamp set", nameof(checkpoints));
-            
             var agg = aggregationCache.Get(cp.RiderId);
             if (agg == null || cp.Timestamp - agg.Timestamp > window)
             {
                 yield return cp;
                 if (agg != null)
                     yield return agg;
-                aggregationCache[cp.RiderId] = AggCheckpoint<TRiderId>.From(cp);
+                aggregationCache[cp.RiderId] = AggCheckpoint.From(cp);
             }
             else
             {
@@ -98,7 +93,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             }
         }
 
-        public IDisposable Subscribe(IObserver<Checkpoint<TRiderId>> observer)
+        public IDisposable Subscribe(IObserver<Checkpoint> observer)
         {
             return checkpoints.Subscribe(observer);
         }

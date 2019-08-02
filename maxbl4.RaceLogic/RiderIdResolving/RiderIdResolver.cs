@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 
 namespace maxbl4.RaceLogic.RiderIdResolving
 {
-    public interface IRiderIdResolver<TInput, TRiderId>
-        where TRiderId: IEquatable<TRiderId>
+    public interface IRiderIdResolver
     {
         /// <summary>
         /// Should be used to resolve RiderId from input data, e.g. from number entered manually or RFID tag string.
@@ -17,27 +16,27 @@ namespace maxbl4.RaceLogic.RiderIdResolving
         /// <param name="riderId"></param>
         /// <returns>True if successfully resolved. In case False was returned, ResolveCreateWhenMissing method should be called.
         /// Depending on implementation, method can create new record in database, thus it should be implemented as async Task.</returns>
-        bool Resolve(TInput input, out TRiderId riderId);
-        Task<TRiderId> ResolveCreateWhenMissing(TInput input);
+        bool Resolve(string input, out string riderId);
+        Task<string> ResolveCreateWhenMissing(string input);
     }
 
-    public class SimpleMapRiderIdResolver<TInput, TRiderId> : IRiderIdResolver<TInput, TRiderId> where TRiderId : IEquatable<TRiderId>
+    public class SimpleMapRiderIdResolver : IRiderIdResolver
     {
-        private readonly IDictionary<TInput, TRiderId> map;
-        private readonly Func<TInput, Task<TRiderId>> createRiderId;
+        private readonly IDictionary<string, string> map;
+        private readonly Func<string, Task<string>> createRiderId;
 
-        public SimpleMapRiderIdResolver(IDictionary<TInput, TRiderId> map, Func<TInput, Task<TRiderId>> createRiderId)
+        public SimpleMapRiderIdResolver(IDictionary<string, string> map, Func<string, Task<string>> createRiderId)
         {
             this.map = map;
             this.createRiderId = createRiderId;
         }
 
-        public bool Resolve(TInput input, out TRiderId riderId)
+        public bool Resolve(string input, out string riderId)
         {
             return map.TryGetValue(input, out riderId);
         }
 
-        public async Task<TRiderId> ResolveCreateWhenMissing(TInput input)
+        public async Task<string> ResolveCreateWhenMissing(string input)
         {
             if (!map.TryGetValue(input, out var riderId))
             {

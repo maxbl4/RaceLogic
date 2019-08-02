@@ -6,27 +6,26 @@ using maxbl4.RaceLogic.Extensions;
 
 namespace maxbl4.RaceLogic.Scoring
 {
-    public class AggRoundScore<TRiderId> : RoundScore<TRiderId>, IComparable<AggRoundScore<TRiderId>>, IComparable
-        where TRiderId: IEquatable<TRiderId>
+    public class AggRoundScore : RoundScore, IComparable<AggRoundScore>, IComparable
     {
         public int AggPoints { get; }
         public int MaxRoundIndex { get; }
         public int PositionInLastRound { get; }
         public int PointsInLastRound { get; }
         public ReadOnlyDictionary<int, int> PositionHistogram { get; }
-        public ReadOnlyCollection<RoundScore<TRiderId>> OriginalScores { get; }
+        public ReadOnlyCollection<RoundScore> OriginalScores { get; }
         
-        private AggRoundScore(RoundScore<TRiderId> score) 
+        private AggRoundScore(RoundScore score) 
             : base(score.RiderId, 0, score.Points) { }
 
-        public AggRoundScore(TRiderId riderId) 
+        public AggRoundScore(string riderId) 
             : base(riderId, 0, 0) 
         { 
-            OriginalScores = new ReadOnlyCollection<RoundScore<TRiderId>>(new RoundScore<TRiderId>[0]);
+            OriginalScores = new ReadOnlyCollection<RoundScore>(new RoundScore[0]);
             PositionHistogram = new ReadOnlyDictionary<int, int>(new Dictionary<int, int>());
         }
         
-        public AggRoundScore(AggRoundScore<TRiderId> baseScore, RoundScore<TRiderId> score, int roundIndex) 
+        public AggRoundScore(AggRoundScore baseScore, RoundScore score, int roundIndex) 
             : base(baseScore.RiderId, 0, baseScore.Points + score.Points) 
         { 
             if (!baseScore.RiderId.Equals(score.RiderId))
@@ -35,7 +34,7 @@ namespace maxbl4.RaceLogic.Scoring
             {
                 var scores = baseScore.OriginalScores.ToList();
                 scores.Add(score);
-                OriginalScores = new ReadOnlyCollection<RoundScore<TRiderId>>(scores);
+                OriginalScores = new ReadOnlyCollection<RoundScore>(scores);
                 var histogram = baseScore.PositionHistogram.ToDictionary(x => x.Key, x => x.Value);
                 histogram.UpdateOrAdd(score.Position, v => v + 1);
                 PositionHistogram = new ReadOnlyDictionary<int, int>(histogram);
@@ -53,7 +52,7 @@ namespace maxbl4.RaceLogic.Scoring
             }
         }
 
-        public AggRoundScore(AggRoundScore<TRiderId> baseScore, int position, int points, int aggPoints)
+        public AggRoundScore(AggRoundScore baseScore, int position, int points, int aggPoints)
             : base(baseScore.RiderId, position, points)
         {
             OriginalScores = baseScore.OriginalScores;
@@ -64,9 +63,9 @@ namespace maxbl4.RaceLogic.Scoring
             AggPoints = aggPoints;
         }
 
-        public AggRoundScore<TRiderId> AddScore(RoundScore<TRiderId> score, int roundIndex)
+        public AggRoundScore AddScore(RoundScore score, int roundIndex)
         {
-            return new AggRoundScore<TRiderId>(this, score, roundIndex);
+            return new AggRoundScore(this, score, roundIndex);
         }
 
         private List<(int Position, int Count)> orderedHistogramItems;
@@ -78,7 +77,7 @@ namespace maxbl4.RaceLogic.Scoring
                 .OrderBy(x => x.Position).ToList();
         }
 
-        public int CompareTo(AggRoundScore<TRiderId> other)
+        public int CompareTo(AggRoundScore other)
         {
             // 1. Compare points
             // 2. Compare number of rounds
@@ -95,7 +94,7 @@ namespace maxbl4.RaceLogic.Scoring
             return CompareLastRound(other);
         }
 
-        public int ComparePointsHistogram(AggRoundScore<TRiderId> other)
+        public int ComparePointsHistogram(AggRoundScore other)
         {
             var others = other.GetOrderedHistogramItems();
             var currents = GetOrderedHistogramItems();
@@ -113,7 +112,7 @@ namespace maxbl4.RaceLogic.Scoring
             return 0;
         }
 
-        public int CompareLastRound(AggRoundScore<TRiderId> other)
+        public int CompareLastRound(AggRoundScore other)
         {
             if (other.MaxRoundIndex < MaxRoundIndex) return -1;
             if (other.MaxRoundIndex > MaxRoundIndex) return 1;
@@ -127,7 +126,7 @@ namespace maxbl4.RaceLogic.Scoring
 
         public int CompareTo(object obj)
         {
-            return CompareTo(obj as AggRoundScore<TRiderId>);
+            return CompareTo(obj as AggRoundScore);
         }
     }
 }

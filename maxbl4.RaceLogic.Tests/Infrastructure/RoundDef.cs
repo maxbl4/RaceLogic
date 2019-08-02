@@ -9,8 +9,8 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
 {
     public class RoundDef
     {
-        public List<Checkpoint<int>> Checkpoints { get; } = new List<Checkpoint<int>>();
-        public List<RoundPosition<int>> Rating { get; } = new List<RoundPosition<int>>();
+        public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
+        public List<RoundPosition> Rating { get; } = new List<RoundPosition>();
         public TimeSpan Duration { get; set; } = TimeSpan.Zero;
         public bool HasDuration => Duration > TimeSpan.Zero;
         public DateTime RoundStartTime { get; set; }

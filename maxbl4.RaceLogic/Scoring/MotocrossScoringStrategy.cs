@@ -4,22 +4,21 @@ using maxbl4.RaceLogic.RoundTiming;
 
 namespace maxbl4.RaceLogic.Scoring
 {
-    public static class WellKnownScoringStrategies<TRiderId>
-        where TRiderId : IEquatable<TRiderId>
+    public static class WellKnownScoringStrategies
     {
-        public static RoundScoringStrategy<TRiderId> Motocross()
+        public static RoundScoringStrategy Motocross()
         {
-            return RoundScoringStrategy<TRiderId>.FromFirstPlacePoints(20, 1, new []{5, 3, 2, 1});
+            return RoundScoringStrategy.FromFirstPlacePoints(20, 1, new []{5, 3, 2, 1});
         }
         
-        public static RoundScoringStrategy<TRiderId> XsrCountryCross(IEnumerable<RoundPosition<TRiderId>> positions)
+        public static RoundScoringStrategy XsrCountryCross(IEnumerable<RoundPosition> positions)
         {
-            return RoundScoringStrategy<TRiderId>.FromFinishers(positions, 1, new []{5, 3, 2, 1});
+            return RoundScoringStrategy.FromFinishers(positions, 1, new []{5, 3, 2, 1});
         }
         
-        public static RoundScoringStrategy<TRiderId> BraaapCountryCross(IEnumerable<RoundPosition<TRiderId>> positions)
+        public static RoundScoringStrategy BraaapCountryCross(IEnumerable<RoundPosition> positions)
         {
-            return RoundScoringStrategy<TRiderId>.FromFinishers(positions);
+            return RoundScoringStrategy.FromFinishers(positions);
         }
     }
 }

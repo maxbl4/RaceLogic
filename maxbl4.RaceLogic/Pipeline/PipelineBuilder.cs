@@ -7,34 +7,33 @@ using maxbl4.RaceLogic.Extensions;
 
 namespace maxbl4.RaceLogic.Pipeline
 {
-    public class PipelineBuilder<TRiderId>
-        where TRiderId: IEquatable<TRiderId>
+    public class PipelineBuilder
     {
-        private List<IObservable<Checkpoint<TRiderId>>> checkpointProviders = new List<IObservable<Checkpoint<TRiderId>>>();
-        ICheckpointAggregator<TRiderId> checkpointAggregator;
+        private List<IObservable<Checkpoint>> checkpointProviders = new List<IObservable<Checkpoint>>();
+        ICheckpointAggregator checkpointAggregator;
         private IFinishCriteria finishCriteria;
 
-        public PipelineBuilder<TRiderId> WithCheckpointAggregator(ICheckpointAggregator<TRiderId> aggregator)
+        public PipelineBuilder WithCheckpointAggregator(ICheckpointAggregator aggregator)
         {
             checkpointAggregator = aggregator;
             return this;
         }
 
-        public PipelineBuilder<TRiderId> WithFinishCriteria(IFinishCriteria criteria)
+        public PipelineBuilder WithFinishCriteria(IFinishCriteria criteria)
         {
             finishCriteria = criteria;
             return this;
         }
 
-        public PipelineBuilder<TRiderId> WithCheckpointProvider(IObservable<Checkpoint<TRiderId>> checkpointProvider)
+        public PipelineBuilder WithCheckpointProvider(IObservable<Checkpoint> checkpointProvider)
         {
             checkpointProviders.Add(checkpointProvider);
             return this;
         }
 
-        public Pipeline<TRiderId> Build()
+        public Pipeline Build()
         {
-            return new Pipeline<TRiderId>(checkpointProviders, finishCriteria, checkpointAggregator);
+            return new Pipeline(checkpointProviders, finishCriteria, checkpointAggregator);
         }
     }
 }

@@ -2,12 +2,11 @@ using System;
 
 namespace maxbl4.RaceLogic.Checkpoints
 {
-    public class RfidCheckpoint<TRiderId> : Checkpoint<TRiderId>
-        where TRiderId : IEquatable<TRiderId>
+    public class RfidCheckpoint : Checkpoint
     {
         public string TagId { get; }
 
-        public RfidCheckpoint(TRiderId riderId, DateTime timestamp, string tagId) : base(riderId, timestamp)
+        public RfidCheckpoint(string riderId, DateTime timestamp, string tagId) : base(riderId, timestamp)
         {
             TagId = tagId;
         }

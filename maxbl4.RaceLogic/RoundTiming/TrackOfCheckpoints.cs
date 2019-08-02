@@ -6,12 +6,12 @@ using maxbl4.RaceLogic.Extensions;
 
 namespace maxbl4.RaceLogic.RoundTiming
 {
-    public class TrackOfCheckpoints<TRiderId> where TRiderId: IEquatable<TRiderId>
+    public class TrackOfCheckpoints
     {
         private bool finishForced;
         private readonly IFinishCriteria finishCriteria;
-        readonly Dictionary<TRiderId, RoundPosition<TRiderId>> positions = new Dictionary<TRiderId, RoundPosition<TRiderId>>();
-        readonly List<List<Checkpoint<TRiderId>>> track = new List<List<Checkpoint<TRiderId>>>();
+        readonly Dictionary<string, RoundPosition> positions = new Dictionary<string, RoundPosition>();
+        readonly List<List<Checkpoint>> track = new List<List<Checkpoint>>();
         public DateTime RoundStartTime { get; }
 
         public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
@@ -20,15 +20,15 @@ namespace maxbl4.RaceLogic.RoundTiming
             RoundStartTime = roundStartTime ?? default(DateTime);
         }
         
-        public void Append(Checkpoint<TRiderId> cp)
+        public void Append(Checkpoint cp)
         {
             if (finishForced) return;
-            var position = positions.GetOrAdd(cp.RiderId, x => RoundPosition<TRiderId>.FromStartTime(x, RoundStartTime));
+            var position = positions.GetOrAdd(cp.RiderId, x => RoundPosition.FromStartTime(x, RoundStartTime));
             if (position.Finished)
                 return;
             positions[cp.RiderId] = position = position.Append(cp);
             if (track.Count < position.LapsCount)
-                track.Add(new List<Checkpoint<TRiderId>>());
+                track.Add(new List<Checkpoint>());
             track[position.LapsCount - 1].Add(cp);
             if (finishCriteria?.HasFinished(position, GetSequence(), false) == true)
             {
@@ -49,12 +49,12 @@ namespace maxbl4.RaceLogic.RoundTiming
             sequence = null;
         }
 
-        private List<RoundPosition<TRiderId>> sequence = null;
-        public List<RoundPosition<TRiderId>> Sequence => sequence ?? (sequence = GetSequence().ToList());
+        private List<RoundPosition> sequence = null;
+        public List<RoundPosition> Sequence => sequence ?? (sequence = GetSequence().ToList());
 
-        public IEnumerable<RoundPosition<TRiderId>> GetSequence()
+        public IEnumerable<RoundPosition> GetSequence()
         {
-            IEnumerable<RoundPosition<TRiderId>> result = null;
+            IEnumerable<RoundPosition> result = null;
             for (var i = track.Count - 1; i >= 0 ; i--)
             {
                 var lapIndex = i + 1;
@@ -62,7 +62,7 @@ namespace maxbl4.RaceLogic.RoundTiming
                 result = result == null ? partRating : result.Concat(partRating);
             }
             if (result == null)
-                return new RoundPosition<TRiderId>[0];
+                return new RoundPosition[0];
 
             return result.Select((x, i) => new
                     {Position = x, Index = i, IndexOfStartAndFinish = x.IndexOfStartAndFinish()})

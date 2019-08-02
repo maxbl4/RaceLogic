@@ -7,8 +7,7 @@ using maxbl4.RaceLogic.RoundTiming;
 
 namespace maxbl4.RaceLogic.Scoring
 {
-    public class RoundScoringStrategy<TRiderId>
-        where TRiderId : IEquatable<TRiderId>
+    public class RoundScoringStrategy
     {
         public int FirstPlacePoints { get; }
         public int SubstractBy { get; }
@@ -33,52 +32,52 @@ namespace maxbl4.RaceLogic.Scoring
             StaticScores = new ReadOnlyCollection<int>(staticScores?.ToArray() ?? new int[0]);
         }
 
-        public static RoundScoringStrategy<TRiderId> FromStaticScores(IEnumerable<int> staticScores, bool rateDnfs = false)
+        public static RoundScoringStrategy FromStaticScores(IEnumerable<int> staticScores, bool rateDnfs = false)
         {
-            return new RoundScoringStrategy<TRiderId>(staticScores, 0, 0, rateDnfs);
+            return new RoundScoringStrategy(staticScores, 0, 0, rateDnfs);
         }
         
-        public static RoundScoringStrategy<TRiderId> FromFinishers(IEnumerable<RoundPosition<TRiderId>> positions, 
+        public static RoundScoringStrategy FromFinishers(IEnumerable<RoundPosition> positions, 
             int substractBy = 1, IEnumerable<int> bonusScores = null)
         {
-            return new RoundScoringStrategy<TRiderId>(bonusScores, positions.Count(x => x.Finished), substractBy, false);
+            return new RoundScoringStrategy(bonusScores, positions.Count(x => x.Finished), substractBy, false);
         }
         
-        public static RoundScoringStrategy<TRiderId> FromStarters(IEnumerable<RoundPosition<TRiderId>> positions, 
+        public static RoundScoringStrategy FromStarters(IEnumerable<RoundPosition> positions, 
             int substractBy = 1, IEnumerable<int> bonusScores = null)
         {
-            return new RoundScoringStrategy<TRiderId>(bonusScores, positions.Count(x => x.Started), substractBy, true);
+            return new RoundScoringStrategy(bonusScores, positions.Count(x => x.Started), substractBy, true);
         }
         
-        public static RoundScoringStrategy<TRiderId> FromFirstPlacePoints(int firstPlacePoints, int substractBy = 1, IEnumerable<int> bonusScores = null, 
+        public static RoundScoringStrategy FromFirstPlacePoints(int firstPlacePoints, int substractBy = 1, IEnumerable<int> bonusScores = null, 
             bool rateDnfs = false)
         {
-            return new RoundScoringStrategy<TRiderId>(bonusScores, firstPlacePoints, substractBy, rateDnfs);
+            return new RoundScoringStrategy(bonusScores, firstPlacePoints, substractBy, rateDnfs);
         }
 
 
-        public IEnumerable<RoundScore<TRiderId>> Calculate(IEnumerable<RoundPosition<TRiderId>> positions, IEnumerable<TRiderId> expectedRiders = null)
+        public IEnumerable<RoundScore> Calculate(IEnumerable<RoundPosition> positions, IEnumerable<string> expectedRiders = null)
         {
             if (expectedRiders == null)
-                expectedRiders = new TRiderId[0];
-            var ridersWithCheckpoints = new HashSet<TRiderId>();
+                expectedRiders = new string[0];
+            var ridersWithCheckpoints = new HashSet<string>();
             var position = 1;
             foreach (var rp in positions)
             {
                 ridersWithCheckpoints.Add(rp.RiderId);
-                yield return new RoundScore<TRiderId>(rp, position, GetScoreForRoundPosition(position, rp));
+                yield return new RoundScore(rp, position, GetScoreForRoundPosition(position, rp));
                 position++;
             }
             foreach (var rp in expectedRiders
                 .Where(x => !ridersWithCheckpoints.Contains(x))
-                .Select(x => RoundPosition<TRiderId>.FromStartTime(x)))
+                .Select(x => RoundPosition.FromStartTime(x)))
             {
-                yield return new RoundScore<TRiderId>(rp, position, GetScoreForRoundPosition(position, rp));
+                yield return new RoundScore(rp, position, GetScoreForRoundPosition(position, rp));
                 position++;
             }
         }
 
-        public int GetScoreForRoundPosition(int position, RoundPosition<TRiderId> roundPosition)
+        public int GetScoreForRoundPosition(int position, RoundPosition roundPosition)
         {
             if (!roundPosition.Started) return 0;
             if (!RateDnfs && !roundPosition.Finished) return 0;

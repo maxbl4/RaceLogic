@@ -40,8 +40,7 @@ namespace maxbl4.RaceLogic.RoundTiming
             return new FinishCriteria(duration, totalLaps, 0, skipFirstLap);
         }
         
-        public bool HasFinished<TRiderId>(RoundPosition<TRiderId> current, IEnumerable<RoundPosition<TRiderId>> sequence, bool finishForced)
-            where TRiderId: IEquatable<TRiderId>
+        public bool HasFinished(RoundPosition current, IEnumerable<RoundPosition> sequence, bool finishForced)
         {
             if (forceFinishOnly && !finishForced) return false;
             if (current.Finished) return true;
@@ -66,10 +65,9 @@ namespace maxbl4.RaceLogic.RoundTiming
             return current.EndSequence > leader.EndSequence;
         }
         
-        public RoundPosition<TRiderId> GetLeader<TRiderId>(IEnumerable<RoundPosition<TRiderId>> sequence, bool finishForced)
-            where TRiderId: IEquatable<TRiderId>
+        public RoundPosition GetLeader(IEnumerable<RoundPosition> sequence, bool finishForced)
         {
-            RoundPosition<TRiderId> first = null;
+            RoundPosition first = null;
             foreach (var position in sequence)
             {
                 if (!finishForced || position.Finished)

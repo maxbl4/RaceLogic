@@ -45,28 +45,28 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
             return rd;
         }
 
-        public static RoundPosition<int> ParseRating(string line, DateTime roundStartTime)
+        public static RoundPosition ParseRating(string line, DateTime roundStartTime)
         {
             var parts = line.Split(new[] {' ', '\t', '[', ']', 'L', 'F'}, StringSplitOptions.RemoveEmptyEntries);
-            var riderId = int.Parse(parts[0]);
+            var riderId = parts[0];
             var finished = line.StartsWith('F');
             if (parts.Length == 1)
-                return RoundPosition<int>.FromLaps(riderId, new Lap<int>[0], false);
+                return RoundPosition.FromLaps(riderId, new Lap[0], false);
             var lapCount = int.Parse(parts[1]);
             if (parts.Length - lapCount < 2)
                 throw new FormatException($"Input should be in format: <rider_number> <number_of_laps> [<lap_time1> ... <lap_time_number_of_laps]. Found lapCount={lapCount} but {parts.Length-2} lap times");
                 
-            Lap<int> prevLap = null;
+            Lap prevLap = null;
             var laps = parts.Skip(2)
                 .Select((x, i) =>
                 {
-                    var cp = new Checkpoint<int>(riderId, roundStartTime + TimeSpanExt.Parse(x));
-                    var l = prevLap?.CreateNext(cp) ?? new Lap<int>(cp, roundStartTime);
+                    var cp = new Checkpoint(riderId, roundStartTime + TimeSpanExt.Parse(x));
+                    var l = prevLap?.CreateNext(cp) ?? new Lap(cp, roundStartTime);
                     prevLap = l;
                     return l;
                 });
             
-            return RoundPosition<int>.FromLaps(riderId, laps, finished);
+            return RoundPosition.FromLaps(riderId, laps, finished);
         }
 
         public static (DateTime roundStartTime, TimeSpan duration) ParseTrackHeader(string trackHeader)
@@ -79,7 +79,7 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
             return (DateTime.MinValue, TimeSpan.Zero);
         }
         
-        public static IEnumerable<Checkpoint<int>> ParseCheckpoints(string line, DateTime roundStartTime)
+        public static IEnumerable<Checkpoint> ParseCheckpoints(string line, DateTime roundStartTime)
         {
             var stringCps = line.Split(new[] {' ', '\t', ','}, StringSplitOptions.RemoveEmptyEntries);
             foreach (var stringCp in stringCps)
@@ -88,22 +88,22 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
             }
         }
 
-        public static Checkpoint<int> ParseCheckpoint(string stringCp, DateTime roundStartTime)
+        public static Checkpoint ParseCheckpoint(string stringCp, DateTime roundStartTime)
         {
             var parts = stringCp.Split(new[] {'[', ']'});
             if (parts.Length > 1)
-                return new Checkpoint<int>(int.Parse(parts[0]), roundStartTime + TimeSpanExt.Parse(parts[1]));
-            return new Checkpoint<int>(int.Parse(parts[0]));
+                return new Checkpoint(parts[0], roundStartTime + TimeSpanExt.Parse(parts[1]));
+            return new Checkpoint(parts[0]);
         }
 
-        public static string ToDefString(this Checkpoint<int> cp, DateTime roundStartTime)
+        public static string ToDefString(this Checkpoint cp, DateTime roundStartTime)
         {
             if (cp == null) return "";
             if (cp.Timestamp == default(DateTime)) return cp.RiderId.ToString();
             return $"{cp.RiderId}[{(cp.Timestamp - roundStartTime).ToShortString()}]";
         }
         
-        public static string ToDefString(this RoundPosition<int> rp)
+        public static string ToDefString(this RoundPosition rp)
         {
             if (rp == null) return "";
             var sb = new StringBuilder();
@@ -119,7 +119,7 @@ namespace maxbl4.RaceLogic.Tests.Infrastructure
         public static string FormatCheckpoints(this RoundDef rd)
         {
             var sb = new StringBuilder();
-            var histogram = new Dictionary<int, int>();
+            var histogram = new Dictionary<string, int>();
             var maxLaps = 0;
             foreach (var cp in rd.Checkpoints)
             {

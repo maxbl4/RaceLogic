@@ -15,10 +15,10 @@ namespace maxbl4.RaceLogic.Tests
             var ts1 = new DateTime(1, 1, 1, 1, 1, 1);
             var ts2 = new DateTime(1, 1, 1, 1, 2, 1);
             ts1.CompareTo(ts2).ShouldBeLessThan(0);
-            var cp1 = new Checkpoint<int>(1, ts1);
-            var cp2 = new Checkpoint<int>(1, ts2);
-            Checkpoint<int>.TimestampComparer.Compare(cp1, cp2).ShouldBeLessThan(0);
-            Checkpoint<int>.TimestampComparer.Compare(cp2, cp1).ShouldBeGreaterThan(0);
+            var cp1 = new Checkpoint("1", ts1);
+            var cp2 = new Checkpoint("1", ts2);
+            Checkpoint.TimestampComparer.Compare(cp1, cp2).ShouldBeLessThan(0);
+            Checkpoint.TimestampComparer.Compare(cp2, cp1).ShouldBeGreaterThan(0);
         }
 
         [Fact]
@@ -27,17 +27,17 @@ namespace maxbl4.RaceLogic.Tests
             var ts1 = new DateTime(1, 1, 1, 1, 1, 1);
             var ts2 = new DateTime(1, 1, 1, 1, 2, 1);
             var ts3 = new DateTime(1, 1, 1, 1, 3, 1);
-            var cp1 = new Checkpoint<int> (1, ts1);
-            var cp2 = new Checkpoint<int> (1, ts2);
-            var cp3 = new Checkpoint<int> (1, ts3);
-            var lst = new List<Checkpoint<int>> { cp2, cp1, cp3};
-            lst.Sort(Checkpoint<int>.TimestampComparer);
+            var cp1 = new Checkpoint ("1", ts1);
+            var cp2 = new Checkpoint ("1", ts2);
+            var cp3 = new Checkpoint ("1", ts3);
+            var lst = new List<Checkpoint> { cp2, cp1, cp3};
+            lst.Sort(Checkpoint.TimestampComparer);
             lst[0].ShouldBeSameAs(cp1);
             lst[1].ShouldBeSameAs(cp2);
             lst[2].ShouldBeSameAs(cp3);
             
-            lst = new List<Checkpoint<int>> { cp3, cp2, cp1};
-            lst.Sort(Checkpoint<int>.TimestampComparer);
+            lst = new List<Checkpoint> { cp3, cp2, cp1};
+            lst.Sort(Checkpoint.TimestampComparer);
             lst[0].ShouldBeSameAs(cp1);
             lst[1].ShouldBeSameAs(cp2);
             lst[2].ShouldBeSameAs(cp3);
