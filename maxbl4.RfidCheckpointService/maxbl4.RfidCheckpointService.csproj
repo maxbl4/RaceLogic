@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\maxbl4.RaceLogic\maxbl4.RaceLogic.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Reactive.Linq" Version="4.2.0" />
+      <PackageReference Include="LiteDB" Version="5.0.0-alpha2" />
+      <PackageReference Include="maxbl4.RfidDotNet" Version="1.0.33" />
+      <PackageReference Include="maxbl4.RfidDotNet.AlienTech" Version="1.0.33" />
+      <PackageReference Include="maxbl4.RfidDotNet.GenericSerial" Version="1.0.33" />
+      <PackageReference Include="Serilog.AspNetCore" Version="3.1.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    </ItemGroup>
+
+</Project>

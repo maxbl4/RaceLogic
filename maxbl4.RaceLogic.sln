@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.RaceLogic", "maxbl4.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.RaceLogic.Tests", "maxbl4.RaceLogic.Tests\maxbl4.RaceLogic.Tests.csproj", "{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.RfidCheckpointService", "maxbl4.RfidCheckpointService\maxbl4.RfidCheckpointService.csproj", "{DA6B91E7-D2D1-4F45-B296-135349DF7338}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6B91E7-D2D1-4F45-B296-135349DF7338}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6B91E7-D2D1-4F45-B296-135349DF7338}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6B91E7-D2D1-4F45-B296-135349DF7338}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6B91E7-D2D1-4F45-B296-135349DF7338}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
