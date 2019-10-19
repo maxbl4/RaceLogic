@@ -22,20 +22,23 @@ namespace maxbl4.RfidCheckpointService.Rfid
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
         private TimestampCheckpointAggregator aggregator;
-
-        public RfidService(StorageService storageService, ISystemClock systemClock)
+        
+        public RfidService(StorageService storageService, ISystemClock systemClock, Func<ConnectionString, IUniversalTagStream> fakeTagStreamFactory = null)
         {
             this.storageService = storageService;
             this.systemClock = systemClock;
+            factory = new UniversalTagStreamFactory();
+            factory.UseAlienProtocol();
+            factory.UseSerialProtocol();
+            if (fakeTagStreamFactory != null)
+                factory.UseFakeStream(fakeTagStreamFactory);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(500));
-            factory = new UniversalTagStreamFactory();
-            factory.UseAlienProtocol();
-            factory.UseSerialProtocol();
             settings = storageService.GetRfidSettings();
+            aggregator = new TimestampCheckpointAggregator(settings.CheckpointAggregationWindow);
+            aggregator.Subscribe(x => storageService.AppendCheckpoint(x));
             if (settings.RfidEnabled)
                 EnableRfid();
             return Task.CompletedTask;
