@@ -10,23 +10,31 @@ using maxbl4.RfidDotNet.AlienTech.Ext;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
 using Microsoft.Extensions.Hosting;
 using System.Reactive.PlatformServices;
+using Easy.MessageHub;
+using Microsoft.Extensions.Logging;
 
 namespace maxbl4.RfidCheckpointService.Rfid
 {
     public class RfidService : IHostedService
     {
         private readonly StorageService storageService;
+        private readonly IMessageHub messageHub;
         private readonly ISystemClock systemClock;
+        private readonly ILogger<RfidService> logger;
         private RfidSettings settings;
-        private UniversalTagStreamFactory factory;
+        private readonly UniversalTagStreamFactory factory;
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
         private TimestampCheckpointAggregator aggregator;
         
-        public RfidService(StorageService storageService, ISystemClock systemClock, Func<ConnectionString, IUniversalTagStream> fakeTagStreamFactory = null)
+        public RfidService(StorageService storageService, IMessageHub messageHub, 
+            ISystemClock systemClock, ILogger<RfidService> logger, 
+            Func<ConnectionString, IUniversalTagStream> fakeTagStreamFactory = null)
         {
             this.storageService = storageService;
+            this.messageHub = messageHub;
             this.systemClock = systemClock;
+            this.logger = logger;
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
@@ -38,10 +46,16 @@ namespace maxbl4.RfidCheckpointService.Rfid
         {
             settings = storageService.GetRfidSettings();
             aggregator = new TimestampCheckpointAggregator(settings.CheckpointAggregationWindow);
-            aggregator.Subscribe(x => storageService.AppendCheckpoint(x));
+            aggregator.Subscribe(OnCheckpoint);
             if (settings.RfidEnabled)
                 EnableRfid();
             return Task.CompletedTask;
+        }
+
+        void OnCheckpoint(Checkpoint cp)
+        {
+            Safe.Execute(() => messageHub.Publish(cp), logger);
+            Safe.Execute(() => storageService.AppendCheckpoint(cp), logger);
         }
 
         public void EnableRfid()

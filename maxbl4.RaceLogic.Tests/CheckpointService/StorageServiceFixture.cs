@@ -5,7 +5,7 @@ using maxbl4.RfidCheckpointService.Services;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService
 {
-    public class StorageServiceFixture : IDisposable
+    public class StorageServiceFixture
     {
         protected readonly StorageService storageService;
         protected readonly ConnectionString connectionString;
@@ -14,17 +14,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         {
             connectionString = new ConnectionString
             {
-                Filename = $"{Guid.NewGuid():N}.litedb",
+                Filename = $"{GetType().Name}.litedb",
                 UtcDate = true
             };
-            
-            storageService = new StorageService(connectionString);
-        }
-        
-        public void Dispose()
-        {
             if (File.Exists(connectionString.Filename))
                 File.Delete(connectionString.Filename);
+            
+            storageService = new StorageService(connectionString);
         }
     }
 }

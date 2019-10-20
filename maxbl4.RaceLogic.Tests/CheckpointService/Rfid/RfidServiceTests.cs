@@ -1,6 +1,8 @@
 ﻿using System.Threading;
+using Easy.MessageHub;
 using maxbl4.RfidCheckpointService.Rfid;
 using maxbl4.RfidDotNet;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Xunit;
 
@@ -9,14 +11,14 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
     public class RfidServiceTests : StorageServiceFixture
     {
         readonly RfidService rfidService;
-        private FakeSystemClock systemClock;
-        private FakeUniversalTagStream tagStream;
+        private readonly FakeSystemClock systemClock;
+        private readonly FakeUniversalTagStream tagStream;
 
         public RfidServiceTests()
         {
             systemClock = new FakeSystemClock();
             tagStream = new FakeUniversalTagStream();
-            rfidService = new RfidService(storageService, systemClock, cs => tagStream);
+            rfidService = new RfidService(storageService, new MessageHub(), systemClock, new NullLogger<RfidService>(),cs => tagStream);
         }
 
         [Fact]

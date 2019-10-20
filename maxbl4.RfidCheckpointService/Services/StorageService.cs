@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using LiteDB;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Rfid;
@@ -35,10 +37,11 @@ namespace maxbl4.RfidCheckpointService.Services
             repo.Insert(cp);
         }
 
-        public List<Checkpoint> ListCheckpoints()
+        public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
         {
             using var repo = new LiteRepository(connectionString);
-            return repo.Query<Checkpoint>().ToList();
+            var query = repo.Query<Checkpoint>();
+            return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value)).ToList();
         }
 
         public RfidSettings GetRfidSettings()

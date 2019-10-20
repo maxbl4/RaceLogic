@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Reactive.PlatformServices;
+using Easy.MessageHub;
+using maxbl4.RfidCheckpointService.Hubs;
 using maxbl4.RfidCheckpointService.Rfid;
 using maxbl4.RfidCheckpointService.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace maxbl4.RfidCheckpointService
 {
@@ -28,10 +23,12 @@ namespace maxbl4.RfidCheckpointService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ISystemClock, SystemClock>();
+            services.AddSingleton<ISystemClock, DefaultSystemClock>();
+            services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
             services.AddSingleton<IHostedService, RfidService>();
             services.AddControllers();
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,7 +45,11 @@ namespace maxbl4.RfidCheckpointService
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<CheckpointsHub>("/ws/cp");
+            });
         }
     }
 }
