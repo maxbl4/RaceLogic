@@ -11,7 +11,6 @@ namespace maxbl4.RfidCheckpointService.Rfid
             CheckpointAggregationWindow = TimeSpan.FromMilliseconds(200)
         };
         
-        public int Id => 1;
         public string SerializedConnectionString { get; set; }
         public bool RfidEnabled { get; set; }
         public TimeSpan CheckpointAggregationWindow { get; set; }
