@@ -26,7 +26,8 @@ namespace maxbl4.RfidCheckpointService
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
-            services.AddSingleton<IHostedService, RfidService>();
+            services.AddSingleton<RfidService>();
+            services.AddSingleton<IHostedService, ServiceHost<RfidService>>();
             services.AddControllers();
             services.AddSignalR();
         }

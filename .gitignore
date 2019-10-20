@@ -4,3 +4,4 @@ obj/
 node_modules/
 .vs/
 *.sln.DotSettings.user
+*.litedb

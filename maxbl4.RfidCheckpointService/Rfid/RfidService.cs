@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace maxbl4.RfidCheckpointService.Rfid
 {
-    public class RfidService : IHostedService
+    public class RfidService : IDisposable
     {
         private readonly StorageService storageService;
         private readonly IMessageHub messageHub;
@@ -40,16 +40,11 @@ namespace maxbl4.RfidCheckpointService.Rfid
             factory.UseSerialProtocol();
             if (fakeTagStreamFactory != null)
                 factory.UseFakeStream(fakeTagStreamFactory);
-        }
-
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
             settings = storageService.GetRfidSettings();
-            aggregator = new TimestampCheckpointAggregator(settings.CheckpointAggregationWindow);
+            aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(settings.CheckpointAggregationWindowMs));
             aggregator.Subscribe(OnCheckpoint);
             if (settings.RfidEnabled)
                 EnableRfid();
-            return Task.CompletedTask;
         }
 
         void OnCheckpoint(Checkpoint cp)
@@ -70,10 +65,9 @@ namespace maxbl4.RfidCheckpointService.Rfid
             disposable?.Dispose();
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public void Dispose()
         {
             disposable?.Dispose();
-            return Task.CompletedTask;
         }
     }
 }
