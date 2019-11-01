@@ -10,13 +10,6 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
 {
     public class StorageServiceTests : StorageServiceFixture
     {
-        private readonly StorageService storageService;
-
-        public StorageServiceTests()
-        {
-            storageService = new StorageService(connectionString);   
-        }
-
         [Fact]
         public void Should_save_and_load_rfidsettings()
         {

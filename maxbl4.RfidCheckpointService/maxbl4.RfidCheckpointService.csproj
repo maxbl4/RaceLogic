@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,11 +13,10 @@
       <PackageReference Include="Easy.MessageHub" Version="5.0.0" />
       <PackageReference Include="System.Reactive.Linq" Version="4.2.0" />
       <PackageReference Include="LiteDB" Version="5.0.0-alpha2" />
-      <PackageReference Include="maxbl4.RfidDotNet" Version="1.0.34" />
-      <PackageReference Include="maxbl4.RfidDotNet.AlienTech" Version="1.0.34" />
-      <PackageReference Include="maxbl4.RfidDotNet.GenericSerial" Version="1.0.34" />
+      <PackageReference Include="maxbl4.RfidDotNet" Version="1.0.43" />
+      <PackageReference Include="maxbl4.RfidDotNet.AlienTech" Version="1.0.43" />
+      <PackageReference Include="maxbl4.RfidDotNet.GenericSerial" Version="1.0.43" />
       <PackageReference Include="Serilog.AspNetCore" Version="3.1.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     </ItemGroup>
 
 </Project>

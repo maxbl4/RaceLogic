@@ -28,8 +28,7 @@ namespace maxbl4.RfidCheckpointService.Rfid
         private TimestampCheckpointAggregator aggregator;
         
         public RfidService(StorageService storageService, IMessageHub messageHub, 
-            ISystemClock systemClock, ILogger<RfidService> logger, 
-            Func<ConnectionString, IUniversalTagStream> fakeTagStreamFactory = null)
+            ISystemClock systemClock, ILogger<RfidService> logger)
         {
             this.storageService = storageService;
             this.messageHub = messageHub;
@@ -38,8 +37,6 @@ namespace maxbl4.RfidCheckpointService.Rfid
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
-            if (fakeTagStreamFactory != null)
-                factory.UseFakeStream(fakeTagStreamFactory);
             settings = storageService.GetRfidSettings();
             aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(settings.CheckpointAggregationWindowMs));
             aggregator.Subscribe(OnCheckpoint);
@@ -53,11 +50,12 @@ namespace maxbl4.RfidCheckpointService.Rfid
             Safe.Execute(() => storageService.AppendCheckpoint(cp), logger);
         }
 
-        public void EnableRfid()
+        public async Task EnableRfid()
         {
             stream = factory.CreateStream(settings.GetConnectionString());
             disposable = new CompositeDisposable(stream,
                 stream.Tags.Select(x => new Checkpoint(x.TagId, systemClock.UtcNow.UtcDateTime)).Subscribe(aggregator));
+            await stream.Start();
         }
 
         public void DisableRfid()

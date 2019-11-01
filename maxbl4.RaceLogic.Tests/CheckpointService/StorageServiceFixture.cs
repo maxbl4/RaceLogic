@@ -8,19 +8,19 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
     public class StorageServiceFixture
     {
         protected readonly StorageService storageService;
-        protected readonly ConnectionString connectionString;
+        protected readonly ConnectionString storageConnectionString;
 
         public StorageServiceFixture()
         {
-            connectionString = new ConnectionString
+            storageConnectionString = new ConnectionString
             {
                 Filename = $"{GetType().Name}.litedb",
                 UtcDate = true
             };
-            if (File.Exists(connectionString.Filename))
-                File.Delete(connectionString.Filename);
+            if (File.Exists(storageConnectionString.Filename))
+                File.Delete(storageConnectionString.Filename);
             
-            storageService = new StorageService(connectionString);
+            storageService = new StorageService(storageConnectionString);
         }
     }
 }
