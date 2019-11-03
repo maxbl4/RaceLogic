@@ -30,6 +30,7 @@ namespace maxbl4.RfidCheckpointService
             services.AddSingleton<IHostedService, ServiceHost<RfidService>>();
             services.AddControllers();
             services.AddSignalR();
+            services.Configure<StorageOptions>(Configuration.GetSection(nameof(StorageOptions)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

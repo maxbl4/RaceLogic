@@ -18,7 +18,7 @@ namespace maxbl4.RfidCheckpointService.Controllers
         }
 
         [HttpGet]
-        public RfidSettings Get()
+        public RfidOptions Get()
         {
             return storageService.GetRfidSettings();
         }

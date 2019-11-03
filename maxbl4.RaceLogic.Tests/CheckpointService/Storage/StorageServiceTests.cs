@@ -14,7 +14,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
         public void Should_save_and_load_rfidsettings()
         {
             var settings = storageService.GetRfidSettings();
-            settings.ShouldBeSameAs(RfidSettings.Default);
+            settings.ShouldBeSameAs(RfidOptions.Default);
             settings.RfidEnabled = true;
             settings.SerializedConnectionString = "Protocol=Alien;Network=8.8.8.8:500";
             storageService.SetRfidSettings(settings);
@@ -27,7 +27,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
         public void Should_return_default_rfidsettings()
         {
             var settings = storageService.GetRfidSettings();
-            settings.ShouldBeSameAs(RfidSettings.Default);
+            settings.ShouldBeSameAs(RfidOptions.Default);
         }
         
         [Fact]

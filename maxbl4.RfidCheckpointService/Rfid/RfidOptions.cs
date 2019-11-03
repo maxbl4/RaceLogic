@@ -3,11 +3,11 @@ using maxbl4.RfidDotNet;
 
 namespace maxbl4.RfidCheckpointService.Rfid
 {
-    public class RfidSettings
+    public class RfidOptions
     {
-        public static readonly RfidSettings Default = new RfidSettings
+        public static readonly RfidOptions Default = new RfidOptions
         {
-            SerializedConnectionString = "Protocol=Fake",
+            SerializedConnectionString = "Protocol=Alien;Network=127.0.01:30023",
             CheckpointAggregationWindowMs = 200
         };
         

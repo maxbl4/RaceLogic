@@ -4,24 +4,17 @@ using System.Linq.Expressions;
 using LiteDB;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Rfid;
+using Microsoft.Extensions.Options;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
     public class StorageService
     {
-        public const string DefaultDatabaseFilename = "storage.litedb";
         private readonly ConnectionString connectionString; 
 
-        public StorageService() : this(new ConnectionString
+        public StorageService(IOptions<StorageOptions> options)
         {
-            Filename = DefaultDatabaseFilename,
-            InitialSize = 1024 * 1024 * 10, //10Mb
-            UtcDate = true
-        }){}
-        
-        public StorageService(ConnectionString connectionString)
-        {
-            this.connectionString = connectionString;
+            this.connectionString = new ConnectionString(options.Value.ConnectionString) {UtcDate = true};
             SetupIndexes();
         }
 
@@ -44,16 +37,16 @@ namespace maxbl4.RfidCheckpointService.Services
             return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value)).ToList();
         }
 
-        public RfidSettings GetRfidSettings()
+        public RfidOptions GetRfidSettings()
         {
             using var repo = new LiteRepository(connectionString);
-            return repo.Query<RfidSettings>().FirstOrDefault() ?? RfidSettings.Default;
+            return repo.Query<RfidOptions>().FirstOrDefault() ?? RfidOptions.Default;
         }
         
-        public void SetRfidSettings(RfidSettings rfidSettings)
+        public void SetRfidSettings(RfidOptions rfidOptions)
         {
             using var repo = new LiteRepository(connectionString);
-            repo.Upsert(rfidSettings);
+            repo.Upsert(rfidOptions);
         }
     }
 }

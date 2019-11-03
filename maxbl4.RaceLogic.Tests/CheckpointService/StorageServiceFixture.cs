@@ -2,25 +2,23 @@
 using System.IO;
 using LiteDB;
 using maxbl4.RfidCheckpointService.Services;
+using Microsoft.Extensions.Options;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService
 {
     public class StorageServiceFixture
     {
         protected readonly StorageService storageService;
-        protected readonly ConnectionString storageConnectionString;
-
+        protected readonly string storageConnectionString;
+        
         public StorageServiceFixture()
         {
-            storageConnectionString = new ConnectionString
-            {
-                Filename = $"{GetType().Name}.litedb",
-                UtcDate = true
-            };
-            if (File.Exists(storageConnectionString.Filename))
-                File.Delete(storageConnectionString.Filename);
+            var fileName = $"{GetType().Name}.litedb";
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            storageConnectionString = $"Filename={fileName};UtcDate=true";
             
-            storageService = new StorageService(storageConnectionString);
+            storageService = new StorageService(Options.Create(new StorageOptions{ConnectionString = storageConnectionString}));
         }
     }
 }
