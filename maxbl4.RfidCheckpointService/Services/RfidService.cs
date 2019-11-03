@@ -43,8 +43,8 @@ namespace maxbl4.RfidCheckpointService.Services
 
         void OnCheckpoint(Checkpoint cp)
         {
-            Safe.Execute(() => messageHub.Publish(cp), logger);
             Safe.Execute(() => storageService.AppendCheckpoint(cp), logger);
+            Safe.Execute(() => messageHub.Publish(cp), logger);
         }
 
         public async Task EnableRfid()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 namespace maxbl4.RfidCheckpointService
 {
@@ -13,6 +14,31 @@ namespace maxbl4.RfidCheckpointService
             catch (Exception e)
             {
                 logger.LogError(e, "Operation failed");
+            }
+        }
+        
+        public static async Task Execute(Func<Task> task, ILogger logger)
+        {
+            try
+            {
+                await task();
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Operation failed");
+            }
+        }
+        
+        public static async Task<T> Execute<T>(Func<Task<T>> task, ILogger logger)
+        {
+            try
+            {
+                return await task();
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Operation failed");
+                return default(T);
             }
         }
     }
