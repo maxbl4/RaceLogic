@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Threading;
+using System.Reactive.PlatformServices;
 using System.Threading.Tasks;
+using Easy.MessageHub;
 using maxbl4.RaceLogic.Checkpoints;
-using maxbl4.RfidCheckpointService.Services;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.Ext;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
-using Microsoft.Extensions.Hosting;
-using System.Reactive.PlatformServices;
-using Easy.MessageHub;
 using Microsoft.Extensions.Logging;
 
-namespace maxbl4.RfidCheckpointService.Rfid
+namespace maxbl4.RfidCheckpointService.Services
 {
     public class RfidService : IDisposable
     {

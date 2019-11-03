@@ -1,5 +1,4 @@
-﻿using maxbl4.RfidCheckpointService.Rfid;
-using maxbl4.RfidCheckpointService.Services;
+﻿using maxbl4.RfidCheckpointService.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace maxbl4.RfidCheckpointService.Controllers

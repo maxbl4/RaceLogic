@@ -1,7 +1,7 @@
 using System.Reactive.PlatformServices;
 using Easy.MessageHub;
+using maxbl4.RfidCheckpointService.Ext;
 using maxbl4.RfidCheckpointService.Hubs;
-using maxbl4.RfidCheckpointService.Rfid;
 using maxbl4.RfidCheckpointService.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,8 +26,8 @@ namespace maxbl4.RfidCheckpointService
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
-            services.AddSingleton<RfidService>();
-            services.AddSingleton<IHostedService, ServiceHost<RfidService>>();
+            services.RegisterHostedService<RfidService>();
+            services.RegisterHostedService<DistributionService>();
             services.AddControllers();
             services.AddSignalR();
             services.Configure<StorageOptions>(Configuration.GetSection(nameof(StorageOptions)));

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using maxbl4.RaceLogic.Checkpoints;
-using maxbl4.RfidCheckpointService.Rfid;
 using maxbl4.RfidCheckpointService.Services;
 using Shouldly;
 using Xunit;

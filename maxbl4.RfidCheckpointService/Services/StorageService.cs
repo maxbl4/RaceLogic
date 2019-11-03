@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using LiteDB;
 using maxbl4.RaceLogic.Checkpoints;
-using maxbl4.RfidCheckpointService.Rfid;
 using Microsoft.Extensions.Options;
 
 namespace maxbl4.RfidCheckpointService.Services

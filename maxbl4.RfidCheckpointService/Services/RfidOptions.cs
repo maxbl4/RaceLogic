@@ -1,7 +1,6 @@
-﻿using System;
-using maxbl4.RfidDotNet;
+﻿using maxbl4.RfidDotNet;
 
-namespace maxbl4.RfidCheckpointService.Rfid
+namespace maxbl4.RfidCheckpointService.Services
 {
     public class RfidOptions
     {

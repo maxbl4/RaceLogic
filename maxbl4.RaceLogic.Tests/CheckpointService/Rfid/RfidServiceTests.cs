@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Easy.MessageHub;
-using maxbl4.RfidCheckpointService.Rfid;
+using maxbl4.RfidCheckpointService.Services;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.ReaderSimulator;
 using maxbl4.RfidDotNet.AlienTech.TagStream;
