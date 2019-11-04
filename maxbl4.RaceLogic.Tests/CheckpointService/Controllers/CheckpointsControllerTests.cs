@@ -52,7 +52,6 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             var tagListHandler = new SimulatorBuilder(storageService).Build();
             using var svc = new RfidCheckpointServiceRunner();
             svc.Start(new []{$"--StorageOptions:ConnectionString={storageConnectionString}"}).Wait(0);
-            var ts = DateTime.UtcNow;
             await tagListHandler.ReturnOnce(new Tag{TagId = "1"});
             await tagListHandler.ReturnOnce(new Tag{TagId = "2"});
             var wsConnection = new HubConnectionBuilder()
@@ -65,6 +64,10 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             await tagListHandler.ReturnOnce(new Tag{TagId = "3"});
             await tagListHandler.ReturnOnce(new Tag{TagId = "4"});
             (await Timing.StartWait(() => checkpoints.Count == 4)).ShouldBeTrue();
+            checkpoints[0].RiderId.ShouldBe("1");
+            checkpoints[1].RiderId.ShouldBe("2");
+            checkpoints[2].RiderId.ShouldBe("3");
+            checkpoints[3].RiderId.ShouldBe("4");
         }
     }
 }
