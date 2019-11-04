@@ -41,5 +41,11 @@ namespace maxbl4.RfidCheckpointService
                 return default(T);
             }
         }
+
+        public static void WaitSafe(this Task task, ILogger logger)
+        {
+            task.ContinueWith(x => logger.LogWarning(x.Exception, "Non-awaited task failed"), TaskContinuationOptions.OnlyOnFaulted)
+                .Wait(0);
+        }
     }
 }

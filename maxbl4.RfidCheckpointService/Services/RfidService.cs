@@ -34,11 +34,11 @@ namespace maxbl4.RfidCheckpointService.Services
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
-            options = storageService.GetRfidSettings();
+            options = storageService.GetRfidOptions();
             aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
             aggregator.Subscribe(OnCheckpoint);
             if (options.RfidEnabled)
-                EnableRfid();
+                EnableRfid().WaitSafe(logger);
         }
 
         void OnCheckpoint(Checkpoint cp)

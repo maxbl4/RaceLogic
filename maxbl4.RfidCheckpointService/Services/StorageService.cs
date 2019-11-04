@@ -36,7 +36,7 @@ namespace maxbl4.RfidCheckpointService.Services
             return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value)).ToList();
         }
 
-        public RfidOptions GetRfidSettings()
+        public RfidOptions GetRfidOptions()
         {
             using var repo = new LiteRepository(connectionString);
             return repo.Query<RfidOptions>().FirstOrDefault() ?? RfidOptions.Default;

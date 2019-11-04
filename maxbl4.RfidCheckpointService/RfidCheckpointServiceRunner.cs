@@ -22,10 +22,10 @@ namespace maxbl4.RfidCheckpointService
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
+                .WriteTo.File("RfidCheckpointServiceRunner.log")
                 .CreateLogger();
             try
             {
-                // CreateHostBuilder(args ?? new string[0]).Build().Start();
                 await CreateHostBuilder(args ?? new string[0]).Build().RunAsync(cts.Token);
                 return 0;
             }
@@ -46,7 +46,10 @@ namespace maxbl4.RfidCheckpointService
                 {
                     webBuilder
                         .UseStartup<Startup>()
-                        .UseSerilog();
+                        .UseSerilog((builder, loggerConfig) =>
+                            {
+                                loggerConfig.ReadFrom.Configuration(builder.Configuration);
+                            });
                 });
 
         public void Dispose()

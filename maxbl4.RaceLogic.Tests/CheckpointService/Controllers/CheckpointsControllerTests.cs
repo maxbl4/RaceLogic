@@ -9,6 +9,7 @@ using maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator;
 using maxbl4.RfidCheckpointService;
 using maxbl4.RfidCheckpointService.Services;
 using maxbl4.RfidDotNet;
+using maxbl4.RfidDotNet.Infrastructure;
 using Microsoft.AspNetCore.SignalR.Client;
 using Shouldly;
 using Xunit;
@@ -63,7 +64,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
             await tagListHandler.ReturnOnce(new Tag{TagId = "3"});
             await tagListHandler.ReturnOnce(new Tag{TagId = "4"});
-            checkpoints.Count.ShouldBe(4);
+            (await Timing.StartWait(() => checkpoints.Count == 4)).ShouldBeTrue();
         }
     }
 }

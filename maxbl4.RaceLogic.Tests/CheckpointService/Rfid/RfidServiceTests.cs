@@ -29,7 +29,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         public async Task Should_persist_checkpoints()
         {
             var rfidService = new RfidService(storageService, new MessageHub(), systemClock, new NullLogger<RfidService>());
-            var connectionString = storageService.GetRfidSettings().GetConnectionString();
+            var connectionString = storageService.GetRfidOptions().GetConnectionString();
             connectionString.Protocol.ShouldBe(ReaderProtocolType.Alien);
             await tagListHandler.ReturnOnce(new Tag{TagId = "1"});
             systemClock.Advance();

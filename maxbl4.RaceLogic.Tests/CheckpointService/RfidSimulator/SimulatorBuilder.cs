@@ -20,7 +20,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
             var tagListHandler = new TagListHandler();
             simulator.TagListHandler = tagListHandler.Handle;
             var serializedConnectionString = $"Protocol = Alien; Network = {simulator.ListenEndpoint}";
-            var settings = storageService.GetRfidSettings();
+            var settings = storageService.GetRfidOptions();
             settings.RfidEnabled = true;
             settings.SerializedConnectionString = serializedConnectionString;
             storageService.SetRfidSettings(settings);
