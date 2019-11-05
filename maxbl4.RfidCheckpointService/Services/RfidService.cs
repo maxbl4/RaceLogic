@@ -18,7 +18,6 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly IMessageHub messageHub;
         private readonly ISystemClock systemClock;
         private readonly ILogger<RfidService> logger;
-        private RfidOptions options;
         private readonly UniversalTagStreamFactory factory;
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
@@ -31,14 +30,22 @@ namespace maxbl4.RfidCheckpointService.Services
             this.messageHub = messageHub;
             this.systemClock = systemClock;
             this.logger = logger;
+            messageHub.Subscribe<RfidOptions>(RfidOptionsChanged);
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
-            options = storageService.GetRfidOptions();
+            RfidOptionsChanged(storageService.GetRfidOptions());
+            
+        }
+
+        private void RfidOptionsChanged(RfidOptions options)
+        {
+            DisableRfid();
+            logger.LogInformation("Using RfidOptions: {options}", options);
             aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
             aggregator.Subscribe(OnCheckpoint);
             if (options.RfidEnabled)
-                EnableRfid().WaitSafe(logger);
+                EnableRfid(options).WaitSafe(logger);
         }
 
         void OnCheckpoint(Checkpoint cp)
@@ -47,7 +54,7 @@ namespace maxbl4.RfidCheckpointService.Services
             Safe.Execute(() => messageHub.Publish(cp), logger);
         }
 
-        public async Task EnableRfid()
+        private async Task EnableRfid(RfidOptions options)
         {
             stream = factory.CreateStream(options.GetConnectionString());
             disposable = new CompositeDisposable(stream,
@@ -55,7 +62,7 @@ namespace maxbl4.RfidCheckpointService.Services
             await stream.Start();
         }
 
-        public void DisableRfid()
+        void DisableRfid()
         {
             disposable?.Dispose();
         }

@@ -45,7 +45,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
                 returnTask = new TaskCompletionSource<bool>();
                 returnOnceTags = string.Join("\r\n", tags.Select(x => TagParser.ToCustomFormatString(x)));
             }
-            await returnTask.Task;
+
+            returnTask.Task.Wait(5000);
         }
     }
 }

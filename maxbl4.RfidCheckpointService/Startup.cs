@@ -1,4 +1,5 @@
 using System.Reactive.PlatformServices;
+using System.Threading;
 using Easy.MessageHub;
 using maxbl4.RfidCheckpointService.Ext;
 using maxbl4.RfidCheckpointService.Hubs;
@@ -30,7 +31,10 @@ namespace maxbl4.RfidCheckpointService
             services.RegisterHostedService<DistributionService>();
             services.AddControllers();
             services.AddSignalR();
-            services.Configure<StorageOptions>(Configuration.GetSection(nameof(StorageOptions)));
+            services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
+            var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();
+            if (options?.PauseInStartupMs > 0)
+                Thread.Sleep(options.PauseInStartupMs);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,12 +10,12 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
         [Fact]
         public void ShouldSerializeAndDeserialize()
         {
-            var options = new StorageOptions
-                {ConnectionString = "Filename=storage.litedb;InitialSize=123;UtcDate=true"};
+            var options = new ServiceOptions
+                {StorageConnectionString = "Filename=storage.litedb;InitialSize=123;UtcDate=true"};
             var s = System.Text.Json.JsonSerializer.Serialize(options);
-            var deserialized = System.Text.Json.JsonSerializer.Deserialize<StorageOptions>(s);
+            var deserialized = System.Text.Json.JsonSerializer.Deserialize<ServiceOptions>(s);
             deserialized.ShouldNotBeSameAs(options);
-            deserialized.ConnectionString.ShouldBe("Filename=storage.litedb;InitialSize=123;UtcDate=true");
+            deserialized.StorageConnectionString.ShouldBe("Filename=storage.litedb;InitialSize=123;UtcDate=true");
         }
     }
 }

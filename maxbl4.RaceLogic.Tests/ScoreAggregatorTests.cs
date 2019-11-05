@@ -128,7 +128,7 @@ namespace maxbl4.RaceLogic.Tests
         }
     }
 
-    static class Ext
+    static class AggRoundScoreExt
     {
         public static void Check(this AggRoundScore position, string rider, int aggPoints, int points)
         {

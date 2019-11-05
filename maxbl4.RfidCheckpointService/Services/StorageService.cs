@@ -3,49 +3,57 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using LiteDB;
 using maxbl4.RaceLogic.Checkpoints;
+using maxbl4.RfidDotNet.Ext;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ILogger = Serilog.ILogger;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
-    public class StorageService
+    public class StorageService : IDisposable
     {
-        private readonly ConnectionString connectionString; 
+        private readonly ILogger<StorageService> logger;
+        private readonly LiteRepository repo;
 
-        public StorageService(IOptions<StorageOptions> options)
+        public StorageService(IOptions<ServiceOptions> options, ILogger<StorageService> logger)
         {
-            this.connectionString = new ConnectionString(options.Value.ConnectionString) {UtcDate = true};
+            this.logger = logger;
+            logger.LogInformation($"Using storage connection string {options.Value?.StorageConnectionString}");
+            var connectionString = new ConnectionString(options.Value.StorageConnectionString) {UtcDate = true};
+            repo = new LiteRepository(connectionString);
             SetupIndexes();
         }
 
         private void SetupIndexes()
         {
-            using var repo = new LiteRepository(connectionString);
             repo.Database.GetCollection<Checkpoint>().EnsureIndex(x => x.Timestamp);
         }
 
         public void AppendCheckpoint(Checkpoint cp)
         {
-            using var repo = new LiteRepository(connectionString);
             repo.Insert(cp);
         }
 
         public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
         {
-            using var repo = new LiteRepository(connectionString);
             var query = repo.Query<Checkpoint>();
             return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value)).ToList();
         }
 
         public RfidOptions GetRfidOptions()
         {
-            using var repo = new LiteRepository(connectionString);
             return repo.Query<RfidOptions>().FirstOrDefault() ?? RfidOptions.Default;
         }
         
         public void SetRfidSettings(RfidOptions rfidOptions)
         {
-            using var repo = new LiteRepository(connectionString);
+            logger.LogInformation($"Persisting RfidOptions {rfidOptions}");
             repo.Upsert(rfidOptions);
+        }
+
+        public void Dispose()
+        {
+            repo.DisposeSafe();
         }
     }
 }

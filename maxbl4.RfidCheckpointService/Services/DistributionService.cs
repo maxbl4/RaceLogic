@@ -21,7 +21,7 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly StorageService storageService;
         private readonly ILogger<DistributionService> logger;
         private readonly CompositeDisposable disposable;
-        private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly Dictionary<string, IDisposable> clients = new Dictionary<string, IDisposable>();
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
@@ -33,12 +33,13 @@ namespace maxbl4.RfidCheckpointService.Services
             disposable = new CompositeDisposable(messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint));
         }
 
-        void OnCheckpoint(Checkpoint tag)
+        void OnCheckpoint(Checkpoint checkpoint)
         {
             try
             {
                 rwlock.EnterReadLock();
-                checkpoints.OnNext(tag);
+                logger.LogInformation($"Received checkpoint: {checkpoint}");
+                checkpoints.OnNext(checkpoint);
             }
             catch (Exception ex)
             {
@@ -64,6 +65,7 @@ namespace maxbl4.RfidCheckpointService.Services
                 {
                     clients.Remove(contextConnectionId);
                     d.DisposeSafe();
+                    logger.LogInformation($"Client unsubscribed {contextConnectionId}");
                 }
             }
             catch (Exception ex)
@@ -87,11 +89,15 @@ namespace maxbl4.RfidCheckpointService.Services
                     .Concat(checkpoints)
                     .Select(x => 
                         Observable.FromAsync(() => 
-                            Safe.Execute(() => 
-                                checkpointsHub.Clients.Client(contextConnectionId)
-                                    .SendCoreAsync("Checkpoint", new []{x}), logger)))
+                            Safe.Execute(async () =>
+                            {
+                                logger.LogInformation($"Sending checkpoint {x} via WS to {contextConnectionId}");
+                                await checkpointsHub.Clients.Client(contextConnectionId)
+                                    .SendCoreAsync("Checkpoint", new[] {x});
+                            }, logger)))
                     .Concat()
                     .Subscribe();
+                logger.LogInformation($"Client subscribed {contextConnectionId}");
             }
             catch (Exception ex)
             {

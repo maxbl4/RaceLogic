@@ -2,6 +2,7 @@
 using System.IO;
 using LiteDB;
 using maxbl4.RfidCheckpointService.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService
@@ -18,7 +19,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
                 File.Delete(fileName);
             storageConnectionString = $"Filename={fileName};UtcDate=true";
             
-            storageService = new StorageService(Options.Create(new StorageOptions{ConnectionString = storageConnectionString}));
+            storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), new NullLogger<StorageService>());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using maxbl4.RfidDotNet;
+﻿using System.Text.Json;
+using maxbl4.RfidDotNet;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
@@ -16,5 +17,10 @@ namespace maxbl4.RfidCheckpointService.Services
         
         public ConnectionString GetConnectionString() => ConnectionString.Parse(SerializedConnectionString);
         public void SetConnectionString(ConnectionString connectionString) => SerializedConnectionString = connectionString.ToString();
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }

@@ -13,6 +13,8 @@ namespace maxbl4.RfidCheckpointService
     public class RfidCheckpointServiceRunner : IDisposable
     {
         private CancellationTokenSource cts;
+        private IHost hostBuilder;
+
         public async Task<int> Start(string[] args = null)
         {
             Dispose();
@@ -26,7 +28,8 @@ namespace maxbl4.RfidCheckpointService
                 .CreateLogger();
             try
             {
-                await CreateHostBuilder(args ?? new string[0]).Build().RunAsync(cts.Token);
+                hostBuilder = CreateHostBuilder(args ?? new string[0]).Build();
+                await hostBuilder.RunAsync(cts.Token);
                 return 0;
             }
             catch (Exception ex)
@@ -56,6 +59,7 @@ namespace maxbl4.RfidCheckpointService
         {
             cts?.Cancel();
             cts.DisposeSafe();
+            hostBuilder?.StopAsync().Wait(5000);
         }
     }
 }
