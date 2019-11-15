@@ -63,17 +63,17 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateRfidCheckpointService();
-            await tagListHandler.ReturnOnce(new Tag{TagId = "1"});
-            await tagListHandler.ReturnOnce(new Tag{TagId = "2"});
+            tagListHandler.ReturnOnce(new Tag{TagId = "1"});
+            tagListHandler.ReturnOnce(new Tag{TagId = "2"});
             var wsConnection = new HubConnectionBuilder()
                 .WithUrl("http://localhost:5000/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();
             await wsConnection.StartAsync();
-            wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
+            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
             wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
-            await tagListHandler.ReturnOnce(new Tag{TagId = "3"});
-            await tagListHandler.ReturnOnce(new Tag{TagId = "4"});
+            tagListHandler.ReturnOnce(new Tag{TagId = "3"});
+            tagListHandler.ReturnOnce(new Tag{TagId = "4"});
             (await Timing.StartWait(() => checkpoints.Count >= 4)).ShouldBeTrue($"checkpoints.Count = {checkpoints.Count}");
         }
     }

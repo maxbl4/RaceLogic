@@ -45,8 +45,6 @@ namespace maxbl4.RfidCheckpointService
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthorization();

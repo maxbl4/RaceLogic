@@ -28,7 +28,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         }
 
         [Fact]
-        public async Task Should_persist_checkpoints()
+        public void Should_persist_checkpoints()
         {
             WithStorageService(storageService =>
             {
@@ -37,9 +37,9 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
                     new NullLogger<RfidService>());
                 var connectionString = storageService.GetRfidOptions().GetConnectionString();
                 connectionString.Protocol.ShouldBe(ReaderProtocolType.Alien);
-                tagListHandler.ReturnOnce(new Tag {TagId = "1"}).Wait(1000);
+                tagListHandler.ReturnOnce(new Tag {TagId = "1"});
                 systemClock.Advance();
-                tagListHandler.ReturnOnce(new Tag {TagId = "1"}).Wait(1000);
+                tagListHandler.ReturnOnce(new Tag {TagId = "1"});
 
                 var cps = storageService.ListCheckpoints();
                 cps.Count.ShouldBe(2);
@@ -59,7 +59,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
                     new NullLogger<RfidService>());
                 
                 
-                tagListHandler.ReturnOnce(new Tag {TagId = "1"}).Wait(1000);
+                tagListHandler.ReturnOnce(new Tag {TagId = "1"});
                 
                 
                 Timing.StartWait(() => cps != null).Result.ShouldBeTrue();

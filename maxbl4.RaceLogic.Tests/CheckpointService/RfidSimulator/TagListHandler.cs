@@ -33,12 +33,12 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
             }
         }
 
-        public Task ReturnOnce(params Tag[] tags)
+        public void ReturnOnce(params Tag[] tags)
         {
-            return ReturnOnce((IEnumerable<Tag>)tags);
+            ReturnOnce((IEnumerable<Tag>)tags);
         }
         
-        public async Task ReturnOnce(IEnumerable<Tag> tags)
+        public void ReturnOnce(IEnumerable<Tag> tags)
         {
             lock (sync)
             {
