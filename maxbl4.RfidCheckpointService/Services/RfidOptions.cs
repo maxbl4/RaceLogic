@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using maxbl4.RfidDotNet;
+﻿using maxbl4.RfidDotNet;
+using Newtonsoft.Json;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
@@ -10,6 +10,8 @@ namespace maxbl4.RfidCheckpointService.Services
             SerializedConnectionString = "Protocol=Alien;Network=127.0.01:30023",
             CheckpointAggregationWindowMs = 200
         };
+
+        public int Id => 1;
         
         public string SerializedConnectionString { get; set; }
         public bool RfidEnabled { get; set; }
@@ -20,7 +22,7 @@ namespace maxbl4.RfidCheckpointService.Services
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonConvert.SerializeObject(this);
         }
     }
 }

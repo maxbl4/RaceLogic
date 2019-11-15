@@ -29,7 +29,7 @@ namespace maxbl4.RfidCheckpointService
             services.AddSingleton<StorageService>();
             services.RegisterHostedService<RfidService>();
             services.RegisterHostedService<DistributionService>();
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddSignalR();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
             var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();

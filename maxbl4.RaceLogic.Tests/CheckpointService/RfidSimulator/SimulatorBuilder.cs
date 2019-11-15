@@ -23,7 +23,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
             var settings = storageService.GetRfidOptions();
             settings.RfidEnabled = true;
             settings.SerializedConnectionString = serializedConnectionString;
-            storageService.SetRfidSettings(settings);
+            storageService.SetRfidOptions(settings);
             return tagListHandler;
         }
     }

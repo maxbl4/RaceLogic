@@ -18,6 +18,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
             var result = System.Text.Json.JsonSerializer.Deserialize<List<Checkpoint>>(str.Replace('\'', '"'));
             result.Count.ShouldBe(2);
             result[0].RiderId.ShouldBeNull();
+            // Here are the proper result, you could expect. But actually System.Text.Json.JsonSerializer returns nulls here
 //            result[0].RiderId.ShouldBe("stored1");
 //            result[0].Sequence.ShouldBe(1);
 //            result[0].Timestamp.ShouldBe(new DateTime(2019, 11, 04, 18, 37, 34, 773, DateTimeKind.Utc));

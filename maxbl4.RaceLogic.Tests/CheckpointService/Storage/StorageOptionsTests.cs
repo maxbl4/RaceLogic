@@ -1,5 +1,5 @@
-﻿using LiteDB;
-using maxbl4.RfidCheckpointService.Services;
+﻿using maxbl4.RfidCheckpointService.Services;
+using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 
@@ -12,8 +12,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
         {
             var options = new ServiceOptions
                 {StorageConnectionString = "Filename=storage.litedb;InitialSize=123;UtcDate=true"};
-            var s = System.Text.Json.JsonSerializer.Serialize(options);
-            var deserialized = System.Text.Json.JsonSerializer.Deserialize<ServiceOptions>(s);
+            var s = JsonConvert.SerializeObject(options);
+            var deserialized = JsonConvert.DeserializeObject<ServiceOptions>(s);
             deserialized.ShouldNotBeSameAs(options);
             deserialized.StorageConnectionString.ShouldBe("Filename=storage.litedb;InitialSize=123;UtcDate=true");
         }

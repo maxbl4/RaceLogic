@@ -5,6 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace maxbl4.RaceLogic.Tests
 {
+    public class BufferLogger<T> : BufferLogger, ILogger<T>
+    {
+    }
+
     public class BufferLogger : ILogger
     {
         public List<Message> Messages { get; } = new List<Message>(); 

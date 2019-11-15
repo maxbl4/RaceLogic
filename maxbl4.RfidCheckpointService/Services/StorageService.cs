@@ -45,7 +45,7 @@ namespace maxbl4.RfidCheckpointService.Services
             return repo.Query<RfidOptions>().FirstOrDefault() ?? RfidOptions.Default;
         }
         
-        public void SetRfidSettings(RfidOptions rfidOptions)
+        public void SetRfidOptions(RfidOptions rfidOptions)
         {
             logger.LogInformation($"Persisting RfidOptions {rfidOptions}");
             repo.Upsert(rfidOptions);

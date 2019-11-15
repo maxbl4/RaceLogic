@@ -4,45 +4,59 @@ using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Services;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
 {
-    public class StorageServiceTests : StorageServiceFixture
+    public class StorageServiceTests : IntegrationTestBase
     {
+        public StorageServiceTests(ITestOutputHelper outputHelper) : base(outputHelper)
+        {
+        }
+
         [Fact]
         public void Should_save_and_load_rfidsettings()
         {
-            var settings = storageService.GetRfidOptions();
-            settings.ShouldBeSameAs(RfidOptions.Default);
-            settings.RfidEnabled = true;
-            settings.SerializedConnectionString = "Protocol=Alien;Network=8.8.8.8:500";
-            storageService.SetRfidSettings(settings);
-            settings = storageService.GetRfidOptions();
-            settings.RfidEnabled.ShouldBeTrue();
-            settings.SerializedConnectionString.ShouldBe("Protocol=Alien;Network=8.8.8.8:500");
+            WithStorageService(storageService =>
+            {
+                var settings = storageService.GetRfidOptions();
+                settings.ShouldBeSameAs(RfidOptions.Default);
+                settings.RfidEnabled = true;
+                settings.SerializedConnectionString = "Protocol=Alien;Network=8.8.8.8:500";
+                storageService.SetRfidOptions(settings);
+                settings = storageService.GetRfidOptions();
+                settings.RfidEnabled.ShouldBeTrue();
+                settings.SerializedConnectionString.ShouldBe("Protocol=Alien;Network=8.8.8.8:500");
+            });
         }
 
         [Fact]
         public void Should_return_default_rfidsettings()
         {
-            var settings = storageService.GetRfidOptions();
-            settings.ShouldBeSameAs(RfidOptions.Default);
+            WithStorageService(storageService =>
+            {
+                var settings = storageService.GetRfidOptions();
+                settings.ShouldBeSameAs(RfidOptions.Default);
+            });
         }
         
         [Fact]
         public void Should_support_date_filter()
         {
-            var ts = DateTime.UtcNow;
-            storageService.AppendCheckpoint(new Checkpoint("1", ts));
-            storageService.AppendCheckpoint(new Checkpoint("2", ts.AddSeconds(100)));
-            storageService.ListCheckpoints().Count.ShouldBe(2);
-            var firstCp = storageService.ListCheckpoints(ts, ts.AddSeconds(10));
-            firstCp.Count.ShouldBe(1);
-            firstCp[0].RiderId.ShouldBe("1");
-            
-            var secondCp = storageService.ListCheckpoints(ts.AddSeconds(10));
-            secondCp.Count.ShouldBe(1);
-            secondCp[0].RiderId.ShouldBe("2");
+            WithStorageService(storageService =>
+            {
+                var ts = DateTime.UtcNow;
+                storageService.AppendCheckpoint(new Checkpoint("1", ts));
+                storageService.AppendCheckpoint(new Checkpoint("2", ts.AddSeconds(100)));
+                storageService.ListCheckpoints().Count.ShouldBe(2);
+                var firstCp = storageService.ListCheckpoints(ts, ts.AddSeconds(10));
+                firstCp.Count.ShouldBe(1);
+                firstCp[0].RiderId.ShouldBe("1");
+
+                var secondCp = storageService.ListCheckpoints(ts.AddSeconds(10));
+                secondCp.Count.ShouldBe(1);
+                secondCp[0].RiderId.ShouldBe("2");
+            });
         }
     }
 }
