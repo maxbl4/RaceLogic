@@ -29,18 +29,17 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
             WithStorageService(storageService =>
             {
                 var hubContext = Substitute.For<IHubContext<CheckpointsHub>>();
-                var messageHub = new MessageHub();
                 var cps = new List<Checkpoint>();
                 hubContext.Clients.Client("con1")
                             .SendCoreAsync("Checkpoint", Arg.Any<object[]>())
                         .Returns(Task.CompletedTask)
                         .AndDoes((info) => cps.Add(info.ArgAt<object[]>(1).OfType<Checkpoint>().First()));
                 
-                var ds = new DistributionService(hubContext, messageHub, storageService, new BufferLogger<DistributionService>());
+                var ds = new DistributionService(hubContext, MessageHub, storageService, new BufferLogger<DistributionService>());
                 ds.StartStream("con1", DateTime.Now);
 
                 
-                messageHub.Publish(new Checkpoint("r1"));
+                MessageHub.Publish(new Checkpoint("r1"));
                 
                 
                 Timing.StartWait(() => cps.Count >= 1).Result.ShouldBeTrue();
@@ -55,7 +54,6 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
             WithStorageService(storageService =>
             {
                 var hubContext = Substitute.For<IHubContext<CheckpointsHub>>();
-                var messageHub = new MessageHub();
                 var log = new List<string>();
                 
                 hubContext.Clients.Client("con1")
@@ -68,12 +66,12 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                     .Returns(Task.CompletedTask)
                     .AndDoes((info) => log.Add(info.ArgAt<object[]>(1).OfType<Checkpoint>().First().RiderId));
                                 
-                var ds = new DistributionService(hubContext, messageHub, storageService, new BufferLogger<DistributionService>());
+                var ds = new DistributionService(hubContext, MessageHub, storageService, new BufferLogger<DistributionService>());
                 ds.StartStream("con1", DateTime.Now);
                 ds.StartStream("con2", DateTime.Now);
 
                 
-                messageHub.Publish(new Checkpoint("r1"));
+                MessageHub.Publish(new Checkpoint("r1"));
                 
                 
                 Timing.StartWait(() => log.Count >= 2).Result.ShouldBeTrue();

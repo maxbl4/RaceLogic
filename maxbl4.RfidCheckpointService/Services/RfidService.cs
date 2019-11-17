@@ -35,7 +35,6 @@ namespace maxbl4.RfidCheckpointService.Services
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
             RfidOptionsChanged(storageService.GetRfidOptions());
-            
         }
 
         private void RfidOptionsChanged(RfidOptions options)

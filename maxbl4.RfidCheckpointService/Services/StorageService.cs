@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Easy.MessageHub;
 using LiteDB;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidDotNet.Ext;
@@ -12,11 +13,13 @@ namespace maxbl4.RfidCheckpointService.Services
 {
     public class StorageService : IDisposable
     {
+        private readonly IMessageHub messageHub;
         private readonly ILogger<StorageService> logger;
         private readonly LiteRepository repo;
 
-        public StorageService(IOptions<ServiceOptions> options, ILogger<StorageService> logger)
+        public StorageService(IOptions<ServiceOptions> options, IMessageHub messageHub, ILogger<StorageService> logger)
         {
+            this.messageHub = messageHub;
             this.logger = logger;
             logger.LogInformation($"Using storage connection string {options.Value?.StorageConnectionString}");
             var connectionString = new ConnectionString(options.Value.StorageConnectionString) {UtcDate = true};
@@ -49,6 +52,14 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             logger.LogInformation($"Persisting RfidOptions {rfidOptions}");
             repo.Upsert(rfidOptions);
+            Safe.Execute(() => messageHub.Publish(rfidOptions), logger);
+        }
+
+        public void UpdateRfidOptions(Action<RfidOptions> modifier)
+        {
+            var opts = GetRfidOptions();
+            modifier(opts);
+            SetRfidOptions(opts);
         }
 
         public void Dispose()

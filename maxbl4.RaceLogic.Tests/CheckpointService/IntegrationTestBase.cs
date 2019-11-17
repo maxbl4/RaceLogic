@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using Easy.MessageHub;
 using LiteDB;
 using maxbl4.RaceLogic.Tests.Ext;
 using maxbl4.RfidCheckpointService;
@@ -14,6 +16,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
 {
     public class IntegrationTestBase
     {
+        private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new MessageHub());
+        protected IMessageHub MessageHub => messageHub.Value;
         protected readonly string storageConnectionString;
         
         public IntegrationTestBase(ITestOutputHelper outputHelper)
@@ -26,13 +30,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
 
         public void WithStorageService(Action<StorageService> storageServiceInitializer)
         {
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), new NullLogger<StorageService>());
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
             storageServiceInitializer(storageService);
         }
         
         public T WithStorageService<T>(Func<StorageService, T> storageServiceInitializer)
         {
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), new NullLogger<StorageService>());
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
             return storageServiceInitializer(storageService);
         }
         
@@ -51,7 +55,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         string GetNameForDbFile(ITestOutputHelper outputHelper)
         {
             var parts = outputHelper.GetTest().DisplayName.Split(".");
-            return string.Join("-", parts.Skip(Math.Max(parts.Length - 2, 0))) + ".litedb";
+            return "_" + string.Join("-", parts.Skip(Math.Max(parts.Length - 2, 0))) + ".litedb";
         }
     }
 }

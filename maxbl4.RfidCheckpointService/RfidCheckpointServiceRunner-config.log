@@ -1,0 +1,27 @@
+2019-11-16 00:08:17.916 +03:00 [INF] Using storage connection string 
+2019-11-16 00:10:59.873 +03:00 [INF] Using storage connection string 
+2019-11-16 00:18:10.764 +03:00 [INF] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-16 00:18:11.228 +03:00 [INF] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-16 00:18:11.852 +03:00 [INF] Now listening on: http://localhost:5000
+2019-11-16 00:18:11.854 +03:00 [INF] Now listening on: https://localhost:5001
+2019-11-16 00:18:11.859 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2019-11-16 00:18:11.860 +03:00 [INF] Hosting environment: Development
+2019-11-16 00:18:11.862 +03:00 [INF] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService
+2019-11-16 00:18:27.237 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/  
+2019-11-16 00:18:27.366 +03:00 [INF] Request finished in 131.3864ms 404 
+2019-11-16 00:18:38.951 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/cp  
+2019-11-16 00:18:38.963 +03:00 [INF] Executing endpoint 'maxbl4.RfidCheckpointService.Controllers.CheckpointsController.Get (maxbl4.RfidCheckpointService)'
+2019-11-16 00:18:39.007 +03:00 [INF] Route matched with {action = "Get", controller = "Checkpoints"}. Executing controller action with signature System.Collections.Generic.IEnumerable`1[maxbl4.RaceLogic.Checkpoints.Checkpoint] Get(System.Nullable`1[System.DateTime], System.Nullable`1[System.DateTime]) on controller maxbl4.RfidCheckpointService.Controllers.CheckpointsController (maxbl4.RfidCheckpointService).
+2019-11-16 00:18:39.110 +03:00 [INF] Executing ObjectResult, writing value of type 'System.Collections.Generic.List`1[[maxbl4.RaceLogic.Checkpoints.Checkpoint, maxbl4.RaceLogic, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2019-11-16 00:18:39.170 +03:00 [INF] Executed action maxbl4.RfidCheckpointService.Controllers.CheckpointsController.Get (maxbl4.RfidCheckpointService) in 140.0909ms
+2019-11-16 00:18:39.196 +03:00 [INF] Executed endpoint 'maxbl4.RfidCheckpointService.Controllers.CheckpointsController.Get (maxbl4.RfidCheckpointService)'
+2019-11-16 00:18:39.200 +03:00 [INF] Request finished in 248.6268ms 200 application/json; charset=utf-8
+2019-11-16 00:18:39.419 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/favicon.ico  
+2019-11-16 00:18:39.422 +03:00 [INF] Request finished in 3.3866ms 404 
+2019-11-16 00:18:49.675 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/rfid  
+2019-11-16 00:18:49.681 +03:00 [INF] Executing endpoint 'maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService)'
+2019-11-16 00:18:49.688 +03:00 [INF] Route matched with {action = "Get", controller = "Rfid"}. Executing controller action with signature maxbl4.RfidCheckpointService.Services.RfidOptions Get() on controller maxbl4.RfidCheckpointService.Controllers.RfidController (maxbl4.RfidCheckpointService).
+2019-11-16 00:18:49.696 +03:00 [INF] Executing ObjectResult, writing value of type 'maxbl4.RfidCheckpointService.Services.RfidOptions'.
+2019-11-16 00:18:49.704 +03:00 [INF] Executed action maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService) in 10.1518ms
+2019-11-16 00:18:49.722 +03:00 [INF] Executed endpoint 'maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService)'
+2019-11-16 00:18:49.726 +03:00 [INF] Request finished in 51.3215ms 200 application/json; charset=utf-8

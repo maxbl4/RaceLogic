@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.ReaderSimulator;
 using maxbl4.RfidDotNet.AlienTech.TagStream;
+using Shouldly;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
 {
@@ -12,10 +14,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
         readonly object sync = new object();
         private string returnOnceTags = null;
         TaskCompletionSource<bool> returnTask = null;
+        private string returnContinuos;
+
         public string Handle()
         {
             lock (sync)
             {
+                LastRequestTime = DateTime.UtcNow;
                 if (returnOnceTags != null)
                 {
                     var t = returnOnceTags;
@@ -29,7 +34,23 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
                     returnTask = null;
                 }
 
+                if (!string.IsNullOrEmpty(returnContinuos))
+                    return returnContinuos;
+
                 return ProtocolMessages.NoTags;
+            }
+        }
+
+        public void ReturnContinuos(params Tag[] tags)
+        {
+            ReturnContinuos((IEnumerable<Tag>)tags);
+        }
+        
+        public void ReturnContinuos(IEnumerable<Tag> tags)
+        {
+            lock (sync)
+            {
+                returnContinuos = string.Join("\r\n", tags.Select(x => x.ToCustomFormatString()));
             }
         }
 
@@ -43,10 +64,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator
             lock (sync)
             {
                 returnTask = new TaskCompletionSource<bool>();
-                returnOnceTags = string.Join("\r\n", tags.Select(x => TagParser.ToCustomFormatString(x)));
+                returnOnceTags = string.Join("\r\n", tags.Select(x => x.ToCustomFormatString()));
             }
 
-            returnTask.Task.Wait(5000);
+            returnTask.Task.Wait(5000).ShouldBeTrue();
         }
+        
+        public DateTime LastRequestTime { get; private set; }
+        public TimeSpan TimeSinceLastRequest => DateTime.UtcNow - LastRequestTime;
     }
 }
