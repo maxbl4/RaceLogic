@@ -1,0 +1,68 @@
+2019-11-18 11:55:53.319 +03:00 [INF] ==== Host starting ====
+2019-11-18 11:55:54.393 +03:00 [INF] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 11:55:59.279 +03:00 [INF] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-18 11:55:59.729 +03:00 [INF] Now listening on: http://localhost:5000
+2019-11-18 11:55:59.731 +03:00 [INF] Now listening on: https://localhost:5001
+2019-11-18 11:55:59.734 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2019-11-18 11:55:59.735 +03:00 [INF] Hosting environment: Development
+2019-11-18 11:55:59.737 +03:00 [INF] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService
+2019-11-18 09:03:47Z [INF] ==== Host starting ====
+2019-11-18 09:03:48Z [INF] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 09:03:49Z [INF] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-18 09:03:49Z [INF] Now listening on: http://localhost:5000
+2019-11-18 09:03:49Z [INF] Now listening on: https://localhost:5001
+2019-11-18 09:03:49Z [INF] Application started. Press Ctrl+C to shut down.
+2019-11-18 09:03:49Z [INF] Hosting environment: Development
+2019-11-18 09:03:49Z [INF] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService
+2019-11-18 09:05:01Z [INF] [] ==== Host starting ====
+2019-11-18 09:05:02Z [INF] [] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 09:05:03Z [INF] [] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-18 09:05:03Z [INF] [] Now listening on: http://localhost:5000
+2019-11-18 09:05:03Z [INF] [] Now listening on: https://localhost:5001
+2019-11-18 09:05:03Z [INF] [] Application started. Press Ctrl+C to shut down.
+2019-11-18 09:05:03Z [INF] [] Hosting environment: Development
+2019-11-18 09:05:03Z [INF] [] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService
+2019-11-18 09:08:04Z [INF] [1] ==== Host starting ====
+2019-11-18 09:08:06Z [INF] [1] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 09:08:06Z [INF] [1] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-18 09:08:06Z [INF] [1] Now listening on: http://localhost:5000
+2019-11-18 09:08:06Z [INF] [1] Now listening on: https://localhost:5001
+2019-11-18 09:08:06Z [INF] [1] Application started. Press Ctrl+C to shut down.
+2019-11-18 09:08:06Z [INF] [1] Hosting environment: Development
+2019-11-18 09:08:06Z [INF] [1] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService
+2019-11-18 09:08:15Z [INF] [7] Request starting HTTP/1.1 GET http://localhost:5000/  
+2019-11-18 09:08:15Z [INF] [7] Request finished in 135.7416ms 404 
+2019-11-18 09:08:22Z [INF] [4] Request starting HTTP/1.1 GET http://localhost:5000/rfid  
+2019-11-18 09:08:22Z [INF] [4] Executing endpoint 'maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService)'
+2019-11-18 09:08:22Z [INF] [4] Route matched with {action = "Get", controller = "Rfid"}. Executing controller action with signature maxbl4.RfidCheckpointService.Services.RfidOptions Get() on controller maxbl4.RfidCheckpointService.Controllers.RfidController (maxbl4.RfidCheckpointService).
+2019-11-18 09:08:22Z [INF] [4] Executing ObjectResult, writing value of type 'maxbl4.RfidCheckpointService.Services.RfidOptions'.
+2019-11-18 09:08:22Z [INF] [4] Executed action maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService) in 28.8276ms
+2019-11-18 09:08:22Z [INF] [4] Executed endpoint 'maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService)'
+2019-11-18 09:08:22Z [INF] [4] Request finished in 91.5006ms 200 application/json; charset=utf-8
+2019-11-18 09:08:22Z [INF] [7] Request starting HTTP/1.1 GET http://localhost:5000/favicon.ico  
+2019-11-18 09:08:22Z [INF] [7] Request finished in 2.2629ms 404 
+2019-11-18 09:08:35Z [INF] [10] Request starting HTTP/1.1 GET http://localhost:5000/rfid  
+2019-11-18 09:08:35Z [INF] [10] Executing endpoint 'maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService)'
+2019-11-18 09:08:35Z [INF] [10] Route matched with {action = "Get", controller = "Rfid"}. Executing controller action with signature maxbl4.RfidCheckpointService.Services.RfidOptions Get() on controller maxbl4.RfidCheckpointService.Controllers.RfidController (maxbl4.RfidCheckpointService).
+2019-11-18 09:08:35Z [INF] [10] Executing ObjectResult, writing value of type 'maxbl4.RfidCheckpointService.Services.RfidOptions'.
+2019-11-18 09:08:35Z [INF] [10] Executed action maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService) in 4.5989ms
+2019-11-18 09:08:35Z [INF] [10] Executed endpoint 'maxbl4.RfidCheckpointService.Controllers.RfidController.Get (maxbl4.RfidCheckpointService)'
+2019-11-18 09:08:35Z [INF] [10] Request finished in 27.0092ms 200 application/json; charset=utf-8
+2019-11-18 09:10:33Z [INF] [1] ==== Host starting ====
+2019-11-18 09:10:34Z [INF] [1] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 09:11:41Z [INF] [1] [] ==== Host starting ====
+2019-11-18 09:11:42Z [INF] [1] [maxbl4.RfidCheckpointService.Services.StorageService] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 09:11:51Z [INF] [1] [maxbl4.RfidCheckpointService.Services.RfidService] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-18 09:11:51Z [INF] [1] [Microsoft.Hosting.Lifetime] Now listening on: http://localhost:5000
+2019-11-18 09:11:51Z [INF] [1] [Microsoft.Hosting.Lifetime] Now listening on: https://localhost:5001
+2019-11-18 09:11:51Z [INF] [1] [Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
+2019-11-18 09:11:51Z [INF] [1] [Microsoft.Hosting.Lifetime] Hosting environment: Development
+2019-11-18 09:11:51Z [INF] [1] [Microsoft.Hosting.Lifetime] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService
+2019-11-18 09:27:11Z [INF] [1] [maxbl4.RfidCheckpointService.RfidCheckpointServiceRunner] ==== Host starting ====
+2019-11-18 09:27:12Z [INF] [1] [maxbl4.RfidCheckpointService.Services.StorageService] Using storage connection string Filename=storage.litedb;InitialSize=10485760;UtcDate=true
+2019-11-18 09:27:12Z [INF] [1] [maxbl4.RfidCheckpointService.Services.RfidService] Using RfidOptions: {"Id":1,"SerializedConnectionString":"Protocol=Alien;Network=127.0.01:30023","RfidEnabled":false,"CheckpointAggregationWindowMs":200}
+2019-11-18 09:27:13Z [INF] [1] [Microsoft.Hosting.Lifetime] Now listening on: http://localhost:5000
+2019-11-18 09:27:13Z [INF] [1] [Microsoft.Hosting.Lifetime] Now listening on: https://localhost:5001
+2019-11-18 09:27:13Z [INF] [1] [Microsoft.Hosting.Lifetime] Application started. Press Ctrl+C to shut down.
+2019-11-18 09:27:13Z [INF] [1] [Microsoft.Hosting.Lifetime] Hosting environment: Development
+2019-11-18 09:27:13Z [INF] [1] [Microsoft.Hosting.Lifetime] Content root path: C:\Users\vlpereva\src\RaceLogic\maxbl4.RfidCheckpointService

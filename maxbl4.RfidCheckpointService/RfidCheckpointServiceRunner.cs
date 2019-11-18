@@ -5,6 +5,7 @@ using maxbl4.RfidDotNet.Ext;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
@@ -17,30 +18,39 @@ namespace maxbl4.RfidCheckpointService
 
         public async Task<int> Start(string[] args = null)
         {
+            SetupLogger("appsettings");
+            var logger = Log.ForContext<RfidCheckpointServiceRunner>();
             Dispose();
             cts = new CancellationTokenSource();
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File("RfidCheckpointServiceRunner.log")
-                .CreateLogger();
             try
             {
+                logger.Information("==== Host starting ====");
                 hostBuilder = CreateHostBuilder(args ?? new string[0]).Build();
                 await hostBuilder.RunAsync(cts.Token);
                 return 0;
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "Host terminated unexpectedly");
+                logger.Fatal(ex, "Host terminated unexpectedly");
                 return -1;
             }
             finally
             {
                 Log.CloseAndFlush();
             }
+        }
+
+        public static void SetupLogger(string configFileBaseName,string[] args = null)
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile($"{configFileBaseName}.json", true)
+                .AddJsonFile($"{configFileBaseName}.Development.json", true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args ?? new string[0])
+                .Build();
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(config)
+                .CreateLogger();
         }
 
         private static IHostBuilder CreateHostBuilder(string[] args) =>

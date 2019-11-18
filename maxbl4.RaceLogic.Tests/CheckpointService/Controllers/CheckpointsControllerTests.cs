@@ -52,7 +52,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             
             var checkpoints = JsonConvert.DeserializeObject<List<Checkpoint>>(await response.Content.ReadAsStringAsync());
             checkpoints.ShouldNotBeNull();
-            checkpoints.Count(x => x.RiderId.StartsWith("stored")).ShouldBe(2);
+            checkpoints.Count(x => x.RiderId.StartsWith("stored")).ShouldBeGreaterThanOrEqualTo(2);
             checkpoints.ShouldContain(x => x.RiderId == "stored1");
             checkpoints.ShouldContain(x => x.RiderId == "stored2");
         }
