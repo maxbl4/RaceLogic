@@ -42,7 +42,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                 MessageHub.Publish(new Checkpoint("r1"));
                 
                 
-                Timing.StartWait(() => cps.Count >= 1).Result.ShouldBeTrue();
+                new Timing().Logger(Logger).Expect(() => cps.Count >= 1);
                 cps[0].RiderId.ShouldBe("r1");
             });
         }
@@ -74,7 +74,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                 MessageHub.Publish(new Checkpoint("r1"));
                 
                 
-                Timing.StartWait(() => log.Count >= 2).Result.ShouldBeTrue();
+                new Timing().Logger(Logger).Expect(() => log.Count >= 2);
                 log[0].ShouldBe("thrown");
                 log[1].ShouldBe("r1");
             });

@@ -1,13 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using maxbl4.RfidDotNet.Ext;
+using maxbl4.Infrastructure.Extensions.DisposableExt;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
 
 namespace maxbl4.RfidCheckpointService
 {

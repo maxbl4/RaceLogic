@@ -7,6 +7,7 @@ using Easy.MessageHub;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.Ext;
+using maxbl4.RfidDotNet.AlienTech.Extensions;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
 using Microsoft.Extensions.Logging;
 

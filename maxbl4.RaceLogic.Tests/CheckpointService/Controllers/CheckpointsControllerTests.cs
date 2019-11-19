@@ -74,8 +74,10 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
             tagListHandler.ReturnOnce(new Tag{TagId = "3"});
             tagListHandler.ReturnOnce(new Tag{TagId = "4"});
-            (await Timing.StartWait(() => checkpoints.Count >= 4))
-                .ShouldBeTrue($"checkpoints.Count = {checkpoints.Count}");
+            await new Timing()
+                .Logger(Logger)
+                .FailureDetails(() => $"checkpoints.Count = {checkpoints.Count}")
+                .ExpectAsync(() => checkpoints.Count >= 4);
         }
     }
 }

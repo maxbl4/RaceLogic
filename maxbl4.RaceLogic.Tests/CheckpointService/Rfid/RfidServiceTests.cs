@@ -56,7 +56,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
                 
                 
-                Timing.StartWait(() => cps != null).Result.ShouldBeTrue();
+                new Timing().Logger(Logger).Expect(() => cps != null);
                 cps.Count.ShouldBe(1);
                 cps[0].RiderId.ShouldBe("1");
             });
@@ -74,21 +74,18 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
                     new NullLogger<RfidService>());
                 // Rfid enabled, gather checkpoints with '1'
                 tagListHandler.ReturnContinuos(new Tag {TagId = "1"});
-                Timing.StartWait(() => cps.Count(x => x.RiderId == "1") > 0)
-                    .Result.ShouldBeTrue("No Tag 1");
+                new Timing().Logger(Logger).Context("No Tag 1").Expect(() => cps.Count(x => x.RiderId == "1") > 0);
 
                 // Disable Rfid, wait for requests to stop for a second
                 storageService.UpdateRfidOptions(o => o.RfidEnabled = false);
-                Timing.StartWait(() => 
-                    tagListHandler.TimeSinceLastRequest > TimeSpan.FromSeconds(1))
-                    .Result.ShouldBeTrue("Did not stop rfid query");
+                new Timing().Logger(Logger).Context("Did not stop rfid query").Expect(() => 
+                    tagListHandler.TimeSinceLastRequest > TimeSpan.FromSeconds(1));
                 cps.Clear();
                 
                 // Now return checkpoints with '2', enable rfid and wait for them
                 tagListHandler.ReturnContinuos(new Tag {TagId = "2"});
                 storageService.UpdateRfidOptions(o => o.RfidEnabled = true);
-                Timing.StartWait(() => cps.Count(x => x.RiderId == "2") > 0)
-                    .Result.ShouldBeTrue("No Tag 2");
+                new Timing().Logger(Logger).Context("No Tag 2").Expect(() => cps.Count(x => x.RiderId == "2") > 0);
             });
         }
     }

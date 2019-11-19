@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using Easy.MessageHub;
 using LiteDB;
+using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.RaceLogic.Checkpoints;
-using maxbl4.RfidDotNet.Ext;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ILogger = Serilog.ILogger;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
