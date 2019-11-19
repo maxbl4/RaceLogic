@@ -21,5 +21,11 @@ namespace maxbl4.RfidCheckpointService.Controllers
         {
             return storageService.GetRfidOptions();
         }
+        
+        [HttpPut]
+        public void Put(RfidOptions options)
+        {
+            storageService.SetRfidOptions(options);
+        }
     }
 }

@@ -7,7 +7,7 @@ namespace maxbl4.RfidCheckpointService.Services
     {
         public static readonly RfidOptions Default = new RfidOptions
         {
-            SerializedConnectionString = "Protocol=Alien;Network=127.0.01:30023",
+            SerializedConnectionString = "Protocol=Alien;Network=127.0.0.1:20023",
             CheckpointAggregationWindowMs = 200
         };
 
