@@ -74,6 +74,7 @@ namespace maxbl4.RaceLogic.LogManagement
             invalidChars.UnionWith(Path.GetInvalidPathChars());
             invalidChars.UnionWith(Path.GetInvalidFileNameChars());
             invalidChars.Add('+');
+            invalidChars.Add('\t');
             invalidCharsPattern = string.Join("|", 
                 invalidChars.OrderBy(x => x).Select(x => @"\u" + ((ushort)x).ToString("x4")));
         }
