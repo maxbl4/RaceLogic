@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reactive.PlatformServices;
 using System.Threading;
 using Easy.MessageHub;
 using LiteDB;
@@ -20,7 +21,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         static object sync = new object();
         private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new MessageHub());
         protected IMessageHub MessageHub => messageHub.Value;
-        protected readonly string storageConnectionString;
+        private readonly string storageConnectionString;
+        protected readonly FakeSystemClock SystemClock = new FakeSystemClock();
         protected ILogger Logger { get; }
         
         public IntegrationTestBase(ITestOutputHelper outputHelper)
@@ -46,6 +48,14 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
             using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
             storageServiceInitializer(storageService);
+        }
+        
+        public void WithRfidService(Action<StorageService, RfidService> action)
+        {
+            Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
+            using var rfidService = new RfidService(storageService, MessageHub, SystemClock, new NullLogger<RfidService>());
+            action(storageService, rfidService);
         }
         
         public T WithStorageService<T>(Func<StorageService, T> storageServiceInitializer)

@@ -15,25 +15,20 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
 {
     public class RfidServiceTests : IntegrationTestBase
     {
-        private readonly FakeSystemClock systemClock;
-
         public RfidServiceTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
-            systemClock = new FakeSystemClock();
         }
 
         [Fact]
         public void Should_persist_checkpoints()
         {
-            WithStorageService(storageService =>
+            WithRfidService((storageService, rfidService) =>
             {
                 var tagListHandler = new SimulatorBuilder(storageService).Build();
-                var rfidService = new RfidService(storageService, MessageHub, systemClock,
-                    new NullLogger<RfidService>());
                 var connectionString = storageService.GetRfidOptions().GetConnectionString();
                 connectionString.Protocol.ShouldBe(ReaderProtocolType.Alien);
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
-                systemClock.Advance();
+                SystemClock.Advance();
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
 
                 var cps = storageService.ListCheckpoints();
@@ -44,17 +39,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         [Fact]
         public void Should_store_checkpoint_before_emitting_to_observable()
         {
-            WithStorageService(storageService =>
+            WithRfidService((storageService, rfidService) =>
             {
                 var tagListHandler = new SimulatorBuilder(storageService).Build();
                 List<Checkpoint> cps = null;
                 MessageHub.Subscribe<Checkpoint>(x => cps = storageService.ListCheckpoints());
-                var rfidService = new RfidService(storageService, MessageHub, systemClock,
-                    new NullLogger<RfidService>());
-                
                 
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
-                
                 
                 new Timing().Logger(Logger).Expect(() => cps != null);
                 cps.Count.ShouldBe(1);
@@ -65,28 +56,34 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         [Fact]
         public void Should_observe_rfid_options_changes()
         {
-            WithStorageService(storageService =>
+            WithRfidService((storageService, rfidService) =>
             {
                 var cps = new List<Checkpoint>();
                 MessageHub.Subscribe<Checkpoint>(x => cps.Add(x));
                 var tagListHandler = new SimulatorBuilder(storageService).Build();
-                var rfidService = new RfidService(storageService, MessageHub, systemClock,
-                    new NullLogger<RfidService>());
                 // Rfid enabled, gather checkpoints with '1'
                 tagListHandler.ReturnContinuos(new Tag {TagId = "1"});
                 new Timing().Logger(Logger).Context("No Tag 1").Expect(() => cps.Count(x => x.RiderId == "1") > 0);
 
                 // Disable Rfid, wait for requests to stop for a second
-                storageService.UpdateRfidOptions(o => o.RfidEnabled = false);
+                storageService.UpdateRfidOptions(o => o.Enabled = false);
                 new Timing().Logger(Logger).Context("Did not stop rfid query").Expect(() => 
                     tagListHandler.TimeSinceLastRequest > TimeSpan.FromSeconds(1));
                 cps.Clear();
                 
                 // Now return checkpoints with '2', enable rfid and wait for them
                 tagListHandler.ReturnContinuos(new Tag {TagId = "2"});
-                storageService.UpdateRfidOptions(o => o.RfidEnabled = true);
+                storageService.UpdateRfidOptions(o => o.Enabled = true);
                 new Timing().Logger(Logger).Context("No Tag 2").Expect(() => cps.Count(x => x.RiderId == "2") > 0);
             });
+        }
+
+        [Fact]
+        public void Should_emit_tag_reading_statistics()
+        {
+            // How many times per second a tag was read (RPS)
+            // Save tags, that have low RPS (configurable)
+            throw new NotImplementedException();
         }
     }
 }

@@ -7,19 +7,31 @@ namespace maxbl4.RfidCheckpointService.Services
     {
         public static readonly RfidOptions Default = new RfidOptions
         {
-            SerializedConnectionString = "Protocol=Alien;Network=127.0.0.1:20023",
+            ConnectionString = "Protocol=Alien;Network=127.0.0.1:20023",
             CheckpointAggregationWindowMs = 200
         };
 
         public int Id => 1;
         
-        public string SerializedConnectionString { get; set; }
-        public bool RfidEnabled { get; set; }
+        /// <summary>
+        /// RfidDotnet connection string
+        /// </summary>
+        public string ConnectionString { get; set; }
+        /// <summary>
+        /// Is Rfid reading enabled
+        /// </summary>
+        public bool Enabled { get; set; }
+        /// <summary>
+        /// Windows in milliseconds for tag deduplication
+        /// </summary>
         public int CheckpointAggregationWindowMs { get; set; }
+        /// <summary>
+        /// Reads per second threshold below which a tag would be reported as bad 
+        /// </summary>
+        public int RpsThreshold { get; set; }
         
-        public ConnectionString GetConnectionString() => ConnectionString.Parse(SerializedConnectionString);
-        public void SetConnectionString(ConnectionString connectionString) => SerializedConnectionString = connectionString.ToString();
-
+        public ConnectionString GetConnectionString() => RfidDotNet.ConnectionString.Parse(ConnectionString);
+        
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);

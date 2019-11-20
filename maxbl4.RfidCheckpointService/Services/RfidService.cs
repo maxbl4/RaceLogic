@@ -44,7 +44,7 @@ namespace maxbl4.RfidCheckpointService.Services
             logger.LogInformation("Using RfidOptions: {options}", options);
             aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
             aggregator.Subscribe(OnCheckpoint);
-            if (options.RfidEnabled)
+            if (options.Enabled)
                 EnableRfid(options).WaitSafe(logger);
         }
 
