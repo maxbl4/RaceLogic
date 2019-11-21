@@ -46,6 +46,8 @@ namespace maxbl4.RfidCheckpointService
             }
 
             app.UseRouting();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 
