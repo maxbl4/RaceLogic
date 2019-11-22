@@ -7,10 +7,6 @@ namespace maxbl4.RaceLogic.Checkpoints
 {
     public class AggCheckpoint : Checkpoint
     {
-        public DateTime LastSeen { get; }
-        public int Count { get; }
-        public bool IsEmpty => Count < 1;
-
         readonly Dictionary<string, int> histogram;
 
         public string Histogram { get; }
@@ -19,6 +15,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             int count, Dictionary<string,int> histogram) 
             : base(riderId, timestamp)
         {
+            Aggregated = true;
             LastSeen = lastSeen;
             Count = count;
             this.histogram = histogram;
@@ -29,6 +26,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             int count, IEnumerable<KeyValuePair<string,int>> histogram = null) 
                 : base(riderId, timestamp)
         {
+            Aggregated = true;
             LastSeen = lastSeen;
             Count = count;
             this.histogram = histogram?

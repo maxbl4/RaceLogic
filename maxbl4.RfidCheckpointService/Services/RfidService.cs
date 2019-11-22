@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Easy.MessageHub;
 using maxbl4.Infrastructure;
+using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.RaceLogic.Checkpoints;
+using maxbl4.RfidCheckpointService.Model;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.Extensions;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
@@ -53,14 +56,24 @@ namespace maxbl4.RfidCheckpointService.Services
             Safe.Execute(() => messageHub.Publish(cp), logger);
         }
 
+        void OnReaderStatus(ReaderStatus status)
+        {
+            Safe.Execute(() => messageHub.Publish(status), logger);
+        }
+
         private async Task EnableRfid(RfidOptions options)
         {
             stream = factory.CreateStream(options.GetConnectionString());
             disposable = new CompositeDisposable(stream,
                 stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
             aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+            disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
+                    (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
+                .Subscribe(OnReaderStatus)
+            );
             disposable.Add(checkpoints.Subscribe(aggregator));
             disposable.Add(aggregator.Subscribe(OnCheckpoint));
+            disposable.Add(aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint));
             await stream.Start();
         }
 

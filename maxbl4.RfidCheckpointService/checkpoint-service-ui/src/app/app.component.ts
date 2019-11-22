@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {RfidOptions} from "./model/rfid-options";
+import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
+import {Checkpoint} from "./model/checkpoint";
+import {ReaderStatus} from "./model/reader-status";
 
 @Component({
   selector: 'app-root',
@@ -64,9 +67,16 @@ export class AppComponent {
   logLineCount = 20;
   logFilter = '';
   isLoading = false;
+  private connection: HubConnection;
   constructor(private http: HttpClient) {
     this.loadOptions().then();
     setInterval(() => this.updateLogs(), 1000);
+    this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();
+    this.connection.on("Checkpoint", (cp:Checkpoint) => console.log("checkpoint", cp));
+    this.connection.on("ReaderStatus", (status:ReaderStatus) => console.log("ReaderStatus", status));
+    this.connection.start().then(x => {
+      this.connection.send("Subscribe", "2019-01-01").then();
+    });
   }
 
   async loadOptions() {

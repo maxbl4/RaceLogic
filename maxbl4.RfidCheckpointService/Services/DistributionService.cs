@@ -10,6 +10,7 @@ using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Ext;
 using maxbl4.RfidCheckpointService.Hubs;
+using maxbl4.RfidCheckpointService.Model;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
@@ -30,7 +31,19 @@ namespace maxbl4.RfidCheckpointService.Services
             this.checkpointsHub = checkpointsHub;
             this.storageService = storageService;
             this.logger = logger;
-            disposable = new CompositeDisposable(messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint));
+            disposable = new CompositeDisposable(messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
+                messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus));
+        }
+
+        private void OnReaderStatus(ReaderStatus readerStatus)
+        {
+            Safe.Execute(async () =>
+            {
+                logger.LogInformation($"Broadcasting reader status {readerStatus}");
+                await checkpointsHub.Clients.All
+                    .SendAsync("ReaderStatus", new[] {readerStatus});
+            }, logger).Wait(0);
+
         }
 
         void OnCheckpoint(Checkpoint checkpoint)
@@ -93,7 +106,7 @@ namespace maxbl4.RfidCheckpointService.Services
                             {
                                 logger.LogInformation($"Sending checkpoint {x} via WS to {contextConnectionId}");
                                 await checkpointsHub.Clients.Client(contextConnectionId)
-                                    .SendCoreAsync("Checkpoint", new[] {x});
+                                    .SendAsync("Checkpoint", new[] {x});
                             }, logger)))
                     .Concat()
                     .Subscribe();
