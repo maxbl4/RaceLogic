@@ -9,7 +9,7 @@ namespace maxbl4.RaceLogic.Checkpoints
         private static long nextSequence;
         public DateTime Timestamp { get; set; }
         public string RiderId { get; set; }
-        public long Sequence { get; set; }
+        public long Id { get; set; }
 
         public Checkpoint()
         {
@@ -17,7 +17,7 @@ namespace maxbl4.RaceLogic.Checkpoints
 
         public Checkpoint(string riderId, DateTime? timestamp = null)
         {
-            Sequence = Interlocked.Increment(ref nextSequence);
+            Id = Interlocked.Increment(ref nextSequence);
             RiderId = riderId;
             Timestamp = timestamp ?? default;
         }

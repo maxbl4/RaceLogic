@@ -29,7 +29,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
                 }));
             using var svc = CreateRfidCheckpointService();
             var client = new HttpClient();
-            var opts = await client.GetAsync<RfidOptions>("http://localhost:5000/rfid");
+            var opts = await client.GetAsync<RfidOptions>("http://localhost:5000/options");
             opts.Enabled.ShouldBe(true);
             opts.ConnectionString.ShouldBe("some");
             opts.RpsThreshold.ShouldBe(123);
@@ -48,10 +48,10 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             };
             using var svc = CreateRfidCheckpointService();
             var client = new HttpClient();
-            (await client.PutAsync("http://localhost:5000/rfid",
+            (await client.PutAsync("http://localhost:5000/options",
                 new StringContent(JsonConvert.SerializeObject(opts), Encoding.UTF8, "application/json")))
                 .EnsureSuccessStatusCode();
-            var opts2 = await client.GetAsync<RfidOptions>("http://localhost:5000/rfid");
+            var opts2 = await client.GetAsync<RfidOptions>("http://localhost:5000/options");
             opts2.Enabled.ShouldBe(true);
             opts2.ConnectionString.ShouldBe("bbb");
             opts2.RpsThreshold.ShouldBe(666);
@@ -72,13 +72,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             using var svc = CreateRfidCheckpointService();
             
             var client = new HttpClient();
-            (await client.GetAsync<bool>($"http://localhost:5000/rfid/{nameof(RfidOptions.Enabled)}"))
+            (await client.GetAsync<bool>($"http://localhost:5000/options/{nameof(RfidOptions.Enabled)}"))
                 .ShouldBe(true);
-            (await client.GetAsync<string>($"http://localhost:5000/rfid/{nameof(RfidOptions.ConnectionString)}"))
+            (await client.GetAsync<string>($"http://localhost:5000/options/{nameof(RfidOptions.ConnectionString)}"))
                 .ShouldBe("some");
-            (await client.GetAsync<int>($"http://localhost:5000/rfid/{nameof(RfidOptions.RpsThreshold)}"))
+            (await client.GetAsync<int>($"http://localhost:5000/options/{nameof(RfidOptions.RpsThreshold)}"))
                 .ShouldBe(123);
-            (await client.GetAsync<int>($"http://localhost:5000/rfid/{nameof(RfidOptions.CheckpointAggregationWindowMs)}"))
+            (await client.GetAsync<int>($"http://localhost:5000/options/{nameof(RfidOptions.CheckpointAggregationWindowMs)}"))
                 .ShouldBe(234);
         }
         
@@ -95,22 +95,22 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
                 }));
             using var svc = CreateRfidCheckpointService();
             var client = new HttpClient();
-            var opts = await client.GetAsync<RfidOptions>("http://localhost:5000/rfid");
+            var opts = await client.GetAsync<RfidOptions>("http://localhost:5000/options");
             opts.Enabled.ShouldBeFalse();
 
-            (await client.PutAsync($"http://localhost:5000/rfid/{nameof(RfidOptions.RpsThreshold)}",
+            (await client.PutAsync($"http://localhost:5000/options/{nameof(RfidOptions.RpsThreshold)}",
                 new StringContent("555", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
-            (await client.GetAsync<int>($"http://localhost:5000/rfid/{nameof(RfidOptions.RpsThreshold)}"))
+            (await client.GetAsync<int>($"http://localhost:5000/options/{nameof(RfidOptions.RpsThreshold)}"))
                 .ShouldBe(555);
             
-            (await client.PutAsync($"http://localhost:5000/rfid/{nameof(RfidOptions.Enabled)}",
+            (await client.PutAsync($"http://localhost:5000/options/{nameof(RfidOptions.Enabled)}",
                 new StringContent("true", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
-            (await client.GetAsync<bool>($"http://localhost:5000/rfid/{nameof(RfidOptions.Enabled)}"))
+            (await client.GetAsync<bool>($"http://localhost:5000/options/{nameof(RfidOptions.Enabled)}"))
                 .ShouldBe(true);
             
-            (await client.PutAsync($"http://localhost:5000/rfid/{nameof(RfidOptions.ConnectionString)}",
+            (await client.PutAsync($"http://localhost:5000/options/{nameof(RfidOptions.ConnectionString)}",
                 new StringContent("\"true\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
-            (await client.GetAsync<string>($"http://localhost:5000/rfid/{nameof(RfidOptions.ConnectionString)}"))
+            (await client.GetAsync<string>($"http://localhost:5000/options/{nameof(RfidOptions.ConnectionString)}"))
                 .ShouldBe("true");
         }
     }

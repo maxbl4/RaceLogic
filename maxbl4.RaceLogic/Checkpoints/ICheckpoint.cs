@@ -6,6 +6,6 @@ namespace maxbl4.RaceLogic.Checkpoints
     {
         DateTime Timestamp { get; set; }
         string RiderId { get; set; }
-        long Sequence { get; set; }
+        long Id { get; set; }
     }
 }

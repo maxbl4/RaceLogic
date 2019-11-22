@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reactive.PlatformServices;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Easy.MessageHub;
+using maxbl4.Infrastructure;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidDotNet;
-using maxbl4.RfidDotNet.AlienTech.Ext;
 using maxbl4.RfidDotNet.AlienTech.Extensions;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
 using Microsoft.Extensions.Logging;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
-    public class RfidService : IDisposable
+    public class RfidService : IRfidService
     {
         private readonly StorageService storageService;
         private readonly IMessageHub messageHub;
@@ -23,6 +23,7 @@ namespace maxbl4.RfidCheckpointService.Services
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
         private TimestampCheckpointAggregator aggregator;
+        private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
         
         public RfidService(StorageService storageService, IMessageHub messageHub, 
             ISystemClock systemClock, ILogger<RfidService> logger)
@@ -43,6 +44,7 @@ namespace maxbl4.RfidCheckpointService.Services
             DisableRfid();
             logger.LogInformation("Using RfidOptions: {options}", options);
             aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+            checkpoints.Subscribe(aggregator);
             aggregator.Subscribe(OnCheckpoint);
             if (options.Enabled)
                 EnableRfid(options).WaitSafe(logger);
@@ -58,8 +60,13 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             stream = factory.CreateStream(options.GetConnectionString());
             disposable = new CompositeDisposable(stream,
-                stream.Tags.Select(x => new Checkpoint(x.TagId, systemClock.UtcNow.UtcDateTime)).Subscribe(aggregator));
+                stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
             await stream.Start();
+        }
+
+        public void AppendRiderId(string riderId)
+        {
+            checkpoints.OnNext(new Checkpoint(riderId, systemClock.UtcNow.UtcDateTime));
         }
 
         void DisableRfid()

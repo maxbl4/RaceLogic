@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Easy.MessageHub;
 using LiteDB;
+using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.RaceLogic.Checkpoints;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,17 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             var query = repo.Query<Checkpoint>();
             return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value)).ToList();
+        }
+
+        public int DeleteCheckpoint(long id)
+        {
+            return repo.Delete<Checkpoint>(id) ? 1 : 0;
+        }
+        
+        public int DeleteCheckpoints(DateTime? start = null, DateTime? end = null)
+        {
+            return repo.Database.GetCollection<Checkpoint>().DeleteMany(x =>
+                (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value));
         }
 
         public RfidOptions GetRfidOptions()

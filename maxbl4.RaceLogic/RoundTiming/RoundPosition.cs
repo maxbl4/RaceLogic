@@ -30,8 +30,8 @@ namespace maxbl4.RaceLogic.RoundTiming
             End = Laps.LastOrDefault()?.End ?? default;
             Duration = End - Start;
             Finished = finished;
-            StartSequence = Laps.FirstOrDefault()?.Checkpoint.Sequence ?? 0;
-            EndSequence = Laps.LastOrDefault()?.Checkpoint.Sequence ?? 0;
+            StartSequence = Laps.FirstOrDefault()?.Checkpoint.Id ?? 0;
+            EndSequence = Laps.LastOrDefault()?.Checkpoint.Id ?? 0;
         }
         
         public static RoundPosition FromStartTime(string riderId, DateTime? roundStartTime = null)

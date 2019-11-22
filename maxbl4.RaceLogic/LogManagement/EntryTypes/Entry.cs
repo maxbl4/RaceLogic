@@ -6,6 +6,6 @@ namespace maxbl4.RaceLogic.LogManagement.EntryTypes
     {
         public DateTime Timestamp { get; set; }
         public bool HasTimestamp => Timestamp > default(DateTime);
-        public long Sequence { get; set; }
+        public long Id { get; set; }
     }
 }

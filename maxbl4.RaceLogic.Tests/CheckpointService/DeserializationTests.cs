@@ -9,7 +9,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
 {
     public class DeserializationTests
     {
-        string str = @"[{'timestamp':'2019-11-04T18:37:34.773Z','riderId':'stored1','sequence':1},{'timestamp':'2019-11-04T18:39:14.773Z','riderId':'stored2','sequence':2}]"
+        string str = @"[{'timestamp':'2019-11-04T18:37:34.773Z','riderId':'stored1','id':1},{'timestamp':'2019-11-04T18:39:14.773Z','riderId':'stored2','id':2}]"
             .Replace('\'', '"');
         
         [Fact]
@@ -30,7 +30,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
             var result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Checkpoint>>(str);
             result.Count.ShouldBe(2);
             result[0].RiderId.ShouldBe("stored1");
-            result[0].Sequence.ShouldBe(1);
+            result[0].Id.ShouldBe(1);
             result[0].Timestamp.ShouldBe(new DateTime(2019, 11, 04, 18, 37, 34, 773, DateTimeKind.Utc));
         }
     }

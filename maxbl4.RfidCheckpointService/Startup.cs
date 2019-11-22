@@ -1,6 +1,7 @@
 using System.Reactive.PlatformServices;
 using System.Threading;
 using Easy.MessageHub;
+using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.RfidCheckpointService.Ext;
 using maxbl4.RfidCheckpointService.Hubs;
 using maxbl4.RfidCheckpointService.Services;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 
 namespace maxbl4.RfidCheckpointService
 {
@@ -27,7 +30,7 @@ namespace maxbl4.RfidCheckpointService
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
-            services.RegisterHostedService<RfidService>();
+            services.RegisterHostedService<IRfidService, RfidService>();
             services.RegisterHostedService<DistributionService>();
             services.AddControllers().AddNewtonsoftJson();
             services.AddSignalR();
@@ -40,6 +43,15 @@ namespace maxbl4.RfidCheckpointService
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSerilogRequestLogging(o =>
+            {
+                o.GetLevel = (context, duration, error) =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/log"))
+                        return LogEventLevel.Verbose;
+                    return LogEventLevel.Information;
+                };
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

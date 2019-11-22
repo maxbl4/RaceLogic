@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using Easy.MessageHub;
+using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Ext;

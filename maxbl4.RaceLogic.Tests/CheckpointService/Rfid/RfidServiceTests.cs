@@ -83,7 +83,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         {
             // How many times per second a tag was read (RPS)
             // Save tags, that have low RPS (configurable)
-            throw new NotImplementedException();
+            
         }
     }
 }

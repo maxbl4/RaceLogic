@@ -6,15 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace maxbl4.RfidCheckpointService.Controllers
 {
     [ApiController]
-    [Route("rfid")]
-    public class RfidController : ControllerBase
+    [Route("options")]
+    public class OptionsController : ControllerBase
     {
-        private readonly RfidService rfidService;
         private readonly StorageService storageService;
 
-        public RfidController(RfidService rfidService, StorageService storageService)
+        public OptionsController(StorageService storageService)
         {
-            this.rfidService = rfidService;
             this.storageService = storageService;
         }
 
