@@ -36,7 +36,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                         .AndDoes((info) => cps.Add(info.ArgAt<object[]>(1).OfType<Checkpoint>().First()));
                 
                 var ds = new DistributionService(hubContext, MessageHub, storageService, new BufferLogger<DistributionService>());
-                ds.StartStream("con1", DateTime.Now);
+                ds.StartStream("con1", DateTime.UtcNow);
 
                 
                 MessageHub.Publish(new Checkpoint("r1"));
@@ -67,8 +67,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                     .AndDoes((info) => log.Add(info.ArgAt<object[]>(1).OfType<Checkpoint>().First().RiderId));
                                 
                 var ds = new DistributionService(hubContext, MessageHub, storageService, new BufferLogger<DistributionService>());
-                ds.StartStream("con1", DateTime.Now);
-                ds.StartStream("con2", DateTime.Now);
+                ds.StartStream("con1", DateTime.UtcNow);
+                ds.StartStream("con2", DateTime.UtcNow);
 
                 
                 MessageHub.Publish(new Checkpoint("r1"));

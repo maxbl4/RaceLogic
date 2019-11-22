@@ -112,11 +112,11 @@ namespace maxbl4.RaceLogic.Tests.Scoring
         {
             for (var i = 0; i < finishers; i++)
                 yield return RoundPosition.FromLaps($"{11 + i}", new List<Lap>{
-                    new Lap(new Checkpoint($"{11 + i}"), DateTime.Now)
+                    new Lap(new Checkpoint($"{11 + i}"), DateTime.UtcNow)
                 }, true);
             for (var i = 0; i < starters; i++)
                 yield return RoundPosition.FromLaps($"{11 + i}", new List<Lap>{
-                    new Lap(new Checkpoint($"{11 + i}"), DateTime.Now)
+                    new Lap(new Checkpoint($"{11 + i}"), DateTime.UtcNow)
                 }, false);
         }
     }

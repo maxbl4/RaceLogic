@@ -43,9 +43,6 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             DisableRfid();
             logger.LogInformation("Using RfidOptions: {options}", options);
-            aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
-            checkpoints.Subscribe(aggregator);
-            aggregator.Subscribe(OnCheckpoint);
             if (options.Enabled)
                 EnableRfid(options).WaitSafe(logger);
         }
@@ -61,6 +58,9 @@ namespace maxbl4.RfidCheckpointService.Services
             stream = factory.CreateStream(options.GetConnectionString());
             disposable = new CompositeDisposable(stream,
                 stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
+            aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+            disposable.Add(checkpoints.Subscribe(aggregator));
+            disposable.Add(aggregator.Subscribe(OnCheckpoint));
             await stream.Start();
         }
 
