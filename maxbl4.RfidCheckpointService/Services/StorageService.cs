@@ -15,6 +15,7 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly IMessageHub messageHub;
         private readonly ILogger<StorageService> logger;
         private readonly LiteRepository repo;
+        private long checkpointId = -1;
 
         public StorageService(IOptions<ServiceOptions> options, IMessageHub messageHub, ILogger<StorageService> logger)
         {
@@ -33,6 +34,7 @@ namespace maxbl4.RfidCheckpointService.Services
 
         public void AppendCheckpoint(Checkpoint cp)
         {
+            cp.Id = NextCheckpointId();
             repo.Insert(cp);
         }
 
@@ -70,6 +72,18 @@ namespace maxbl4.RfidCheckpointService.Services
             var opts = GetRfidOptions();
             modifier(opts);
             SetRfidOptions(opts);
+        }
+
+        private long NextCheckpointId()
+        {
+            if (checkpointId < 0)
+            {
+                var lastCheckpoint = repo.Query<Checkpoint>().OrderByDescending(x => x.Id).FirstOrDefault();
+                checkpointId = lastCheckpoint?.Id ?? 0;
+            }
+
+            checkpointId++;
+            return checkpointId;
         }
 
         public void Dispose()

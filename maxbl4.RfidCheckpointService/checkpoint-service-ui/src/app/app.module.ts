@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import {HttpClientModule} from "@angular/common/http";
+import {FormsModule} from "@angular/forms";
+import {ProgressbarModule, TabsModule} from "ngx-bootstrap";
 
 @NgModule({
   declarations: [
@@ -10,7 +12,10 @@ import {HttpClientModule} from "@angular/common/http";
   ],
   imports: [
     BrowserModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule,
+    TabsModule.forRoot(),
+    ProgressbarModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]
