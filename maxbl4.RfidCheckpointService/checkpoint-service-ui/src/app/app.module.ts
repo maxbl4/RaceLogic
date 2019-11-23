@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import {HttpClientModule} from "@angular/common/http";
 import {FormsModule} from "@angular/forms";
 import {ProgressbarModule, TabsModule} from "ngx-bootstrap";
+import {ConsoleLogService} from "./service/console-log.service";
 
 @NgModule({
   declarations: [
@@ -17,7 +18,7 @@ import {ProgressbarModule, TabsModule} from "ngx-bootstrap";
     TabsModule.forRoot(),
     ProgressbarModule.forRoot()
   ],
-  providers: [],
+  providers: [ConsoleLogService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -4,6 +4,7 @@ import {RfidOptions} from "./model/rfid-options";
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {Checkpoint} from "./model/checkpoint";
 import {ReaderStatus} from "./model/reader-status";
+import {ConsoleLogService} from "./service/console-log.service";
 
 @Component({
   selector: 'app-root',
@@ -11,6 +12,9 @@ import {ReaderStatus} from "./model/reader-status";
     <div class="container-fluid">
         <progressbar [hidden]="!isLoading" max="100" [value]="100" type="danger" [striped]="true" [animate]="true"
             style="position: absolute;left: 0px; top:0px;width: 100%"></progressbar>
+        <div class="row">
+            
+        </div>
         <tabset>
             <tab heading="Options">
                 <div class="form-group">
@@ -41,7 +45,6 @@ import {ReaderStatus} from "./model/reader-status";
                     </div>
                 </div>
             </tab>
-            <tab heading="Basic Title 1">Basic content 1</tab>
             <tab heading="Logs">
               <div class="form-group">
                   <label>Display Log Count</label>
@@ -54,6 +57,16 @@ import {ReaderStatus} from "./model/reader-status";
               <div class="row">
                   <pre style="width: 100%; overflow-x: scroll">{{logs}}</pre>
               </div>
+            </tab>
+            <tab heading="Errors">
+                <button (click)="testError()">test</button>
+                <table class="table">
+                    <tr *ngFor="let e of logSvc.errors">
+                        <td>{{e.errorMsg}}</td>
+                        <td>{{e.url}}</td>
+                        <td>{{e.line}}</td>
+                    </tr>
+                </table>
             </tab>
         </tabset>
     </div>
@@ -68,7 +81,7 @@ export class AppComponent {
   logFilter = '';
   isLoading = false;
   private connection: HubConnection;
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, public logSvc: ConsoleLogService) {
     this.loadOptions().then();
     setInterval(() => this.updateLogs(), 1000);
     this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();
@@ -101,5 +114,9 @@ export class AppComponent {
       requestUri += `${this.logFilter}/`
     }
     this.logs = (await this.http.get(requestUri, {responseType: "text"}).toPromise()).toString();
+  }
+
+  testError() {
+    throw "some error";
   }
 }
