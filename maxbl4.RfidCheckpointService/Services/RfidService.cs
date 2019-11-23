@@ -67,26 +67,20 @@ namespace maxbl4.RfidCheckpointService.Services
         private async Task EnableRfid(RfidOptions options)
         {
             logger.LogInformation("Starting RFID");
-            try
-            {
-                stream = factory.CreateStream(options.GetConnectionString());
-                disposable = new CompositeDisposable(stream,
-                    stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
-                aggregator =
-                    new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
-                disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
-                        (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
-                    .Subscribe(OnReaderStatus)
-                );
-                disposable.Add(checkpoints.Subscribe(aggregator));
-                disposable.Add(aggregator.Subscribe(OnCheckpoint));
-                disposable.Add(aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint));
-                await stream.Start();
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning(ex, "Failed to start RFID");
-            }
+            
+            stream = factory.CreateStream(options.GetConnectionString());
+            disposable = new CompositeDisposable(stream,
+                stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
+            aggregator =
+                new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+            disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
+                    (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
+                .Subscribe(OnReaderStatus)
+            );
+            disposable.Add(checkpoints.Subscribe(aggregator));
+            disposable.Add(aggregator.Subscribe(OnCheckpoint));
+            disposable.Add(aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint));
+            await stream.Start();
         }
 
         public void AppendRiderId(string riderId)
