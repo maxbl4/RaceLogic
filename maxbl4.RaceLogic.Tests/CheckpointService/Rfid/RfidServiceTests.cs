@@ -81,9 +81,17 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         [Fact]
         public void Should_emit_tag_reading_statistics()
         {
-            // How many times per second a tag was read (RPS)
-            // Save tags, that have low RPS (configurable)
-            
+            WithRfidService((storageService, rfidService) =>
+            {
+                SystemClock.UseRealClock();
+                var cps = new List<Checkpoint>();
+                MessageHub.Subscribe<Checkpoint>(x => cps.Add(x));
+                var tagListHandler = new SimulatorBuilder(storageService).Build();
+                tagListHandler.ReturnContinuos(new Tag {TagId = "1"});
+                new Timing().Logger(Logger)
+                    .Expect(() => cps.Any(x => x.RiderId == "1"
+                            && x.Aggregated && x.Count > 1));
+            });
         }
     }
 }

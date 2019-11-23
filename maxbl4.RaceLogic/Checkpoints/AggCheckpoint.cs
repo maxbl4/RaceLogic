@@ -7,36 +7,24 @@ namespace maxbl4.RaceLogic.Checkpoints
 {
     public class AggCheckpoint : Checkpoint
     {
-        readonly Dictionary<string, int> histogram;
-
-        public string Histogram { get; set; }
-
         public AggCheckpoint()
         {
         }
-
-        public AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
-            int count, Dictionary<string,int> histogram) 
-            : base(riderId, timestamp)
-        {
-            Aggregated = true;
-            LastSeen = lastSeen;
-            Count = count;
-            this.histogram = histogram;
-            Histogram = ToHistogramString(this.histogram);
-        }
         
         public AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
-            int count, IEnumerable<KeyValuePair<string,int>> histogram = null) 
+            int count) 
                 : base(riderId, timestamp)
         {
             Aggregated = true;
             LastSeen = lastSeen;
             Count = count;
-            this.histogram = histogram?
-                .GroupBy(x => x.Key)
-                .ToDictionary(x => x.Key, x => x.Sum(y => y.Value));
-            Histogram = ToHistogramString(this.histogram);
+            var interval = (lastSeen - timestamp).TotalMilliseconds;
+            if (interval < 1)
+                Rps = Count;
+            else
+            {
+                Rps = Count * 1000 / interval;
+            }
         }
 
         public static AggCheckpoint From(Checkpoint checkpoint)
@@ -50,7 +38,6 @@ namespace maxbl4.RaceLogic.Checkpoints
             var timestamp = default(DateTime);
             var lastSeen = default(DateTime);
             var count = 0;
-            var histogram = new Dictionary<string, int>();
             foreach (var cp in checkpoints)
             {
                 count++;
@@ -65,13 +52,12 @@ namespace maxbl4.RaceLogic.Checkpoints
                 }
                 timestamp = timestamp.TakeSmaller(cp.Timestamp);
                 lastSeen = lastSeen.TakeLarger(cp.Timestamp);
-                histogram.UpdateOrAdd(cp.GetType().Name, x => x + 1);
             }
             if (count == 0)
                 return new AggCheckpoint(default, 
                     default, default, 
                     0);
-            return new AggCheckpoint(riderId, timestamp, lastSeen, count, histogram);
+            return new AggCheckpoint(riderId, timestamp, lastSeen, count);
         }
 
         public AggCheckpoint Add(Checkpoint cp)
@@ -83,13 +69,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             return new AggCheckpoint(RiderId, 
                 Timestamp.TakeSmaller(cp.Timestamp),
                 LastSeen.TakeLarger(cp.Timestamp),
-                Count + 1, histogram?.Concat(record) ?? record);
-        }
-
-        string ToHistogramString(IDictionary<string, int> h)
-        {
-            return h == null ? string.Empty
-                : string.Join(", ", h.OrderBy(x => x.Key).Select(x => $"{x.Key} = {x.Value}"));
+                Count + 1);
         }
     }
 }

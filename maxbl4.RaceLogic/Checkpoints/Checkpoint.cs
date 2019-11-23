@@ -14,6 +14,7 @@ namespace maxbl4.RaceLogic.Checkpoints
         public DateTime LastSeen { get; set; } = new DateTime(0, DateTimeKind.Utc);
         public int Count { get; set; } = 1;
         public bool Aggregated { get; set; }
+        public double Rps { get; set; }
 
         public Checkpoint()
         {

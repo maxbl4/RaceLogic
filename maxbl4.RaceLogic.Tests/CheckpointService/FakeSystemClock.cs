@@ -5,8 +5,29 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
 {
     public class FakeSystemClock : ISystemClock
     {
+        private bool useRealClock = false;
+        private DateTime now = new DateTime(2019, 1,1, 0, 0, 0, DateTimeKind.Utc);
         public DateTimeOffset UtcNow => Now;
-        public DateTime Now { get; set; } = new DateTime(2019, 1,1, 0, 0, 0, DateTimeKind.Utc);
+
+        public DateTime Now
+        {
+            get
+            {
+                if (useRealClock)
+                    return DateTime.UtcNow;
+                return now;
+            }
+            set
+            {
+                useRealClock = false;
+                now = value;
+            }
+        }
+
+        public void UseRealClock()
+        {
+            useRealClock = true;
+        }
 
         public DateTime Advance(TimeSpan? by = null)
         {

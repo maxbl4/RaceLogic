@@ -6,6 +6,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Easy.MessageHub;
 using maxbl4.Infrastructure;
+using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Model;
@@ -52,29 +53,40 @@ namespace maxbl4.RfidCheckpointService.Services
 
         void OnCheckpoint(Checkpoint cp)
         {
+            logger.LogDebug("OnCheckpoint {cp}", cp);
             Safe.Execute(() => storageService.AppendCheckpoint(cp), logger);
             Safe.Execute(() => messageHub.Publish(cp), logger);
         }
 
         void OnReaderStatus(ReaderStatus status)
         {
+            logger.LogDebug("OnReaderStatus {status}", status);
             Safe.Execute(() => messageHub.Publish(status), logger);
         }
 
         private async Task EnableRfid(RfidOptions options)
         {
-            stream = factory.CreateStream(options.GetConnectionString());
-            disposable = new CompositeDisposable(stream,
-                stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
-            aggregator = new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
-            disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
-                    (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
-                .Subscribe(OnReaderStatus)
-            );
-            disposable.Add(checkpoints.Subscribe(aggregator));
-            disposable.Add(aggregator.Subscribe(OnCheckpoint));
-            disposable.Add(aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint));
-            await stream.Start();
+            logger.LogInformation("Starting RFID");
+            try
+            {
+                stream = factory.CreateStream(options.GetConnectionString());
+                disposable = new CompositeDisposable(stream,
+                    stream.Tags.Subscribe(x => AppendRiderId(x.TagId)));
+                aggregator =
+                    new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+                disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
+                        (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
+                    .Subscribe(OnReaderStatus)
+                );
+                disposable.Add(checkpoints.Subscribe(aggregator));
+                disposable.Add(aggregator.Subscribe(OnCheckpoint));
+                disposable.Add(aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint));
+                await stream.Start();
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to start RFID");
+            }
         }
 
         public void AppendRiderId(string riderId)
@@ -84,12 +96,12 @@ namespace maxbl4.RfidCheckpointService.Services
 
         void DisableRfid()
         {
-            disposable?.Dispose();
+            disposable.DisposeSafe();
         }
 
         public void Dispose()
         {
-            disposable?.Dispose();
+            disposable.DisposeSafe();
         }
     }
 }
