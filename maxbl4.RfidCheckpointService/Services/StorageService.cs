@@ -35,7 +35,7 @@ namespace maxbl4.RfidCheckpointService.Services
         public void AppendCheckpoint(Checkpoint cp)
         {
             cp.Id = NextCheckpointId();
-            repo.Insert<Checkpoint>(cp);
+            repo.Insert(cp);
         }
 
         public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)

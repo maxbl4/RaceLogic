@@ -15,6 +15,17 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
         }
 
         [Fact]
+        public void Should_store_and_load_utc_date()
+        {
+            WithStorageService(s =>
+            {
+                var dt = DateTime.UtcNow;
+                s.AppendCheckpoint(new Checkpoint("111", dt));
+                s.ListCheckpoints()[0].Timestamp.ShouldBe(dt, TimeSpan.FromSeconds(1));
+            });
+        }
+
+        [Fact]
         public void Should_save_and_load_rfidsettings()
         {
             WithStorageService(storageService =>

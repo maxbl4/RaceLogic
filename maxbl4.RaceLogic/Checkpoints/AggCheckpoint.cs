@@ -9,9 +9,13 @@ namespace maxbl4.RaceLogic.Checkpoints
     {
         readonly Dictionary<string, int> histogram;
 
-        public string Histogram { get; }
+        public string Histogram { get; set; }
 
-        private AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
+        public AggCheckpoint()
+        {
+        }
+
+        public AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
             int count, Dictionary<string,int> histogram) 
             : base(riderId, timestamp)
         {
@@ -22,7 +26,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             Histogram = ToHistogramString(this.histogram);
         }
         
-        private AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
+        public AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
             int count, IEnumerable<KeyValuePair<string,int>> histogram = null) 
                 : base(riderId, timestamp)
         {

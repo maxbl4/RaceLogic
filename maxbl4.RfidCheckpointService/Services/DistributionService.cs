@@ -41,7 +41,7 @@ namespace maxbl4.RfidCheckpointService.Services
             {
                 logger.LogInformation($"Broadcasting reader status {readerStatus}");
                 await checkpointsHub.Clients.All
-                    .SendAsync("ReaderStatus", new[] {readerStatus});
+                    .SendCoreAsync("ReaderStatus", new[] {readerStatus});
             }, logger).Wait(0);
 
         }
@@ -106,7 +106,7 @@ namespace maxbl4.RfidCheckpointService.Services
                             {
                                 logger.LogInformation($"Sending checkpoint {x} via WS to {contextConnectionId}");
                                 await checkpointsHub.Clients.Client(contextConnectionId)
-                                    .SendAsync("Checkpoint", new[] {x});
+                                    .SendCoreAsync("Checkpoint", new[] {x});
                             }, logger)))
                     .Concat()
                     .Subscribe();
