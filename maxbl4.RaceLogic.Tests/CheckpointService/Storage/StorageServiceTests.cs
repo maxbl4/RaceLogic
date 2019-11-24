@@ -36,6 +36,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 settings.ConnectionString = "Protocol=Alien;Network=8.8.8.8:500";
                 storageService.SetRfidOptions(settings);
                 settings = storageService.GetRfidOptions();
+                settings.ShouldNotBeSameAs(RfidOptions.Default);
                 settings.Enabled.ShouldBeTrue();
                 settings.ConnectionString.ShouldBe("Protocol=Alien;Network=8.8.8.8:500");
             });
@@ -67,6 +68,18 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 var secondCp = storageService.ListCheckpoints(ts.AddSeconds(10));
                 secondCp.Count.ShouldBe(1);
                 secondCp[0].RiderId.ShouldBe("2");
+            });
+        }
+        
+        [Fact]
+        public void Should_update_timestamp()
+        {
+            WithStorageService(storageService =>
+            {
+                var options = storageService.GetRfidOptions();
+                options.Timestamp.ShouldBe(default);
+                storageService.SetRfidOptions(options);
+                storageService.GetRfidOptions().Timestamp.ShouldBe(SystemClock.UtcNow.UtcDateTime);
             });
         }
     }

@@ -35,7 +35,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                         .Returns(Task.CompletedTask)
                         .AndDoes((info) => cps.Add(info.ArgAt<object[]>(1).OfType<Checkpoint>().First()));
                 
-                var ds = new DistributionService(hubContext, MessageHub, storageService, new BufferLogger<DistributionService>());
+                var ds = new DistributionService(hubContext, MessageHub, storageService);
                 ds.StartStream("con1", DateTime.UtcNow);
 
                 
@@ -66,7 +66,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Services
                     .Returns(Task.CompletedTask)
                     .AndDoes((info) => log.Add(info.ArgAt<object[]>(1).OfType<Checkpoint>().First().RiderId));
                                 
-                var ds = new DistributionService(hubContext, MessageHub, storageService, new BufferLogger<DistributionService>());
+                var ds = new DistributionService(hubContext, MessageHub, storageService);
                 ds.StartStream("con1", DateTime.UtcNow);
                 ds.StartStream("con2", DateTime.UtcNow);
 

@@ -5,7 +5,6 @@ using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Easy.MessageHub;
-using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.RaceLogic.Checkpoints;
@@ -13,7 +12,7 @@ using maxbl4.RfidCheckpointService.Model;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.Extensions;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
@@ -22,20 +21,19 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly StorageService storageService;
         private readonly IMessageHub messageHub;
         private readonly ISystemClock systemClock;
-        private readonly ILogger<RfidService> logger;
+        private readonly ILogger logger = Log.ForContext<RfidService>();
         private readonly UniversalTagStreamFactory factory;
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
         private TimestampCheckpointAggregator aggregator;
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
-        
+
         public RfidService(StorageService storageService, IMessageHub messageHub, 
-            ISystemClock systemClock, ILogger<RfidService> logger)
+            ISystemClock systemClock)
         {
             this.storageService = storageService;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
-            this.logger = logger;
             messageHub.Subscribe<RfidOptions>(RfidOptionsChanged);
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
@@ -46,27 +44,40 @@ namespace maxbl4.RfidCheckpointService.Services
         private void RfidOptionsChanged(RfidOptions options)
         {
             DisableRfid();
-            logger.LogInformation("Using RfidOptions: {options}", options);
-            if (options.Enabled)
-                EnableRfid(options).WaitSafe(logger);
+            logger.Information("Using RfidOptions: {options}", options);
+            if (ShouldStartRfid(options))
+                logger.Swallow(() => EnableRfid(options)).Wait(0);
+        }
+
+        private bool ShouldStartRfid(RfidOptions options)
+        {
+            if (options.Enabled
+                && systemClock.UtcNow.UtcDateTime - options.Timestamp > TimeSpan.FromDays(1))
+            {
+                options.Enabled = false;
+                storageService.SetRfidOptions(options, false);
+                return false;
+            }
+
+            return options.Enabled;
         }
 
         void OnCheckpoint(Checkpoint cp)
         {
-            logger.LogDebug("OnCheckpoint {cp}", cp);
-            Safe.Execute(() => storageService.AppendCheckpoint(cp), logger);
-            Safe.Execute(() => messageHub.Publish(cp), logger);
+            logger.Debug("OnCheckpoint {cp}", cp);
+            logger.SwallowError(() => storageService.AppendCheckpoint(cp));
+            logger.Swallow(() => messageHub.Publish(cp));
         }
 
         void OnReaderStatus(ReaderStatus status)
         {
-            logger.LogDebug("OnReaderStatus {status}", status);
-            Safe.Execute(() => messageHub.Publish(status), logger);
+            logger.Debug("OnReaderStatus {status}", status);
+            logger.Swallow(() => messageHub.Publish(status));
         }
-
+        
         private async Task EnableRfid(RfidOptions options)
         {
-            logger.LogInformation("Starting RFID");
+            logger.Information("Starting RFID");
             
             stream = factory.CreateStream(options.GetConnectionString());
             disposable = new CompositeDisposable(stream,

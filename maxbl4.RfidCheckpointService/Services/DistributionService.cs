@@ -7,12 +7,13 @@ using System.Threading;
 using Easy.MessageHub;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
+using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Ext;
 using maxbl4.RfidCheckpointService.Hubs;
 using maxbl4.RfidCheckpointService.Model;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
@@ -20,29 +21,28 @@ namespace maxbl4.RfidCheckpointService.Services
     {
         private readonly IHubContext<CheckpointsHub> checkpointsHub;
         private readonly StorageService storageService;
-        private readonly ILogger<DistributionService> logger;
+        private readonly ILogger logger = Log.ForContext<DistributionService>();
         private readonly CompositeDisposable disposable;
         private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly Dictionary<string, IDisposable> clients = new Dictionary<string, IDisposable>();
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
-        public DistributionService(IHubContext<CheckpointsHub> checkpointsHub, IMessageHub messageHub, StorageService storageService, ILogger<DistributionService> logger)
+        public DistributionService(IHubContext<CheckpointsHub> checkpointsHub, IMessageHub messageHub, StorageService storageService)
         {
             this.checkpointsHub = checkpointsHub;
             this.storageService = storageService;
-            this.logger = logger;
             disposable = new CompositeDisposable(messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
                 messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus));
         }
 
         private void OnReaderStatus(ReaderStatus readerStatus)
         {
-            Safe.Execute(async () =>
+            logger.Swallow(async () =>
             {
-                logger.LogInformation($"Broadcasting reader status {readerStatus}");
+                logger.Information($"Broadcasting reader status {readerStatus}");
                 await checkpointsHub.Clients.All
                     .SendCoreAsync("ReaderStatus", new[] {readerStatus});
-            }, logger).Wait(0);
+            }).Wait(0);
 
         }
 
@@ -51,12 +51,12 @@ namespace maxbl4.RfidCheckpointService.Services
             try
             {
                 rwlock.EnterReadLock();
-                logger.LogInformation($"Received checkpoint: {checkpoint}");
+                logger.Information($"Received checkpoint: {checkpoint}");
                 checkpoints.OnNext(checkpoint);
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Error sending tag to clients");
+                logger.Warning(ex, "Error sending tag to clients");
             }
             finally
             {
@@ -78,12 +78,12 @@ namespace maxbl4.RfidCheckpointService.Services
                 {
                     clients.Remove(contextConnectionId);
                     d.DisposeSafe();
-                    logger.LogInformation($"Client unsubscribed {contextConnectionId}");
+                    logger.Information($"Client unsubscribed {contextConnectionId}");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to stop the stream");
+                logger.Warning(ex, "Failed to stop the stream");
             }
             finally
             {
@@ -102,19 +102,19 @@ namespace maxbl4.RfidCheckpointService.Services
                     .Concat(checkpoints)
                     .Select(x => 
                         Observable.FromAsync(() => 
-                            Safe.Execute(async () =>
+                            logger.Swallow(async () =>
                             {
-                                logger.LogInformation($"Sending checkpoint {x} via WS to {contextConnectionId}");
+                                logger.Information($"Sending checkpoint {x} via WS to {contextConnectionId}");
                                 await checkpointsHub.Clients.Client(contextConnectionId)
                                     .SendCoreAsync("Checkpoint", new[] {x});
-                            }, logger)))
+                            })))
                     .Concat()
                     .Subscribe();
-                logger.LogInformation($"Client subscribed {contextConnectionId}");
+                logger.Information($"Client subscribed {contextConnectionId}");
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to start the stream");
+                logger.Warning(ex, "Failed to start the stream");
             }
             finally
             {

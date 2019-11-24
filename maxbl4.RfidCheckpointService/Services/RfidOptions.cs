@@ -1,14 +1,16 @@
-﻿using maxbl4.RfidDotNet;
+﻿using System;
+using maxbl4.RfidDotNet;
 using Newtonsoft.Json;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
     public class RfidOptions
     {
-        public static readonly RfidOptions Default = new RfidOptions
+        public const string DefaultConnectionString = "Protocol=Alien;Network=127.0.0.1:20023"; 
+        public static RfidOptions Default => new RfidOptions
         {
-            ConnectionString = "Protocol=Alien;Network=127.0.0.1:20023",
-            CheckpointAggregationWindowMs = 200
+            ConnectionString = DefaultConnectionString,
+            CheckpointAggregationWindowMs = 200,
         };
 
         public int Id => 1;
@@ -29,6 +31,7 @@ namespace maxbl4.RfidCheckpointService.Services
         /// Reads per second threshold below which a tag would be reported as bad 
         /// </summary>
         public int RpsThreshold { get; set; }
+        public DateTime Timestamp { get; set; }
         
         public ConnectionString GetConnectionString() => RfidDotNet.ConnectionString.Parse(ConnectionString);
         

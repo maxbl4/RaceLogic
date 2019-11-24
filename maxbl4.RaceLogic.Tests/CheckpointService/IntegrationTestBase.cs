@@ -1,15 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.PlatformServices;
 using System.Threading;
 using Easy.MessageHub;
-using LiteDB;
 using maxbl4.RaceLogic.Tests.Ext;
 using maxbl4.RfidCheckpointService;
 using maxbl4.RfidCheckpointService.Services;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Xunit.Abstractions;
@@ -46,22 +43,22 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         public void WithStorageService(Action<StorageService> storageServiceInitializer)
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
             storageServiceInitializer(storageService);
         }
         
         public void WithRfidService(Action<StorageService, RfidService> action)
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
-            using var rfidService = new RfidService(storageService, MessageHub, SystemClock, new NullLogger<RfidService>());
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
+            using var rfidService = new RfidService(storageService, MessageHub, SystemClock);
             action(storageService, rfidService);
         }
         
         public T WithStorageService<T>(Func<StorageService, T> storageServiceInitializer)
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, new NullLogger<StorageService>());
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
             return storageServiceInitializer(storageService);
         }
         

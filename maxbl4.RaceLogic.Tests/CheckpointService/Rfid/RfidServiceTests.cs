@@ -3,10 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator;
-using maxbl4.RfidCheckpointService.Services;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.Infrastructure;
-using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,14 +23,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
             WithRfidService((storageService, rfidService) =>
             {
                 var tagListHandler = new SimulatorBuilder(storageService).Build();
-                var connectionString = storageService.GetRfidOptions().GetConnectionString();
-                connectionString.Protocol.ShouldBe(ReaderProtocolType.Alien);
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
                 SystemClock.Advance();
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
-
-                var cps = storageService.ListCheckpoints();
-                cps.Count.ShouldBe(2);
+                
+                new Timing()
+                    .FailureDetails(() => storageService.ListCheckpoints().Count.ToString())
+                    .Expect(() => storageService.ListCheckpoints().Count(y => !y.Aggregated) == 2);
             });
         }
 
@@ -91,6 +88,23 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
                 new Timing().Logger(Logger)
                     .Expect(() => cps.Any(x => x.RiderId == "1"
                             && x.Aggregated && x.Count > 1));
+            });
+        }
+
+        [Fact]
+        public void Should_disable_stale_rfid()
+        {
+            //TODO: Test that enabled with old timestamp would become disabled
+            WithStorageService(s =>
+            {
+                s.UpdateRfidOptions(o => o.Enabled = true);
+            });
+            SystemClock.Advance(TimeSpan.FromDays(1.2));
+            WithRfidService((s, r) =>
+            {
+                var o = s.GetRfidOptions();
+                o.Enabled.ShouldBeFalse();
+                o.Timestamp.ShouldBe(SystemClock.UtcNow.UtcDateTime);
             });
         }
     }

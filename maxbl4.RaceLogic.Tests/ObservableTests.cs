@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
-using maxbl4.Infrastructure;
-using maxbl4.RfidCheckpointService;
 using maxbl4.RfidDotNet.Infrastructure;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using maxbl4.Infrastructure.Extensions.LoggerExt;
 using Shouldly;
 using Xunit;
 
@@ -46,20 +41,20 @@ namespace maxbl4.RaceLogic.Tests
         [Fact]
         public void Should_continue_observable_after_many_exceptions()
         {
-            var logger = new BufferLogger();
+            var logger = MemoryLogger.Serilog();
             var subject = new Subject<int>();
 
             var s = "";
             subject.Subscribe(x =>
-                Safe.Execute(() =>{
+                logger.instance.Swallow(() =>{
                     s += x;
                     throw new ArgumentException();
-                }, logger));
+                }));
 
             subject.OnNext(1);
             subject.OnNext(2);
             s.ShouldBe("12");
-            logger.Messages.Count.ShouldBe(2);
+            logger.messages.Count.ShouldBe(2);
             
         }
 
