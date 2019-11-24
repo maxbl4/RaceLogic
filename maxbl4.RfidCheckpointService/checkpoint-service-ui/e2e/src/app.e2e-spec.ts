@@ -10,7 +10,7 @@ describe('workspace-project App', () => {
 
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getTitleText()).toEqual('checkpoint-service-ui app is running!');
+    expect(page.getTitleText()).toEqual('nd-dash-material app is running!');
   });
 
   afterEach(async () => {

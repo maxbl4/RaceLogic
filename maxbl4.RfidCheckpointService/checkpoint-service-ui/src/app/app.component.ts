@@ -1,122 +1,49 @@
-import { Component } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {RfidOptions} from "./model/rfid-options";
-import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
-import {Checkpoint} from "./model/checkpoint";
-import {ReaderStatus} from "./model/reader-status";
-import {ConsoleLogService} from "./service/console-log.service";
+import {ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
+import {MediaMatcher} from "@angular/cdk/layout";
 
 @Component({
   selector: 'app-root',
-  template: `
-    <div class="container-fluid">
-        <progressbar [hidden]="!isLoading" max="100" [value]="100" type="danger" [striped]="true" [animate]="true"
-            style="position: absolute;left: 0px; top:0px;width: 100%"></progressbar>
-        <div class="row">
-            
-        </div>
-        <tabset>
-            <tab heading="Options">
-                <div class="form-group">
-                    <label>Rfid Connection String</label>
-                    <input type="text" class="form-control" [(ngModel)]="rfidOptions.connectionString">
-                </div>
-                <div class="form-group">
-                    <label>Checkpoint aggregation window milliseconds</label>
-                    <input type="number" class="form-control" [(ngModel)]="rfidOptions.checkpointAggregationWindowMs">
-                </div>
-                <div class="form-group">
-                    <label>RPS Threshold</label>
-                    <input type="number" class="form-control" [(ngModel)]="rfidOptions.rpsThreshold">
-                    <small>Read Per Second threshold to report poor tag reading</small>
-                </div>
-                <div class="form-group">
-                  <div class="custom-control custom-switch">
-                      <input type="checkbox" class="custom-control-input" id="customSwitch1" [(ngModel)]="rfidOptions.enabled">
-                      <label class="custom-control-label" for="customSwitch1">Rfid is enabled</label>
-                  </div>
-                </div>
-                <div class="row">
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary" (click)="saveOptions()">Save</button>                        
-                    </div>
-                    <div class="col-auto">
-                        <button type="reset" class="btn btn-secondary" (click)="loadOptions()">Reset</button>
-                    </div>
-                </div>
-            </tab>
-            <tab heading="Logs">
-              <div class="form-group">
-                  <label>Display Log Count</label>
-                  <input type="number" class="form-control" [(ngModel)]="logLineCount">
-              </div>
-              <div class="form-group">
-                  <label>Log Filter</label>
-                  <input type="text" class="form-control" [(ngModel)]="logFilter">
-              </div>              
-              <div class="row">
-                  <pre style="width: 100%; overflow-x: scroll">{{logs}}</pre>
-              </div>
-            </tab>
-            <tab heading="Errors">
-                <button (click)="testError()">test</button>
-                <table class="table">
-                    <tr *ngFor="let e of logSvc.errors">
-                        <td>{{e.errorMsg}}</td>
-                        <td>{{e.url}}</td>
-                        <td>{{e.line}}</td>
-                    </tr>
-                </table>
-            </tab>
-        </tabset>
-    </div>
+  template: `      
+      <mat-toolbar color="primary" class="fixed-top navbar navbar-dark">
+          <span class="d-flex flex-grow-1">
+              <a class="navbar-brand" routerLink="">Checkpoint Service</a>
+          </span>
+          <button mat-icon-button (click)="sidenav.toggle()"
+                  [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>
+      </mat-toolbar>
+    <mat-sidenav-container class="h-100">
+        <mat-sidenav #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches" position="end" 
+                     [fixedInViewport]="mobileQuery.matches"
+                        [fixedTopGap]="mobileQuery.matches ? 56 : 64"
+                     (click)="mobileQuery.matches ? sidenav.toggle() : false">
+            <mat-nav-list>
+                <a mat-list-item routerLink="">Dashboard</a>
+                <a mat-list-item routerLink="options">Options</a>
+                <a mat-list-item routerLink="monitor">Monitor</a>
+                <a mat-list-item routerLink="logs">Logs</a>
+            </mat-nav-list>
+        </mat-sidenav>
+
+        <mat-sidenav-content>
+            <div class="container-fluid">
+                <router-outlet></router-outlet>
+            </div>
+        </mat-sidenav-content>
+    </mat-sidenav-container>
   `,
   styles: []
 })
-export class AppComponent {
-  title = 'checkpoint-service-ui';
-  rfidOptions: RfidOptions = {};
-  logs = '';
-  logLineCount = 20;
-  logFilter = '';
-  isLoading = false;
-  private connection: HubConnection;
-  constructor(private http: HttpClient, public logSvc: ConsoleLogService) {
-    this.loadOptions().then();
-    setInterval(() => this.updateLogs(), 1000);
-    this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();
-    this.connection.on("Checkpoint", (cp:Checkpoint) => console.log("checkpoint", cp));
-    this.connection.on("ReaderStatus", (status:ReaderStatus) => console.log("ReaderStatus", status));
-    this.connection.start().then(x => {
-      this.connection.send("Subscribe", "2019-01-01").then();
-    });
+export class AppComponent implements OnDestroy {
+  public mobileQuery: MediaQueryList;
+  private readonly _mobileQueryListener: () => void;
+
+  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher) {
+    this.mobileQuery = media.matchMedia('(max-width: 600px)');
+    this._mobileQueryListener = () => console.log("detected");
+    this.mobileQuery.addListener(this._mobileQueryListener);
   }
 
-  async loadOptions() {
-    this.isLoading = true;
-    this.rfidOptions = await this.http.get<RfidOptions>('options').toPromise();
-    this.isLoading = false;
-  }
-
-  async saveOptions() {
-    this.isLoading = true;
-    await this.http.put('options', this.rfidOptions).toPromise();
-    await this.loadOptions();
-    this.isLoading = false;
-  }
-
-  async updateLogs() {
-    let requestUri = 'log/';
-    if (this.logLineCount > 0) {
-      requestUri += `${this.logLineCount}/`
-    }
-    if (this.logFilter != null && this.logFilter.length > 0) {
-      requestUri += `${this.logFilter}/`
-    }
-    this.logs = (await this.http.get(requestUri, {responseType: "text"}).toPromise()).toString();
-  }
-
-  testError() {
-    throw "some error";
+  ngOnDestroy(): void {
+    this.mobileQuery.removeListener(this._mobileQueryListener);
   }
 }

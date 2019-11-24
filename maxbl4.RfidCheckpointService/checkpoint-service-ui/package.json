@@ -1,5 +1,5 @@
 {
-  "name": "checkpoint-service-ui",
+  "name": "nd-dash-material",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -12,17 +12,20 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "~8.2.14",
+    "@angular/cdk": "~8.2.3",
     "@angular/common": "~8.2.14",
     "@angular/compiler": "~8.2.14",
     "@angular/core": "~8.2.14",
     "@angular/forms": "~8.2.14",
+    "@angular/material": "^8.2.3",
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
     "@microsoft/signalr": "^3.0.1",
-    "@ng-bootstrap/ng-bootstrap": "^5.1.4",
     "bootstrap": "^4.3.1",
-    "ngx-bootstrap": "^5.2.0",
+    "bootstrap-material-design": "^4.1.2",
+    "hammerjs": "^2.0.8",
+    "moment": "^2.24.0",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"

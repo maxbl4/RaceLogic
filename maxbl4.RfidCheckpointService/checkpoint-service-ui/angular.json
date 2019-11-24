@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "checkpoint-service-ui": {
+    "nd-dash-material": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -69,18 +69,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "checkpoint-service-ui:build"
+            "host": "0.0.0.0",
+            "browserTarget": "nd-dash-material:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "checkpoint-service-ui:build:production"
+              "browserTarget": "nd-dash-material:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "checkpoint-service-ui:build"
+            "browserTarget": "nd-dash-material:build"
           }
         },
         "test": {
@@ -95,6 +96,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -117,15 +119,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "checkpoint-service-ui:serve"
+            "devServerTarget": "nd-dash-material:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "checkpoint-service-ui:serve:production"
+              "devServerTarget": "nd-dash-material:serve:production"
             }
           }
         }
       }
-    }},
-  "defaultProject": "checkpoint-service-ui"
+    }
+  },
+  "defaultProject": "nd-dash-material"
 }
