@@ -97,7 +97,6 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
         [Fact]
         public void Should_disable_stale_rfid()
         {
-            //TODO: Test that enabled with old timestamp would become disabled
             WithStorageService(s =>
             {
                 s.UpdateRfidOptions(o => o.Enabled = true);
