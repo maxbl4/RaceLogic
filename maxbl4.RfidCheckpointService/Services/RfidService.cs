@@ -96,6 +96,7 @@ namespace maxbl4.RfidCheckpointService.Services
 
         public void AppendRiderId(string riderId)
         {
+            logger.Information($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
             checkpoints.OnNext(new Checkpoint(riderId, systemClock.UtcNow.UtcDateTime));
         }
 

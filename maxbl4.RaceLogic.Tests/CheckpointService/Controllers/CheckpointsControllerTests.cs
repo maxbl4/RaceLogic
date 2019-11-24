@@ -9,6 +9,7 @@ using maxbl4.Infrastructure.Extensions.HttpContentExt;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RaceLogic.Tests.CheckpointService.RfidSimulator;
+using maxbl4.RfidCheckpointService.Model;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.Infrastructure;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -63,6 +64,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
         [Fact]
         public async Task Should_stream_checkpoints_over_websocket()
         {
+            SystemClock.UseRealClock();
             var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateRfidCheckpointService();
@@ -75,6 +77,9 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             await wsConnection.StartAsync();
             await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
             wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
+            var wsConnected = false;
+            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            await new Timing().ExpectAsync(() => wsConnected);
             tagListHandler.ReturnOnce(new Tag{TagId = "3"});
             tagListHandler.ReturnOnce(new Tag{TagId = "4"});
             await new Timing()
@@ -86,6 +91,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
         [Fact]
         public async Task Should_append_manual_checkpoint()
         {
+            SystemClock.UseRealClock();
             var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateRfidCheckpointService();
@@ -96,6 +102,9 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             await wsConnection.StartAsync();
             await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
             wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
+            var wsConnected = false;
+            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            await new Timing().ExpectAsync(() => wsConnected);
             var cli = new HttpClient();
             (await cli.PutAsync("http://localhost:5000/cp", 
                 new StringContent("\"555\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();

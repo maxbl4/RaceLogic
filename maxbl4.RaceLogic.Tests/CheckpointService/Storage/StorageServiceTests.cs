@@ -31,7 +31,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
             WithStorageService(storageService =>
             {
                 var settings = storageService.GetRfidOptions();
-                settings.ShouldBeSameAs(RfidOptions.Default);
+                settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
                 settings.Enabled = true;
                 settings.ConnectionString = "Protocol=Alien;Network=8.8.8.8:500";
                 storageService.SetRfidOptions(settings);
@@ -48,7 +48,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
             WithStorageService(storageService =>
             {
                 var settings = storageService.GetRfidOptions();
-                settings.ShouldBeSameAs(RfidOptions.Default);
+                settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
             });
         }
         
