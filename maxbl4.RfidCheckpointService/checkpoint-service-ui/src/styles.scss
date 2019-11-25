@@ -1,6 +1,8 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-material-design/dist/css/bootstrap-material-design.css";
+@import "~@ag-grid-community/all-modules/dist/styles/ag-grid.css";
+@import "~@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
 html, body, app-root { height: 100%; }
 body { padding-top: 67px; }
 @media (max-width: 599px) {
@@ -10,6 +12,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .fab-menu-button {
   position:absolute !important; right:1rem; bottom: 1rem; z-index: 1000;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 

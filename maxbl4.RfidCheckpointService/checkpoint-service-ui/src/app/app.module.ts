@@ -15,6 +15,7 @@ import {WebSocketConnectionService} from "./service/web-socket-connection-servic
 import {CheckpointService} from "./service/checkpoint.service";
 import {ReaderStatusService} from "./service/reader-status.service";
 import {OptionsService} from "./service/options.service";
+import {AgGridModule} from "@ag-grid-community/angular";
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import {OptionsService} from "./service/options.service";
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
-    DemoMaterialModule
+    DemoMaterialModule,
+    AgGridModule.withComponents([])
   ],
   providers: [WebSocketConnectionService, CheckpointService, OptionsService, ReaderStatusService],
   bootstrap: [AppComponent]

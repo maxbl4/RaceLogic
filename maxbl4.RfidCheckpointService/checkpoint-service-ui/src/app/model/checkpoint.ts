@@ -5,5 +5,6 @@
   riderId: string;
   id: number;
   count: number;
+  rps: number;
   aggregated: boolean
 }

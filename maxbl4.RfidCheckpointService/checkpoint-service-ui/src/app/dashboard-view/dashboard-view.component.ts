@@ -7,6 +7,7 @@ import { Component, OnInit } from '@angular/core';
       dashboard-view works!
     </p>
   `,
+  host: {'class': 'flex-container'},
   styles: []
 })
 export class DashboardViewComponent implements OnInit {

@@ -27,7 +27,7 @@ import {CheckpointService} from "./service/checkpoint.service";
         </mat-sidenav>
 
         <mat-sidenav-content>
-            <div class="container-fluid">
+            <div class="container-fluid d-flex flex-column h-100">
                 <router-outlet></router-outlet>
             </div>
         </mat-sidenav-content>

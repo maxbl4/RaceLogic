@@ -28,13 +28,14 @@ import {OptionsService} from "../service/options.service";
           </div>
       </div>
   `,
+  host: {'class': 'flex-container'},
   styles: []
 })
 export class OptionsViewComponent implements OnInit {
   rfidOptions: RfidOptions = {};
 
   constructor(private optionsService: OptionsService) {
-    this.optionsService.options.subscribe(o => this.rfidOptions = o);
+    this.optionsService.$options.subscribe(o => this.rfidOptions = o);
   }
 
   saveOptions() {

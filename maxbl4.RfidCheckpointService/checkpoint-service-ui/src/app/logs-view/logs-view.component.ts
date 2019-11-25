@@ -16,6 +16,7 @@ import {HttpClient} from "@angular/common/http";
           <pre class="w-100 small" style="overflow-x: scroll">{{logs}}</pre>
       </div>
   `,
+  host: {'class': 'flex-container'},
   styles: []
 })
 export class LogsViewComponent implements OnInit {

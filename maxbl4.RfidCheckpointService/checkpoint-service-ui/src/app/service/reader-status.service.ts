@@ -8,10 +8,10 @@ export class ReaderStatusService {
   timestamp: string = '';
 
   constructor(ws: WebSocketConnectionService) {
-    timer(1000, 1000)
-      .pipe(() => combineLatest(ws.readerStatus, (t, s) => {
-        return {time:t, status: s};
-      }))
-      .subscribe(console.log);
+    // timer(1000, 1000)
+    //   .pipe(() => combineLatest(ws.readerStatus, (t, s) => {
+    //     return {time:t, status: s};
+    //   }))
+    //   .subscribe(console.log);
   }
 }
