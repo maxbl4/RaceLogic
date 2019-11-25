@@ -34,7 +34,7 @@ import {OptionsService} from "../service/options.service";
 export class OptionsViewComponent implements OnInit {
   rfidOptions: RfidOptions = {};
 
-  constructor(private optionsService: OptionsService) {
+  constructor(public optionsService: OptionsService) {
     this.optionsService.$options.subscribe(o => this.rfidOptions = o);
   }
 

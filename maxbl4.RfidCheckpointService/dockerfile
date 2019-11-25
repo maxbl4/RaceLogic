@@ -1,0 +1,6 @@
+﻿from mcr.microsoft.com/dotnet/core/sdk:3.1
+add ./ /app/
+WORKDIR /app
+EXPOSE 80
+ENV ASPNETCORE_URLS=http://*:80
+CMD [ "dotnet", "maxbl4.RfidCheckpointService.dll" ]
