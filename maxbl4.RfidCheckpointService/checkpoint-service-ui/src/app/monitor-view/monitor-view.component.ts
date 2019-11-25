@@ -37,7 +37,7 @@ export class MonitorViewComponent implements OnInit {
   gridOptions: GridOptions = {
     columnDefs: [
       {headerName: 'Seq', field: 'id', width: 40 },
-      {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('hh:mm:ss') },
+      {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('HH:mm:ss') },
       {headerName: 'RiderId', field: 'riderId'},
       {headerName: 'Count', field: 'count', width: 60}
     ],
