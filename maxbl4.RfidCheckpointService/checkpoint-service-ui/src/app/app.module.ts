@@ -11,6 +11,10 @@ import { MonitorViewComponent } from './monitor-view/monitor-view.component';
 import { LogsViewComponent } from './logs-view/logs-view.component';
 import { DashboardViewComponent } from './dashboard-view/dashboard-view.component';
 import {HttpClientModule} from "@angular/common/http";
+import {WebSocketConnectionService} from "./service/web-socket-connection-service";
+import {CheckpointService} from "./service/checkpoint.service";
+import {ReaderStatusService} from "./service/reader-status.service";
+import {OptionsService} from "./service/options.service";
 
 @NgModule({
   declarations: [
@@ -28,7 +32,7 @@ import {HttpClientModule} from "@angular/common/http";
     FormsModule,
     DemoMaterialModule
   ],
-  providers: [],
+  providers: [WebSocketConnectionService, CheckpointService, OptionsService, ReaderStatusService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

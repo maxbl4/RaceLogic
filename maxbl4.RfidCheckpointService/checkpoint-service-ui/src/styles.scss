@@ -8,6 +8,9 @@ body { padding-top: 67px; }
 }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+.fab-menu-button {
+  position:absolute !important; right:1rem; bottom: 1rem; z-index: 1000;
+}
 
 
 

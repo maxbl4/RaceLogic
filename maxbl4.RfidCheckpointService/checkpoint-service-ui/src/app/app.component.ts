@@ -1,16 +1,18 @@
 import {ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
 import {MediaMatcher} from "@angular/cdk/layout";
+import {ReaderStatusService} from "./service/reader-status.service";
+import {CheckpointService} from "./service/checkpoint.service";
 
 @Component({
   selector: 'app-root',
   template: `      
-      <mat-toolbar color="primary" class="fixed-top navbar navbar-dark">
-          <span class="d-flex flex-grow-1">
-              <a class="navbar-brand" routerLink="">Checkpoint Service</a>
-          </span>
-          <button mat-icon-button (click)="sidenav.toggle()"
-                  [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>
-      </mat-toolbar>
+    <mat-toolbar color="primary" class="fixed-top navbar navbar-dark">
+        <span class="d-flex flex-grow-1">
+            <a class="navbar-brand" routerLink="">Checkpoint Service</a>
+        </span>
+        <button mat-icon-button (click)="sidenav.toggle()"
+                [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>
+    </mat-toolbar>
     <mat-sidenav-container class="h-100">
         <mat-sidenav #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches" position="end" 
                      [fixedInViewport]="mobileQuery.matches"
@@ -37,7 +39,7 @@ export class AppComponent implements OnDestroy {
   public mobileQuery: MediaQueryList;
   private readonly _mobileQueryListener: () => void;
 
-  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher) {
+  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, public readerStatusService: ReaderStatusService, public checkpointService: CheckpointService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => console.log("detected");
     this.mobileQuery.addListener(this._mobileQueryListener);

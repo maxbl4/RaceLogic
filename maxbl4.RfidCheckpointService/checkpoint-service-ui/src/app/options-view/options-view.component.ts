@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {RfidOptions} from "../model/rfid-options";
-import {HttpClient} from "@angular/common/http";
+import {OptionsService} from "../service/options.service";
 
 @Component({
   selector: 'app-options-view',
@@ -24,7 +24,7 @@ import {HttpClient} from "@angular/common/http";
               <button type="submit" mat-raised-button color="primary" (click)="saveOptions()">Save</button>
           </div>
           <div class="col-auto">
-              <button type="reset" mat-raised-button (click)="loadOptions()">Reset</button>
+              <button type="reset" mat-raised-button (click)="optionsService.loadOptions()">Reset</button>
           </div>
       </div>
   `,
@@ -33,17 +33,12 @@ import {HttpClient} from "@angular/common/http";
 export class OptionsViewComponent implements OnInit {
   rfidOptions: RfidOptions = {};
 
-  constructor(private http: HttpClient) {
-    this.loadOptions().then();
+  constructor(private optionsService: OptionsService) {
+    this.optionsService.options.subscribe(o => this.rfidOptions = o);
   }
 
-  async loadOptions() {
-    this.rfidOptions = await this.http.get<RfidOptions>('options').toPromise();
-  }
-
-  async saveOptions() {
-    await this.http.put('options', this.rfidOptions).toPromise();
-    await this.loadOptions();
+  saveOptions() {
+    this.optionsService.saveOptions(this.rfidOptions);
   }
 
   ngOnInit() {
