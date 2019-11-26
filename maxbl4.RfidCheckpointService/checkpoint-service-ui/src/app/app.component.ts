@@ -13,7 +13,7 @@ import {CheckpointService} from "./service/checkpoint.service";
         <mat-chip-list class="flex-grow-1" [hidden]="!readerStatusService.active">
           <mat-chip color="accent" selected>
               <i class="material-icons {{readerStatusService.statusIconClass}}">{{readerStatusService.statusIcon}}</i>
-              {{checkpointService.checkpoints.length}}
+              {{checkpointService.checkpointsCount}}
           </mat-chip>
         </mat-chip-list>        
         <button mat-icon-button (click)="sidenav.toggle()"

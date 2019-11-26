@@ -15,7 +15,7 @@ import {OptionsService} from "../service/options.service";
       <mat-form-field class="w-100">
           <input matInput placeholder="RPS Threshold"
                  type="number" [(ngModel)]="rfidOptions.rpsThreshold">
-          <small>Read Per Second threshold to report poor tag reading</small>
+          <mat-hint>Read Per Second threshold to report poor tag reading</mat-hint>
       </mat-form-field>      
       <mat-slide-toggle [(ngModel)]="rfidOptions.enabled">Rfid enabled</mat-slide-toggle>
       <div class="row mt-2">

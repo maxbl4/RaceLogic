@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import * as moment from "moment";
 import {AllCommunityModules, GridOptions, GridApi} from '@ag-grid-community/all-modules';
 import {CheckpointService} from "../service/checkpoint.service";
-import {Subscription} from "rxjs";
+import {combineLatest, Observable, Subscription} from "rxjs";
+import {bufferTime, filter, map, mergeMap} from "rxjs/operators";
+import {OptionsService} from "../service/options.service";
 import {Checkpoint} from "../model/checkpoint";
-import {map} from "rxjs/operators";
 
 @Component({
   selector: 'app-monitor-view',
@@ -20,41 +21,47 @@ import {map} from "rxjs/operators";
               </mat-radio-group>
           </div>
       </div>
+      <div class="row">
+          <mat-form-field class="w-100">
+              <input matInput placeholder="Filter" #tagFilter>
+          </mat-form-field>
+      </div>
       <div class="row flex-grow-1 flex-column">
           <ag-grid-angular
                   class="ag-theme-balham h-100"
                   [gridOptions]="gridOptions"
-                  [modules]="modules">
+                  [modules]="modules"
+                  [quickFilterText]="tagFilter.value">
           </ag-grid-angular>  
       </div>
   `,
   host: {'class': 'flex-container'},
   styles: []
 })
-export class MonitorViewComponent implements OnInit {
+export class MonitorViewComponent implements OnInit, OnDestroy {
   displayType = DisplayType;
-  rowData: Checkpoint[] = [];
   gridOptions: GridOptions = {
     columnDefs: [
-      {headerName: 'Seq', field: 'id', width: 40 },
-      {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('HH:mm:ss') },
+      {headerName: 'Seq', field: 'id', width: 50, sort: 'desc', getQuickFilterText: () => ''},
+      {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('HH:mm:ss'), getQuickFilterText: () => ''},
       {headerName: 'RiderId', field: 'riderId'},
-      {headerName: 'Count', field: 'count', width: 60}
+      {headerName: 'Count', field: 'count', width: 60, getQuickFilterText: () => ''},
+      {headerName: 'Aggregated', field: 'aggregated', width: 60, getQuickFilterText: () => ''},
     ],
     defaultColDef: {
       sortable: true,
       resizable: true
     },
-    rowData: this.rowData,
     onGridSizeChanged: params => params.api.sizeColumnsToFit(),
-    onGridReady: params => this.api = params.api
+    onGridReady: params => {
+      this.api = params.api;
+      this.display = DisplayType.regular;
+    }
   };
 
   modules = AllCommunityModules;
 
-  constructor(public checkpointService: CheckpointService) {
-    this.display = DisplayType.regular;
-  }
+  constructor(private checkpointService: CheckpointService, private optionsService: OptionsService) {}
 
   private subscription: Subscription;
   private _display: DisplayType;
@@ -65,32 +72,57 @@ export class MonitorViewComponent implements OnInit {
 
   set display(value: DisplayType) {
     this._display = value;
-    if (this.subscription) this.subscription.unsubscribe();
+    let $checkpoints: Observable<Checkpoint[]>;
     switch (value) {
+      case DisplayType.all:
+        $checkpoints = this.checkpointService.$checkpoints.pipe(
+          mergeMap(x => x),
+          bufferTime(1000));
+        break;
       case DisplayType.regular:
-        console.log("subscribe to all");
-        this.subscription = this.checkpointService.$checkpoints
-          .pipe(map(cps => cps.filter(cp => !cp.aggregated)))
-          .subscribe(x => this.setRowData(x));
+        $checkpoints = this.checkpointService.$checkpoints.pipe(
+          mergeMap(x => x),
+          filter(x => !x.aggregated),
+          bufferTime(1000));
         break;
       case DisplayType.aggregated:
-        this.subscription = this.checkpointService.getAggregateCheckpoints().subscribe(x => this.setRowData(x));
+        $checkpoints = this.checkpointService.$checkpoints.pipe(
+          mergeMap(x => x),
+          filter(x => x.aggregated),
+          bufferTime(1000));
         break;
       case DisplayType.lowRps:
-        this.subscription = this.checkpointService.getLowRpsCheckpoints().subscribe(x => this.setRowData(x));
+        $checkpoints = combineLatest(this.optionsService.$options, this.checkpointService.$checkpoints.pipe(mergeMap(x => x)))
+          .pipe(
+            filter(([options, cp]) => cp.aggregated && cp.count < options.rpsThreshold),
+            map(([options, cp]) => cp),
+            bufferTime(1000));
         break;
-      case DisplayType.all:
-        console.log("subscribe to all");
-        this.subscription = this.checkpointService.$checkpoints.subscribe(x => this.setRowData(x));
+      case DisplayType.lowRpsGrouped:
+        $checkpoints = combineLatest(this.optionsService.$options, this.checkpointService.$checkpoints.pipe(mergeMap(x => x)))
+          .pipe(
+            filter(([options, cp]) => cp.aggregated && cp.count < options.rpsThreshold),
+            map(([options, cp]) => cp),
+            bufferTime(1000));
         break;
     }
+    this.subscribeToData($checkpoints);
   }
 
-  setRowData(data:any[]){
-    if (this.api) this.api.setRowData(data);
+  subscribeToData($data: Observable<Checkpoint[]>) {
+    if (this.subscription) this.subscription.unsubscribe();
+    this.api.setRowData([]);
+    this.subscription = $data.subscribe(cps => {
+      if (cps.length > 0) this.api.batchUpdateRowData({add: cps});
+    });
   }
 
   ngOnInit() {
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription)
+      this.subscription.unsubscribe();
   }
 }
 
@@ -98,5 +130,6 @@ enum DisplayType {
   regular,
   aggregated,
   lowRps,
+  lowRpsGrouped,
   all,
 }

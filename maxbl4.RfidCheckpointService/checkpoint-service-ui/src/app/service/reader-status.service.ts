@@ -18,7 +18,7 @@ export class ReaderStatusService {
   private rotationIndex = 0;
 
   constructor(ws: WebSocketConnectionService, options: OptionsService) {
-    combineLatest(timer(500, 500), ws.readerStatus, options.$options)
+    combineLatest(timer(500, 500), ws.$readerStatus, options.$options)
       .pipe(map((args) => {
         return {time:args[0], status: args[1], rfidEnabled: args[2].enabled};
       }))

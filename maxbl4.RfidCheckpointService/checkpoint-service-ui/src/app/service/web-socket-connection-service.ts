@@ -8,17 +8,15 @@ import {Injectable} from "@angular/core";
 @Injectable()
 export class WebSocketConnectionService {
   private connection: HubConnection;
-  readonly checkpoints = new ReplaySubject<Checkpoint>();
-  readonly readerStatus = new BehaviorSubject<ReaderStatus>({isConnected: false, heartbeat: ''});
+  readonly $checkpoints = new ReplaySubject<Checkpoint[]>();
+  readonly $readerStatus = new BehaviorSubject<ReaderStatus>({isConnected: false, heartbeat: ''});
   readonly subscriptionStartTime = moment().utc().startOf('day').format();
 
   constructor() {
     this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();
-    this.connection.on("Checkpoint", (cp:Checkpoint) => {
-      this.checkpoints.next(cp);
-    });
+    this.connection.on("Checkpoint", (cps:Checkpoint[]) => this.$checkpoints.next(cps));
     this.connection.on("ReaderStatus", (status:ReaderStatus) => {
-      this.readerStatus.next(status);
+      this.$readerStatus.next(status);
     });
     this.connection.start().then(x => {
       console.log(`Subscribing to checkpoints at ${this.subscriptionStartTime}`);

@@ -99,7 +99,8 @@ namespace maxbl4.RfidCheckpointService.Services
                 StopStream(contextConnectionId);
                 clients[contextConnectionId] = storageService.ListCheckpoints(from)
                     .ToObservable()
-                    .Concat(checkpoints)
+                    .Buffer(TimeSpan.FromMilliseconds(100), 100)
+                    .Concat(checkpoints.Select(x => new []{x}))
                     .Select(x => 
                         Observable.FromAsync(() => 
                             logger.Swallow(async () =>
