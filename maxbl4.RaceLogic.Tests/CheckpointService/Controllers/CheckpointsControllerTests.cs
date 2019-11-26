@@ -76,7 +76,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             var checkpoints = new List<Checkpoint>();
             await wsConnection.StartAsync();
             await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
-            wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
+            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
             var wsConnected = false;
             wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
             await new Timing().ExpectAsync(() => wsConnected);
@@ -101,7 +101,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             var checkpoints = new List<Checkpoint>();
             await wsConnection.StartAsync();
             await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
-            wsConnection.On("Checkpoint", (Checkpoint cp) => checkpoints.Add(cp));
+            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
             var wsConnected = false;
             wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
             await new Timing().ExpectAsync(() => wsConnected);

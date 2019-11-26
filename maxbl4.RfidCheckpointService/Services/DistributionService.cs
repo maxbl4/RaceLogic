@@ -112,6 +112,7 @@ namespace maxbl4.RfidCheckpointService.Services
                     .ToObservable()
                     .Buffer(TimeSpan.FromMilliseconds(100), 100)
                     .Concat(checkpoints.Select(x => new []{x}))
+                    .Where(x => x.Count > 0)
                     .Select(x => 
                         Observable.FromAsync(() => 
                             logger.Swallow(async () =>
