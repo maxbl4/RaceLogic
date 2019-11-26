@@ -35,7 +35,7 @@ export class OptionsViewComponent implements OnInit {
   rfidOptions: RfidOptions = {};
 
   constructor(public optionsService: OptionsService) {
-    this.optionsService.$options.subscribe(o => this.rfidOptions = o);
+    this.optionsService.$options.subscribe(o => this.rfidOptions = Object.assign({}, o));
   }
 
   saveOptions() {

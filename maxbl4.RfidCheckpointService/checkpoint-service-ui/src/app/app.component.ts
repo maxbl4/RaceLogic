@@ -7,9 +7,15 @@ import {CheckpointService} from "./service/checkpoint.service";
   selector: 'app-root',
   template: `      
     <mat-toolbar color="primary" class="fixed-top navbar navbar-dark">
-        <span class="d-flex flex-grow-1">
-            <a class="navbar-brand" routerLink="">Checkpoint Service</a>
-        </span>
+        <span class="d-flex flex-shrink-0">
+            <a class="navbar-brand" routerLink="">Checkpoint Service</a>            
+        </span>        
+        <mat-chip-list class="flex-grow-1" [hidden]="!readerStatusService.active">
+          <mat-chip color="accent" selected>
+              <i class="material-icons {{readerStatusService.statusIconClass}}">{{readerStatusService.statusIcon}}</i>
+              {{checkpointService.checkpoints.length}}
+          </mat-chip>
+        </mat-chip-list>        
         <button mat-icon-button (click)="sidenav.toggle()"
                 [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>
     </mat-toolbar>
@@ -26,7 +32,7 @@ import {CheckpointService} from "./service/checkpoint.service";
             </mat-nav-list>
         </mat-sidenav>
 
-        <mat-sidenav-content>
+        <mat-sidenav-content>            
             <div class="container-fluid d-flex flex-column h-100">
                 <router-outlet></router-outlet>
             </div>

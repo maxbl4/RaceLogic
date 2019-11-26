@@ -15,11 +15,9 @@ export class WebSocketConnectionService {
   constructor() {
     this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();
     this.connection.on("Checkpoint", (cp:Checkpoint) => {
-      console.log("Checkpoint", cp);
       this.checkpoints.next(cp);
     });
     this.connection.on("ReaderStatus", (status:ReaderStatus) => {
-      console.log("ReaderStatus", status);
       this.readerStatus.next(status);
     });
     this.connection.start().then(x => {
