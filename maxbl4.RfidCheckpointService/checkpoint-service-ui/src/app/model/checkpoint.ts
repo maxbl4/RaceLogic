@@ -7,7 +7,4 @@
   count: number;
   rps: number;
   aggregated: boolean
-  getRowNodeId(){
-    return this.id;
-  }
 }

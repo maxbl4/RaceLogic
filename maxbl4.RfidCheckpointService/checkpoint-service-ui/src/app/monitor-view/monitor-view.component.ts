@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import * as moment from "moment";
-import {AllCommunityModules, GridOptions, GridApi} from '@ag-grid-community/all-modules';
+import {AllCommunityModules, GridOptions, GridApi, ColumnApi} from '@ag-grid-community/all-modules';
 import {CheckpointService} from "../service/checkpoint.service";
 import {combineLatest, Observable, Subscription} from "rxjs";
 import {bufferTime, filter, map, mergeMap} from "rxjs/operators";
@@ -46,6 +46,7 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
       {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('HH:mm:ss'), getQuickFilterText: () => ''},
       {headerName: 'RiderId', field: 'riderId'},
       {headerName: 'Count', field: 'count', width: 60, getQuickFilterText: () => ''},
+      {headerName: 'Rps', field: 'rps', width: 60, getQuickFilterText: () => ''},
       {headerName: 'Aggregated', field: 'aggregated', width: 60, getQuickFilterText: () => ''},
     ],
     defaultColDef: {
@@ -55,6 +56,7 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
     onGridSizeChanged: params => params.api.sizeColumnsToFit(),
     onGridReady: params => {
       this.api = params.api;
+      this.columnApi = params.columnApi;
       this.display = DisplayType.regular;
     }
   };
@@ -66,6 +68,7 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
   private subscription: Subscription;
   private _display: DisplayType;
   private api: GridApi;
+  private columnApi: ColumnApi;
   get display(): DisplayType {
     return this._display;
   }
@@ -75,35 +78,22 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
     let $checkpoints: Observable<Checkpoint[]>;
     switch (value) {
       case DisplayType.all:
-        $checkpoints = this.checkpointService.$checkpoints.pipe(
-          mergeMap(x => x),
-          bufferTime(1000));
+        this.columnApi.setColumnsVisible(["count", "rps", "aggregated"], true);
+        $checkpoints = this.checkpointService.$checkpoints;
         break;
       case DisplayType.regular:
-        $checkpoints = this.checkpointService.$checkpoints.pipe(
-          mergeMap(x => x),
-          filter(x => !x.aggregated),
-          bufferTime(1000));
+        this.columnApi.setColumnsVisible(["count", "rps", "aggregated"], false);
+        $checkpoints = this.checkpointService.$regularCheckpoints;
         break;
       case DisplayType.aggregated:
-        $checkpoints = this.checkpointService.$checkpoints.pipe(
-          mergeMap(x => x),
-          filter(x => x.aggregated),
-          bufferTime(1000));
+        this.columnApi.setColumnsVisible(["aggregated"], false);
+        this.columnApi.setColumnsVisible(["count", "rps"], true);
+        $checkpoints = this.checkpointService.$aggregatedCheckpoints;
         break;
       case DisplayType.lowRps:
-        $checkpoints = combineLatest(this.optionsService.$options, this.checkpointService.$checkpoints.pipe(mergeMap(x => x)))
-          .pipe(
-            filter(([options, cp]) => cp.aggregated && cp.count < options.rpsThreshold),
-            map(([options, cp]) => cp),
-            bufferTime(1000));
-        break;
-      case DisplayType.lowRpsGrouped:
-        $checkpoints = combineLatest(this.optionsService.$options, this.checkpointService.$checkpoints.pipe(mergeMap(x => x)))
-          .pipe(
-            filter(([options, cp]) => cp.aggregated && cp.count < options.rpsThreshold),
-            map(([options, cp]) => cp),
-            bufferTime(1000));
+        this.columnApi.setColumnsVisible(["count", "rps"], true);
+        this.columnApi.setColumnsVisible(["aggregated"], false);
+        $checkpoints = this.checkpointService.$lowRpscheckpoints;
         break;
     }
     this.subscribeToData($checkpoints);
@@ -111,9 +101,9 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
 
   subscribeToData($data: Observable<Checkpoint[]>) {
     if (this.subscription) this.subscription.unsubscribe();
-    this.api.setRowData([]);
+    this.api.setRowData(null);
     this.subscription = $data.subscribe(cps => {
-      if (cps.length > 0) this.api.batchUpdateRowData({add: cps});
+      if (cps.length > 0) this.api.batchUpdateRowData({add: cps}, () => this.api.sizeColumnsToFit());
     });
   }
 
@@ -130,6 +120,5 @@ enum DisplayType {
   regular,
   aggregated,
   lowRps,
-  lowRpsGrouped,
   all,
 }

@@ -31,10 +31,22 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             this.checkpointsHub = checkpointsHub;
             this.storageService = storageService;
-            disposable = new CompositeDisposable(messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
-                messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus));
+            disposable = new CompositeDisposable(
+                messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
+                messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus),
+                messageHub.SubscribeDisposable<RfidOptions>(OnRfidOptions));
         }
 
+        private void OnRfidOptions(RfidOptions rfidOptions)
+        {
+            logger.Swallow(async () =>
+            {
+                logger.Information($"Broadcasting rfid options");
+                await checkpointsHub.Clients.All
+                    .SendCoreAsync("RfidOptions", new[] {rfidOptions});
+            }).Wait(0);
+        }
+        
         private void OnReaderStatus(ReaderStatus readerStatus)
         {
             logger.Swallow(async () =>
@@ -43,7 +55,6 @@ namespace maxbl4.RfidCheckpointService.Services
                 await checkpointsHub.Clients.All
                     .SendCoreAsync("ReaderStatus", new[] {readerStatus});
             }).Wait(0);
-
         }
 
         void OnCheckpoint(Checkpoint checkpoint)

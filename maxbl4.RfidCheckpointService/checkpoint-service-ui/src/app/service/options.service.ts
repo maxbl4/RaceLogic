@@ -2,12 +2,14 @@
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject} from "rxjs";
 import {Injectable} from "@angular/core";
+import {WebSocketConnectionService} from "./web-socket-connection-service";
 
 @Injectable()
 export class OptionsService {
   $options = new BehaviorSubject<RfidOptions>({});
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, ws: WebSocketConnectionService) {
+    ws.$rfidOptions.subscribe(x => this.$options.next(x));
     this.loadOptions();
   }
 

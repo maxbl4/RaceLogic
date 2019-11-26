@@ -1,11 +1,13 @@
-﻿namespace maxbl4.RfidCheckpointService
+﻿using System.Threading.Tasks;
+
+namespace maxbl4.RfidCheckpointService
 {
     public static class Program
     {
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             using var svc = new RfidCheckpointServiceRunner();
-            return svc.Start(args).Result;
+            return await svc.Start(args);
         }
     }
 }
