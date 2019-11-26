@@ -46,7 +46,7 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
       {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('HH:mm:ss'), getQuickFilterText: () => ''},
       {headerName: 'RiderId', field: 'riderId'},
       {headerName: 'Count', field: 'count', width: 60, getQuickFilterText: () => ''},
-      {headerName: 'Rps', field: 'rps', width: 60, getQuickFilterText: () => ''},
+      {headerName: 'Rps', field: 'rps', width: 60, valueFormatter: p => p.value.toFixed(1), getQuickFilterText: () => ''},
       {headerName: 'Aggregated', field: 'aggregated', width: 60, getQuickFilterText: () => ''},
     ],
     defaultColDef: {
@@ -103,8 +103,12 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
     if (this.subscription) this.subscription.unsubscribe();
     this.api.setRowData(null);
     this.subscription = $data.subscribe(cps => {
-      if (cps.length > 0) this.api.batchUpdateRowData({add: cps}, () => this.api.sizeColumnsToFit());
+      if (cps.length > 0) this.api.batchUpdateRowData({add: cps}, () => this.autoSizeColumns());
     });
+  }
+
+  autoSizeColumns() {
+    this.columnApi.autoSizeAllColumns();
   }
 
   ngOnInit() {
