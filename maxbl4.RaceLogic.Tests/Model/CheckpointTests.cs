@@ -86,7 +86,7 @@ namespace maxbl4.RaceLogic.Tests.Model
         public void AggCheckpoint_rps_same_timestamps()
         {
             var ts = new DateTime(10000000, DateTimeKind.Utc);
-            var agg = new AggCheckpoint("11", ts, ts, 2);
+            var agg = new AggCheckpoint("11", ts, ts, 2, false);
             agg.Rps.ShouldBe(2);
 
             agg = AggCheckpoint.From(new []

@@ -38,7 +38,7 @@ export class CheckpointService {
 
     this.$lowRpscheckpoints = combineLatest(optionsService.$options, ws.$checkpoints.pipe(mergeMap(x => x)))
       .pipe(
-        filter(([options, cp]) => cp.aggregated && cp.count < options.rpsThreshold),
+        filter(([options, cp]) => !cp.isManual && cp.aggregated && cp.rps < options.rpsThreshold),
         map(([options, cp]) => cp),
         bufferTime(1000));
   }

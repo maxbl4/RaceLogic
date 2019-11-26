@@ -2,30 +2,27 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import * as moment from "moment";
 import {AllCommunityModules, GridOptions, GridApi, ColumnApi} from '@ag-grid-community/all-modules';
 import {CheckpointService} from "../service/checkpoint.service";
-import {combineLatest, Observable, Subscription} from "rxjs";
-import {bufferTime, filter, map, mergeMap} from "rxjs/operators";
-import {OptionsService} from "../service/options.service";
+import {Observable, Subscription} from "rxjs";
 import {Checkpoint} from "../model/checkpoint";
 
 @Component({
   selector: 'app-monitor-view',
   template: `
-      <div class="row">
-          <div>
-              <label>Show: </label>
+      <div class="row align-items-center">
+          <div class="col-auto">
               <mat-radio-group [(ngModel)]="display">
-                  <mat-radio-button class="ml-2" [value]="displayType.regular">Regular</mat-radio-button>                  
-                  <mat-radio-button class="ml-2" [value]="displayType.aggregated">Aggregated</mat-radio-button>
-                  <mat-radio-button class="ml-2" [value]="displayType.lowRps">Low RPS</mat-radio-button>
-                  <mat-radio-button class="ml-2" [value]="displayType.all">All</mat-radio-button>
+                  <mat-radio-button [value]="displayType.regular">Regular</mat-radio-button>                  
+                  <mat-radio-button class="ml-1" [value]="displayType.aggregated">Aggregated</mat-radio-button>
+                  <mat-radio-button class="ml-1" [value]="displayType.lowRps">Low RPS</mat-radio-button>
+                  <mat-radio-button class="ml-1" [value]="displayType.all">All</mat-radio-button>
               </mat-radio-group>
           </div>
-      </div>
-      <div class="row">
-          <mat-form-field class="w-100">
-              <input matInput placeholder="Filter" #tagFilter>
-          </mat-form-field>
-      </div>
+          <div class="col">
+              <mat-form-field class="w-100">
+                  <input matInput placeholder="Filter" #tagFilter>
+              </mat-form-field>
+          </div>
+      </div>      
       <div class="row flex-grow-1 flex-column">
           <ag-grid-angular
                   class="ag-theme-balham h-100"
@@ -63,7 +60,7 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
 
   modules = AllCommunityModules;
 
-  constructor(private checkpointService: CheckpointService, private optionsService: OptionsService) {}
+  constructor(private checkpointService: CheckpointService) {}
 
   private subscription: Subscription;
   private _display: DisplayType;

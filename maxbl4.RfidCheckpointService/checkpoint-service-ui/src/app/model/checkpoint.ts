@@ -6,5 +6,6 @@
   id: number;
   count: number;
   rps: number;
-  aggregated: boolean
+  aggregated: boolean;
+  isManual: boolean;
 }

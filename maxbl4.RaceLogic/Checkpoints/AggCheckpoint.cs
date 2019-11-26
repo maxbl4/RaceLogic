@@ -12,10 +12,11 @@ namespace maxbl4.RaceLogic.Checkpoints
         }
         
         public AggCheckpoint(string riderId, DateTime timestamp, DateTime lastSeen, 
-            int count) 
+            int count, bool isManual) 
                 : base(riderId, timestamp)
         {
             Aggregated = true;
+            IsManual = isManual;
             LastSeen = lastSeen;
             Count = count;
             var interval = (lastSeen - timestamp).TotalMilliseconds;
@@ -38,6 +39,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             var timestamp = default(DateTime);
             var lastSeen = default(DateTime);
             var count = 0;
+            var manual = false;
             foreach (var cp in checkpoints)
             {
                 count++;
@@ -52,12 +54,13 @@ namespace maxbl4.RaceLogic.Checkpoints
                 }
                 timestamp = timestamp.TakeSmaller(cp.Timestamp);
                 lastSeen = lastSeen.TakeLarger(cp.Timestamp);
+                manual = cp.IsManual;
             }
             if (count == 0)
                 return new AggCheckpoint(default, 
                     default, default, 
-                    0);
-            return new AggCheckpoint(riderId, timestamp, lastSeen, count);
+                    0, false);
+            return new AggCheckpoint(riderId, timestamp, lastSeen, count, manual);
         }
 
         public AggCheckpoint Add(Checkpoint cp)
@@ -69,7 +72,7 @@ namespace maxbl4.RaceLogic.Checkpoints
             return new AggCheckpoint(RiderId, 
                 Timestamp.TakeSmaller(cp.Timestamp),
                 LastSeen.TakeLarger(cp.Timestamp),
-                Count + 1);
+                Count + 1, IsManual || cp.IsManual);
         }
     }
 }

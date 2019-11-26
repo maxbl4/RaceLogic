@@ -16,6 +16,7 @@ import {CheckpointService} from "./service/checkpoint.service";
 import {ReaderStatusService} from "./service/reader-status.service";
 import {OptionsService} from "./service/options.service";
 import {AgGridModule} from "@ag-grid-community/angular";
+import {LowRpsCheckpointAggregatorService} from "./service/low-rps-checkpoint-aggregator.service";
 
 @NgModule({
   declarations: [
@@ -34,7 +35,7 @@ import {AgGridModule} from "@ag-grid-community/angular";
     DemoMaterialModule,
     AgGridModule.withComponents([])
   ],
-  providers: [WebSocketConnectionService, CheckpointService, OptionsService, ReaderStatusService],
+  providers: [WebSocketConnectionService, CheckpointService, OptionsService, ReaderStatusService, LowRpsCheckpointAggregatorService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
