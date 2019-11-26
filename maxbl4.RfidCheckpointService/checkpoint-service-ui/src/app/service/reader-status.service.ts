@@ -14,10 +14,14 @@ export class ReaderStatusService {
   statusIconClass = "";
   statusIcon = "";
   active = false;
+  lastHeartbeat = "";
 
   private rotationIndex = 0;
 
   constructor(ws: WebSocketConnectionService, options: OptionsService) {
+    ws.$readerStatus.subscribe(status => {
+      this.lastHeartbeat = moment().utc().format();
+    });
     combineLatest(timer(500, 500), ws.$readerStatus, options.$options)
       .pipe(map((args) => {
         return {time:args[0], status: args[1], rfidEnabled: args[2].enabled};
@@ -29,7 +33,8 @@ export class ReaderStatusService {
           return;
         }
         this.active = true;
-        if (s.status.isConnected) {
+        const lastSuccess = moment().diff(moment(this.lastHeartbeat), 'milliseconds');
+        if (s.status.isConnected && lastSuccess < 2000) {
           this.statusIcon = "sync";
           this.statusIconClass = `rotate-${this.rotationIndex*45}`;
           this.rotationIndex++;
