@@ -52,11 +52,9 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             
             using var svc = CreateRfidCheckpointService();
             var client = new HttpClient();
-            var response = await client.GetAsync("http://localhost:5000/cp");
-            
-            var checkpoints = JsonConvert.DeserializeObject<List<Checkpoint>>(await response.Content.ReadAsStringAsync());
+            var checkpoints = await client.GetAsync<List<Checkpoint>>("http://localhost:5000/cp");
             checkpoints.ShouldNotBeNull();
-            checkpoints.Count(x => x.RiderId.StartsWith("stored")).ShouldBeGreaterThanOrEqualTo(2);
+            checkpoints.Count.ShouldBe(2);
             checkpoints.ShouldContain(x => x.RiderId == "stored1");
             checkpoints.ShouldContain(x => x.RiderId == "stored2");
         }

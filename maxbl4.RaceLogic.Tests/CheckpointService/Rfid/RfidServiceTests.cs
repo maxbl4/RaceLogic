@@ -35,6 +35,30 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Rfid
                     .Expect(() => storageService.ListCheckpoints().Count(y => !y.Aggregated) == 2);
             });
         }
+        
+        [Fact]
+        public void Should_persist_tags_and_checkpoints()
+        {
+            WithRfidService((storageService, rfidService) =>
+            {
+                storageService.UpdateRfidOptions(x => x.PersistTags = true);
+                var tagListHandler = new SimulatorBuilder(storageService).Build();
+                tagListHandler.ReturnOnce(new Tag {TagId = "1"});
+                new Timing()
+                    .FailureDetails(() => storageService.ListCheckpoints().Count.ToString())
+                    .Expect(() => storageService.ListCheckpoints().Count(y => !y.Aggregated) == 1);
+                // Need to wait before advance, to prevent race between Advance and checkpoint code in RfidService
+                SystemClock.Advance();
+                tagListHandler.ReturnOnce(new Tag {TagId = "1"});
+                new Timing()
+                    .FailureDetails(() => storageService.ListCheckpoints().Count.ToString())
+                    .Expect(() => storageService.ListCheckpoints().Count(y => !y.Aggregated) == 2);
+                
+                new Timing()
+                    .FailureDetails(() => storageService.ListTags().Count.ToString())
+                    .Expect(() => storageService.ListTags().Count == 2);
+            });
+        }
 
         [Fact]
         public void Should_store_checkpoint_before_emitting_to_observable()

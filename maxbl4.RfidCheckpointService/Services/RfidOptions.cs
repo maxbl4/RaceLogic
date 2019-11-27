@@ -24,6 +24,10 @@ namespace maxbl4.RfidCheckpointService.Services
         /// </summary>
         public bool Enabled { get; set; }
         /// <summary>
+        /// In addition to checkpoints, persis the raw Tag objects streamed from the reader 
+        /// </summary>
+        public bool PersistTags { get; set; }
+        /// <summary>
         /// Windows in milliseconds for tag deduplication
         /// </summary>
         public int CheckpointAggregationWindowMs { get; set; }
