@@ -2,7 +2,7 @@
 
 services:
   checkpoint-service:
-    image: maxbl4/checkpoint-service-amd64:latest    
+    image: maxbl4/checkpoint-service-${cps_arch:-amd64}:latest    
     networks:
       - checkpoint-test-net
     environment:
@@ -18,7 +18,7 @@ services:
         condition: any
         
   sim:
-    image: maxbl4/alien-sim-amd64
+    image: maxbl4/alien-sim-${cps_arch:-amd64}:latest
     networks:
       - checkpoint-test-net
     ports:
