@@ -1,0 +1,30 @@
+﻿version: '3.7'
+
+services:
+  checkpoint-service:
+    image: maxbl4/checkpoint-service-amd64:latest    
+    networks:
+      - checkpoint-test-net
+    ports:
+      - 5050:80
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        
+  sim:
+    image: maxbl4/alien-sim-amd64
+    networks:
+      - checkpoint-test-net
+    ports:
+      - 20023:20023
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      
+networks:
+  checkpoint-test-net:
+    driver: overlay
+    attachable: true
+    name: checkpoint-test-net
