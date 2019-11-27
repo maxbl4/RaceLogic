@@ -47,6 +47,7 @@ import {RfidOptions} from "../model/rfid-options";
         </div>
     </div>      
   `,
+  host: {'class': 'flex-container'},
   styles: []
 })
 export class DashboardViewComponent {

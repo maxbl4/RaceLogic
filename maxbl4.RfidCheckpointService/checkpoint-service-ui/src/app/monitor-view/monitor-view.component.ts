@@ -4,6 +4,7 @@ import {AllCommunityModules, GridOptions, GridApi, ColumnApi} from '@ag-grid-com
 import {CheckpointService} from "../service/checkpoint.service";
 import {Observable, Subscription} from "rxjs";
 import {Checkpoint} from "../model/checkpoint";
+import { formatDate } from '../util/formatters';
 
 @Component({
   selector: 'app-monitor-view',
@@ -40,7 +41,7 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
   gridOptions: GridOptions = {
     columnDefs: [
       {headerName: 'Seq', field: 'id', width: 50, sort: 'desc', getQuickFilterText: () => ''},
-      {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => moment(v.value).format('HH:mm:ss'), getQuickFilterText: () => ''},
+      {headerName: 'Time', field: 'timestamp', width: 80, valueFormatter: v => formatDate(v.value), getQuickFilterText: () => ''},
       {headerName: 'RiderId', field: 'riderId'},
       {headerName: 'Count', field: 'count', width: 60, getQuickFilterText: () => ''},
       {headerName: 'Rps', field: 'rps', width: 60, valueFormatter: p => p.value.toFixed(1), getQuickFilterText: () => ''},

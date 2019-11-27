@@ -19,9 +19,11 @@ namespace maxbl4.RfidCheckpointService.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Tag> Get(DateTime? start = null, DateTime? end = null)
+        public IEnumerable<Tag> Get(DateTime? start = null, DateTime? end = null, int? count = null)
         {
-            return storageService.ListTags(start, end);
+            if (count == null)
+                count = 100;
+            return storageService.ListTags(start, end, count);
         }
         
         [HttpDelete()]

@@ -52,7 +52,6 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             var query = repo.Query<Checkpoint>();
             return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value))
-                .OrderBy(x => x.Id)
                 .ToList();
         }
 
@@ -73,11 +72,13 @@ namespace maxbl4.RfidCheckpointService.Services
             repo.Insert(new KeyValue<Tag>{Value = tag}, tagCollection);
         }
 
-        public List<Tag> ListTags(DateTime? start = null, DateTime? end = null)
+        public List<Tag> ListTags(DateTime? start = null, DateTime? end = null, int? count = null)
         {
             var query = repo.Query<KeyValue<Tag>>(tagCollection);
             return query.Where(x => (start == null || x.Value.DiscoveryTime >= start.Value) && (end == null || x.Value.DiscoveryTime < end.Value))
-                .Select(x => x.Value).ToList();
+                .Select(x => x.Value)
+                .Limit(count ?? int.MaxValue)
+                .ToList();
         }
         
         public int DeleteTags(DateTime? start = null, DateTime? end = null)

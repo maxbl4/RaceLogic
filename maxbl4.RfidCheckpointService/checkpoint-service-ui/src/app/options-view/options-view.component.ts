@@ -16,8 +16,9 @@ import {OptionsService} from "../service/options.service";
           <input matInput placeholder="RPS Threshold"
                  type="number" [(ngModel)]="rfidOptions.rpsThreshold">
           <mat-hint>Read Per Second threshold to report poor tag reading</mat-hint>
-      </mat-form-field>      
-      <mat-slide-toggle [(ngModel)]="rfidOptions.enabled">Rfid enabled</mat-slide-toggle>
+      </mat-form-field>
+      <mat-slide-toggle class="mt-2" [(ngModel)]="rfidOptions.persistTags">Persist raw tags</mat-slide-toggle>
+      <mat-slide-toggle class="mt-2" [(ngModel)]="rfidOptions.enabled">Rfid enabled</mat-slide-toggle>
       <div class="row mt-2">
           <div class="col"></div>
           <div class="col-auto">

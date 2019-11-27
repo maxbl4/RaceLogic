@@ -18,6 +18,7 @@ import {OptionsService} from "./service/options.service";
 import {AgGridModule} from "@ag-grid-community/angular";
 import {LowRpsCheckpointAggregatorService} from "./service/low-rps-checkpoint-aggregator.service";
 import { DashboardViewComponent } from './dashboard-view/dashboard-view.component';
+import { TagViewComponent } from './tag-view/tag-view.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { DashboardViewComponent } from './dashboard-view/dashboard-view.componen
     MonitorViewComponent,
     LogsViewComponent,
     LowRpsViewComponent,
-    DashboardViewComponent
+    DashboardViewComponent,
+    TagViewComponent
   ],
   imports: [
     BrowserModule,

@@ -123,5 +123,20 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 }
             });
         }
+        
+        [Fact]
+        public void Should_save_and_load_tags_with_same_tagId()
+        {
+            WithStorageService(storageService =>
+            {
+                var ts = DateTime.UtcNow;
+                storageService.AppendTag(new Tag{Antenna = 1, DiscoveryTime = ts, TagId = "1"});
+                storageService.AppendTag(new Tag{Antenna = 2, DiscoveryTime = ts, TagId = "1"});
+                var list = storageService.ListTags();
+                list.Count.ShouldBe(2);
+                list.ShouldContain(x => x.Antenna == 1);
+                list.ShouldContain(x => x.Antenna == 2);
+            });
+        }
     }
 }

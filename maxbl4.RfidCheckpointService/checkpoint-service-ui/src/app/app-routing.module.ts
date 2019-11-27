@@ -5,6 +5,7 @@ import {MonitorViewComponent} from "./monitor-view/monitor-view.component";
 import {LogsViewComponent} from "./logs-view/logs-view.component";
 import {LowRpsViewComponent} from "./low-rps-view/low-rps-view.component";
 import {DashboardViewComponent} from "./dashboard-view/dashboard-view.component";
+import {TagViewComponent} from "./tag-view/tag-view.component";
 
 
 const routes: Routes = [
@@ -13,6 +14,7 @@ const routes: Routes = [
   {path: 'low-rps', component: LowRpsViewComponent},
   {path: 'options', component: OptionsViewComponent},
   {path: 'monitor', component: MonitorViewComponent},
+  {path: 'tags', component: TagViewComponent},
   {path: 'logs', component: LogsViewComponent},
 ];
 
