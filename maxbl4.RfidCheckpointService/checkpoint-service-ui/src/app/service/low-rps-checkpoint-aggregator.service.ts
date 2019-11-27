@@ -16,7 +16,6 @@ export class LowRpsCheckpointAggregatorService {
 
   constructor(optionsService: OptionsService, private checkpointService: CheckpointService) {
     optionsService.$options.subscribe(x => this.initialize(x.rpsThreshold));
-    console.log(`Create Low Rps Aggregator`);
   }
 
   initialize(rpsThreshold: number) {
@@ -45,7 +44,8 @@ export class LowRpsCheckpointAggregatorService {
       }else{
         const agg = this.checkpoints.get(cp.riderId);
         agg.append(cp);
-        toUpdate.add(agg);
+        if (!toAdd.has(agg))
+          toUpdate.add(agg);
       }
     });
     this.$transactions.next({add:Array.from(toAdd)});
