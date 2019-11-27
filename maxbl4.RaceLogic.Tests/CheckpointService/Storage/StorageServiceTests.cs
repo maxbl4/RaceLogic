@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Services;
 using maxbl4.RfidDotNet;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -51,6 +54,21 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 var settings = storageService.GetRfidOptions();
                 settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
             });
+        }
+        
+        [Fact]
+        public void Should_return_initial_rfid_options()
+        {
+            var opts = new RfidOptions();
+            using var storageService = new StorageService(Options
+                .Create(new ServiceOptions
+                {
+                    StorageConnectionString = storageConnectionString,
+                    InitialRfidOptions = opts
+                }), MessageHub, SystemClock);
+            
+            var settings = storageService.GetRfidOptions();
+            settings.ShouldBeSameAs(opts);
         }
         
         [Fact]
@@ -137,6 +155,28 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 list.ShouldContain(x => x.Antenna == 1);
                 list.ShouldContain(x => x.Antenna == 2);
             });
+        }
+
+        [Fact]
+        public void Should_load_initial_rfid_options_from_settings()
+        {
+            var dict = new Dictionary<string, string>();
+            dict.Add("ServiceOptions:InitialRfidOptions:ConnectionString", "Protocol=Alien;Network=sim:20023");
+            //dict.Add("ServiceOptions:InitialRfidOptions:Enabled", "true");
+            dict.Add("ServiceOptions:InitialRfidOptions:PersistTags", "true");
+            dict.Add("ServiceOptions:InitialRfidOptions:CheckpointAggregationWindowMs", "1000");
+            dict.Add("ServiceOptions:InitialRfidOptions:RpsThreshold", "1000");
+            //dict.Add("ServiceOptions:StorageConnectionString", "aaa");
+            
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(dict)
+                .Build();
+            var opts = config.GetSection(nameof(ServiceOptions))
+                .Get<ServiceOptions>();
+            //opts.StorageConnectionString.ShouldBe("aaa");
+            opts.InitialRfidOptions.ShouldNotBeNull();
+            opts.InitialRfidOptions.Enabled.ShouldBeFalse();
+            opts.InitialRfidOptions.PersistTags.ShouldBeTrue();
         }
     }
 }

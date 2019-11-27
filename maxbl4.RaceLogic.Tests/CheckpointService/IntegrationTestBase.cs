@@ -18,7 +18,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         static object sync = new object();
         private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new MessageHub());
         protected IMessageHub MessageHub => messageHub.Value;
-        private readonly string storageConnectionString;
+        protected readonly string storageConnectionString;
         protected readonly FakeSystemClock SystemClock = new FakeSystemClock();
         protected ILogger Logger { get; }
         

@@ -5,6 +5,11 @@ services:
     image: maxbl4/checkpoint-service-amd64:latest    
     networks:
       - checkpoint-test-net
+    environment:
+      "ServiceOptions:InitialRfidOptions:ConnectionString": "Protocol=Alien;Network=sim:20023"
+      "ServiceOptions:InitialRfidOptions:PersistTags": "true"
+      "ServiceOptions:InitialRfidOptions:CheckpointAggregationWindowMs": "1000"
+      "ServiceOptions:InitialRfidOptions:RpsThreshold": "5"
     ports:
       - 5050:80
     deploy:

@@ -17,6 +17,7 @@ namespace maxbl4.RfidCheckpointService.Services
 {
     public class StorageService : IDisposable
     {
+        private readonly IOptions<ServiceOptions> serviceOptions;
         private readonly IMessageHub messageHub;
         private readonly ILogger logger = Log.ForContext<StorageService>();
         private readonly ISystemClock systemClock;
@@ -24,12 +25,13 @@ namespace maxbl4.RfidCheckpointService.Services
         private long checkpointId;
         private const string tagCollection = "Tag";
 
-        public StorageService(IOptions<ServiceOptions> options, IMessageHub messageHub, ISystemClock systemClock)
+        public StorageService(IOptions<ServiceOptions> serviceOptions, IMessageHub messageHub, ISystemClock systemClock)
         {
+            this.serviceOptions = serviceOptions;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
-            logger.Information($"Using storage connection string {options.Value?.StorageConnectionString}");
-            var connectionString = new ConnectionString(options.Value.StorageConnectionString) {UtcDate = true};
+            logger.Information($"Using storage connection string {serviceOptions.Value?.StorageConnectionString}");
+            var connectionString = new ConnectionString(serviceOptions.Value.StorageConnectionString) {UtcDate = true};
             repo = new LiteRepository(connectionString);
             SetupIndexes();
             checkpointId = GetLastCheckpointId();
@@ -89,7 +91,9 @@ namespace maxbl4.RfidCheckpointService.Services
 
         public RfidOptions GetRfidOptions()
         {
-            return repo.Query<RfidOptions>().FirstOrDefault() ?? RfidOptions.Default;
+            return repo.Query<RfidOptions>().FirstOrDefault()
+                ?? serviceOptions.Value.InitialRfidOptions 
+                ?? RfidOptions.Default;
         }
         
         public void SetRfidOptions(RfidOptions rfidOptions, bool publishUpdate = true)
