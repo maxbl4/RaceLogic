@@ -25,10 +25,11 @@ import {CheckpointService} from "./service/checkpoint.service";
                         [fixedTopGap]="mobileQuery.matches ? 56 : 64"
                      (click)="mobileQuery.matches ? sidenav.toggle() : false">
             <mat-nav-list>
-                <a mat-list-item routerLinkActive="text-danger" routerLink="dashboard">Dashboard</a>
-                <a mat-list-item routerLinkActive="text-danger" routerLink="options">Options</a>
-                <a mat-list-item routerLinkActive="text-danger" routerLink="monitor">Monitor</a>
-                <a mat-list-item routerLinkActive="text-danger" routerLink="logs">Logs</a>
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/dash">Dashboard</a>
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/low-rps">Low RPS</a>
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/monitor">Tags</a>
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/logs">Logs</a>
             </mat-nav-list>
         </mat-sidenav>
 

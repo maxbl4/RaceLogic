@@ -1,71 +1,76 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import * as moment from "moment";
-import {AllCommunityModules, GridOptions, GridApi, ColumnApi, RowDataTransaction} from '@ag-grid-community/all-modules';
+import { Component, OnInit } from '@angular/core';
+import {CheckpointService} from "../service/checkpoint.service";
 import {LowRpsCheckpointAggregatorService} from "../service/low-rps-checkpoint-aggregator.service";
-import {Subscription} from "rxjs";
+import {OptionsService} from "../service/options.service";
+import {RfidOptions} from "../model/rfid-options";
 
 @Component({
   selector: 'app-dashboard-view',
   template: `
-      <div class="row flex-grow-1 flex-column">
-          <ag-grid-angular
-                  class="ag-theme-balham h-100"
-                  [gridOptions]="gridOptions"
-                  [modules]="modules">
-          </ag-grid-angular>
-      </div>
+    <div class="row">
+        <div class="col-md mb-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Enable RFID</h6>
+                    <mat-slide-toggle [(ngModel)]="rfidEnabled">Rfid enabled</mat-slide-toggle>
+                </div>
+            </div>
+        </div>
+        <div class="col-md mb-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Checkpoints</h6>
+                    <h5>{{checkpointService.checkpointsCount}}</h5>
+                    <button mat-raised-button routerLink="/monitor">Details</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md mb-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Low RPS</h6>
+                    <h5>{{lowRpsService.lowRpsCount}}</h5>
+                    <button mat-raised-button routerLink="/low-rps">Details</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md mb-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Manual input</h6>
+                    <mat-form-field class="w-100">
+                        <input matInput placeholder="Enter rider id and press Enter"
+                               [(ngModel)]="manualRiderId" (keyup)="onManualRiderKey($event)">
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+    </div>      
   `,
-  host: {'class': 'flex-container'},
   styles: []
 })
-export class DashboardViewComponent implements OnInit, OnDestroy {
-  private api: GridApi;
-  private columnApi: ColumnApi;
-  modules = AllCommunityModules;
+export class DashboardViewComponent {
+  options: RfidOptions = { enabled: false };
+  manualRiderId: string;
 
-  gridOptions: GridOptions = {
-    columnDefs: [
-      {headerName: 'RiderId', field: 'riderId', sort: 'asc'},
-      {headerName: 'Min Rps', field: 'minRps', valueFormatter: p => p.value.toFixed(1)},
-      {headerName: 'Max Rps', field: 'maxRps', valueFormatter: p => p.value.toFixed(1)},
-      {headerName: 'Count', field: 'count'},
-      {headerName: 'First Seen', field: 'firstSeen', valueFormatter: v => moment(v.value).format('HH:mm:ss')},
-      {headerName: 'Last Seen', field: 'lastSeen', valueFormatter: v => moment(v.value).format('HH:mm:ss')},
-    ],
-    defaultColDef: {
-      sortable: true,
-      resizable: true
-    },
-    onGridSizeChanged: params => params.api.sizeColumnsToFit(),
-    onGridReady: params => {
-      this.api = params.api;
-      this.columnApi = params.columnApi;
-      params.api.sizeColumnsToFit();
-      if (!this.subscription)
-        this.subscription = this.lowRpsCheckpointAggregatorService.$updates
-          .subscribe($up => {
-            this.api.setRowData([]);
-            if ($up)
-              $up.subscribe(x => this.applyUpdate(x));
-          });
+  constructor(public checkpointService: CheckpointService,
+              public lowRpsService: LowRpsCheckpointAggregatorService, private optionsService: OptionsService) {
+    optionsService.$options.subscribe(x => this.options = x);
+  }
+
+  get rfidEnabled() {
+    return this.options.enabled;
+  }
+
+  set rfidEnabled(v: boolean) {
+    this.options.enabled = v;
+    this.optionsService.saveOptions(this.options);
+  }
+
+  onManualRiderKey($event: KeyboardEvent) {
+    if ($event.key == 'Enter') {
+      this.checkpointService.sendManualCheckpoint(this.manualRiderId);
+      this.manualRiderId = '';
     }
-  };
-  private subscription: Subscription;
-
-  constructor(private lowRpsCheckpointAggregatorService: LowRpsCheckpointAggregatorService) {
-  }
-
-  ngOnInit() {
-  }
-
-  private applyUpdate(update: RowDataTransaction|null) {
-    console.log(update);
-    if (update) {
-      this.api.updateRowData(update);
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscription) this.subscription.unsubscribe();
   }
 }

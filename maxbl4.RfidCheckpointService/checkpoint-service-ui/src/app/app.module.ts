@@ -9,7 +9,7 @@ import {DemoMaterialModule} from "./material-module";
 import { OptionsViewComponent } from './options-view/options-view.component';
 import { MonitorViewComponent } from './monitor-view/monitor-view.component';
 import { LogsViewComponent } from './logs-view/logs-view.component';
-import { DashboardViewComponent } from './dashboard-view/dashboard-view.component';
+import { LowRpsViewComponent } from './low-rps-view/low-rps-view.component';
 import {HttpClientModule} from "@angular/common/http";
 import {WebSocketConnectionService} from "./service/web-socket-connection-service";
 import {CheckpointService} from "./service/checkpoint.service";
@@ -17,6 +17,7 @@ import {ReaderStatusService} from "./service/reader-status.service";
 import {OptionsService} from "./service/options.service";
 import {AgGridModule} from "@ag-grid-community/angular";
 import {LowRpsCheckpointAggregatorService} from "./service/low-rps-checkpoint-aggregator.service";
+import { DashboardViewComponent } from './dashboard-view/dashboard-view.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import {LowRpsCheckpointAggregatorService} from "./service/low-rps-checkpoint-ag
     OptionsViewComponent,
     MonitorViewComponent,
     LogsViewComponent,
+    LowRpsViewComponent,
     DashboardViewComponent
   ],
   imports: [

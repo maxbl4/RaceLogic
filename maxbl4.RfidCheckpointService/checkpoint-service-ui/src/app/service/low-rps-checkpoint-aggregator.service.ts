@@ -11,6 +11,7 @@ export class LowRpsCheckpointAggregatorService {
   $updates = new BehaviorSubject<Observable<RowDataTransaction|null>|null>(null);
   readonly checkpoints: Map<string,LowRpsCheckpoint> = new Map<string, LowRpsCheckpoint>();
   rpsThreshold = 0;
+  lowRpsCount = 0;
   private subscription: Subscription;
   private $transactions: ReplaySubject<RowDataTransaction|null>;
 
@@ -48,6 +49,7 @@ export class LowRpsCheckpointAggregatorService {
           toUpdate.add(agg);
       }
     });
+    this.lowRpsCount = this.checkpoints.size;
     this.$transactions.next({add:Array.from(toAdd)});
     this.$transactions.next({update: Array.from(toUpdate)});
   }

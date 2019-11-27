@@ -116,6 +116,32 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
         }
         
         [Fact]
+        public async Task Should_ignore_empty_manual_checkpoint()
+        {
+            SystemClock.UseRealClock();
+            var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
+            
+            using var svc = CreateRfidCheckpointService();
+            var wsConnection = new HubConnectionBuilder()
+                .WithUrl("http://localhost:5000/ws/cp")
+                .Build();
+            var checkpoints = new List<Checkpoint>();
+            await wsConnection.StartAsync();
+            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
+            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
+            var wsConnected = false;
+            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            await new Timing().ExpectAsync(() => wsConnected);
+            var cli = new HttpClient();
+            (await cli.PutAsync("http://localhost:5000/cp", 
+                new StringContent("\"\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
+            (await new Timing()
+                .Timeout(5000)
+                .Logger(Logger)
+                .WaitAsync(() => checkpoints.Count > 0)).ShouldBeFalse();
+        }
+        
+        [Fact]
         public async Task Should_remove_checkpoints()
         {
             var now = DateTime.UtcNow;

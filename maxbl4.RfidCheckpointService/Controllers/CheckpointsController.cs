@@ -27,9 +27,12 @@ namespace maxbl4.RfidCheckpointService.Controllers
         
         [HttpPut]
         [HttpPost]
-        public void Put([FromBody]string riderId)
+        public IActionResult Put([FromBody]string riderId)
         {
+            if (string.IsNullOrWhiteSpace(riderId))
+                return NoContent();
             rfidService.AppendRiderId(riderId);
+            return Accepted();
         }
         
         [HttpDelete("{id}")]

@@ -5,6 +5,7 @@ import {Injectable} from "@angular/core";
 import {combineLatest, Observable} from "rxjs";
 import {bufferTime, filter, map, mergeMap} from "rxjs/operators";
 import {OptionsService} from "./options.service";
+import {HttpClient} from "@angular/common/http";
 
 @Injectable()
 export class CheckpointService {
@@ -16,7 +17,7 @@ export class CheckpointService {
   checkpointsCount = 0;
   subscriptionTime = moment().utc().startOf('day').format();
 
-  constructor(ws: WebSocketConnectionService, optionsService: OptionsService) {
+  constructor(ws: WebSocketConnectionService, optionsService: OptionsService, private http: HttpClient) {
     this.$checkpoints = ws.$checkpoints;
     ws.$checkpoints.subscribe(cps => {
       this.checkpointsCount += cps.length;
@@ -41,5 +42,9 @@ export class CheckpointService {
         filter(([options, cp]) => !cp.isManual && cp.aggregated && cp.rps < options.rpsThreshold),
         map(([options, cp]) => cp),
         bufferTime(1000));
+  }
+
+  sendManualCheckpoint(manualRiderId: string) {
+    this.http.put('cp', `"${manualRiderId}"`, {headers:{'Content-type':'application/json'}}).subscribe();
   }
 }
