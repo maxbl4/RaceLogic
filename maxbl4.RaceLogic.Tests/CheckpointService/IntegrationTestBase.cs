@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
+using AutoMapper;
 using Easy.MessageHub;
 using maxbl4.RaceLogic.Tests.Ext;
 using maxbl4.RfidCheckpointService;
@@ -21,6 +22,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         protected readonly string storageConnectionString;
         protected readonly FakeSystemClock SystemClock = new FakeSystemClock();
         protected ILogger Logger { get; }
+        protected IMapper Mapper { get; }
         
         public IntegrationTestBase(ITestOutputHelper outputHelper)
         {
@@ -38,6 +40,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
                 File.Delete(fileName);
             }
             storageConnectionString = $"Filename={fileName};UtcDate=true";
+            Mapper = new MapperConfiguration(x => x.AddMaps(typeof(Startup)))
+                .CreateMapper();
         }
 
         public void WithStorageService(Action<StorageService> storageServiceInitializer)
@@ -51,7 +55,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
             using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
-            using var rfidService = new RfidService(storageService, MessageHub, SystemClock);
+            using var rfidService = new RfidService(storageService, MessageHub, SystemClock, Mapper);
             action(storageService, rfidService);
         }
         

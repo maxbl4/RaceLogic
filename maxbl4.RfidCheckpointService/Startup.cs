@@ -1,5 +1,6 @@
 using System.Reactive.PlatformServices;
 using System.Threading;
+using AutoMapper;
 using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.RfidCheckpointService.Ext;
@@ -30,6 +31,7 @@ namespace maxbl4.RfidCheckpointService
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
+            services.AddAutoMapper(typeof(Startup));
             services.RegisterHostedService<IRfidService, RfidService>();
             services.RegisterHostedService<DistributionService>();
             services.AddControllers().AddNewtonsoftJson();

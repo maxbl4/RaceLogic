@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
+using Tag = maxbl4.RfidCheckpointService.Model.Tag;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
 {
@@ -76,6 +77,16 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             (await response.Content.ReadAs<int>()).ShouldBe(0);
             var tags = await cli.GetAsync<List<Tag>>("http://localhost:5000/tag");
             tags.Count.ShouldBe(0);
+        }
+        
+        [Fact]
+        public async Task Should_return_version()
+        {
+            using var svc = CreateRfidCheckpointService();
+            var cli = new HttpClient();
+            
+            var response = await cli.GetStringAsync("http://localhost:5000/version");
+            response.ShouldBe("1.0.0.0");
         }
     }
 }

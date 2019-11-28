@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,10 +12,10 @@ using maxbl4.RfidCheckpointService.Model;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.Infrastructure;
 using Microsoft.AspNetCore.SignalR.Client;
-using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
+using Tag = maxbl4.RfidDotNet.Tag;
 
 namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
 {

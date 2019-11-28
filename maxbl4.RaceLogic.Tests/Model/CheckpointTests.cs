@@ -56,14 +56,14 @@ namespace maxbl4.RaceLogic.Tests.Model
             agg.Timestamp.ShouldBe(ts);
             agg.LastSeen.ShouldBe(ts2);
             agg.Count.ShouldBe(2);
-            agg.Rps.ShouldBe(4, 0.1);
+            agg.Rps.ShouldBe(4);
             
             var ts3 = ts.AddSeconds(3);
             agg = agg.Add(new Checkpoint("11", ts3));
             agg.Timestamp.ShouldBe(ts);
             agg.LastSeen.ShouldBe(ts3);
             agg.Count.ShouldBe(3);
-            agg.Rps.ShouldBe(1, 0.1);
+            agg.Rps.ShouldBe(1);
         }
         
         [Fact]
@@ -79,7 +79,7 @@ namespace maxbl4.RaceLogic.Tests.Model
             agg.Timestamp.ShouldBe(ts);
             agg.LastSeen.ShouldBe(ts.AddSeconds(2));
             agg.Count.ShouldBe(3);
-            agg.Rps.ShouldBe(1.5, 0.1);
+            agg.Rps.ShouldBe(2);
         }
         
         [Fact]
@@ -98,7 +98,7 @@ namespace maxbl4.RaceLogic.Tests.Model
             agg.Timestamp.ShouldBe(ts);
             agg.LastSeen.ShouldBe(ts);
             agg.Count.ShouldBe(3);
-            agg.Rps.ShouldBe(3, 0.1);
+            agg.Rps.ShouldBe(3);
         }
         
         [Fact]

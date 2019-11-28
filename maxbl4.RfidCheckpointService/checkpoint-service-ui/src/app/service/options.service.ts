@@ -7,10 +7,12 @@ import {WebSocketConnectionService} from "./web-socket-connection-service";
 @Injectable()
 export class OptionsService {
   $options = new BehaviorSubject<RfidOptions>({});
+  version: string = "";
 
   constructor(private http: HttpClient, ws: WebSocketConnectionService) {
     ws.$rfidOptions.subscribe(x => this.$options.next(x));
     this.loadOptions();
+    this.http.get('version', {responseType: 'text'}).subscribe(x => this.version = x);
   }
 
   loadOptions() {

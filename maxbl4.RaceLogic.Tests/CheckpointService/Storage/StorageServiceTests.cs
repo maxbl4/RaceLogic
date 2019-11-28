@@ -110,7 +110,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 var ts = DateTime.UtcNow;
                 for (var i = 1; i <= 10; i++)
                 {
-                    storageService.AppendTag(new Tag{Antenna = i, Rssi = i, DiscoveryTime = ts.AddSeconds(i), LastSeenTime = ts.AddSeconds(i + 1), ReadCount = i, TagId = i.ToString()});
+                    storageService.AppendTag(new RfidCheckpointService.Model.Tag{Antenna = i, Rssi = i, DiscoveryTime = ts.AddSeconds(i), LastSeenTime = ts.AddSeconds(i + 1), ReadCount = i, TagId = i.ToString()});
                 }
                 var list = storageService.ListTags();
                 list.Count.ShouldBe(10);
@@ -118,7 +118,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 {
                     var t = list[i - 1];
                     t.Antenna.ShouldBe(i);
-                    t.Rssi.ShouldBe(i, 0.01);
+                    t.Rssi.ShouldBe(i);
                     t.DiscoveryTime.ShouldBe(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
                     t.LastSeenTime.ShouldBe(ts.AddSeconds(i + 1), TimeSpan.FromMilliseconds(10));
                     t.ReadCount.ShouldBe(i);
@@ -133,7 +133,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 {
                     var t = list[i - 8];
                     t.Antenna.ShouldBe(i);
-                    t.Rssi.ShouldBe(i, 0.01);
+                    t.Rssi.ShouldBe(i);
                     t.DiscoveryTime.ShouldBe(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
                     t.LastSeenTime.ShouldBe(ts.AddSeconds(i + 1), TimeSpan.FromMilliseconds(10));
                     t.ReadCount.ShouldBe(i);
@@ -148,8 +148,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
             WithStorageService(storageService =>
             {
                 var ts = DateTime.UtcNow;
-                storageService.AppendTag(new Tag{Antenna = 1, DiscoveryTime = ts, TagId = "1"});
-                storageService.AppendTag(new Tag{Antenna = 2, DiscoveryTime = ts, TagId = "1"});
+                storageService.AppendTag(new RfidCheckpointService.Model.Tag{Antenna = 1, DiscoveryTime = ts, TagId = "1"});
+                storageService.AppendTag(new RfidCheckpointService.Model.Tag{Antenna = 2, DiscoveryTime = ts, TagId = "1"});
                 var list = storageService.ListTags();
                 list.Count.ShouldBe(2);
                 list.ShouldContain(x => x.Antenna == 1);

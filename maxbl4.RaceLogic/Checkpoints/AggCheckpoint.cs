@@ -24,7 +24,7 @@ namespace maxbl4.RaceLogic.Checkpoints
                 Rps = Count;
             else
             {
-                Rps = Count * 1000 / interval;
+                Rps = (int)Math.Ceiling(Count * 1000 / interval);
             }
         }
 

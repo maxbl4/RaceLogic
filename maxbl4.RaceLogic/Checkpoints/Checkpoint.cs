@@ -15,7 +15,7 @@ namespace maxbl4.RaceLogic.Checkpoints
         public int Count { get; set; } = 1;
         public bool Aggregated { get; set; }
         public bool IsManual { get; set; }
-        public double Rps { get; set; }
+        public int Rps { get; set; }
 
         public Checkpoint()
         {

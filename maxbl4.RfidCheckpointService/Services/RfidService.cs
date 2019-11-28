@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using AutoMapper;
 using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
@@ -13,6 +14,7 @@ using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.Extensions;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
 using Serilog;
+using Tag = maxbl4.RfidCheckpointService.Model.Tag;
 
 namespace maxbl4.RfidCheckpointService.Services
 {
@@ -21,6 +23,7 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly StorageService storageService;
         private readonly IMessageHub messageHub;
         private readonly ISystemClock systemClock;
+        private readonly IMapper mapper;
         private readonly ILogger logger = Log.ForContext<RfidService>();
         private readonly UniversalTagStreamFactory factory;
         private IUniversalTagStream stream;
@@ -29,11 +32,12 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
         public RfidService(StorageService storageService, IMessageHub messageHub, 
-            ISystemClock systemClock)
+            ISystemClock systemClock, IMapper mapper)
         {
             this.storageService = storageService;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
+            this.mapper = mapper;
             messageHub.Subscribe<RfidOptions>(RfidOptionsChanged);
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
@@ -84,7 +88,7 @@ namespace maxbl4.RfidCheckpointService.Services
                 stream.Tags.Subscribe(x =>
                 {
                     if (options.PersistTags)
-                        logger.Swallow(() => storageService.AppendTag(x));
+                        logger.Swallow(() => storageService.AppendTag(mapper.Map<Tag>(x)));
                     AppendRiderId(x.TagId);
                 }));
             aggregator =

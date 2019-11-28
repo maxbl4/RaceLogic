@@ -4,11 +4,10 @@ using System.Reactive.PlatformServices;
 using System.Threading;
 using Easy.MessageHub;
 using LiteDB;
-using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.RaceLogic.Checkpoints;
-using maxbl4.RfidDotNet;
+using maxbl4.RfidCheckpointService.Model;
 using Serilog;
 using Microsoft.Extensions.Options;
 using ConnectionString = LiteDB.ConnectionString;
@@ -23,7 +22,6 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly ISystemClock systemClock;
         private readonly LiteRepository repo;
         private long checkpointId;
-        private const string tagCollection = "Tag";
 
         public StorageService(IOptions<ServiceOptions> serviceOptions, IMessageHub messageHub, ISystemClock systemClock)
         {
@@ -40,7 +38,7 @@ namespace maxbl4.RfidCheckpointService.Services
         private void SetupIndexes()
         {
             repo.Database.GetCollection<Checkpoint>().EnsureIndex(x => x.Timestamp);
-            repo.Database.GetCollection<KeyValue<Tag>>(tagCollection).EnsureIndex(x => x.Value.DiscoveryTime);
+            repo.Database.GetCollection<Tag>().EnsureIndex(x => x.DiscoveryTime);
         }
 
         public void AppendCheckpoint(Checkpoint cp)
@@ -71,22 +69,21 @@ namespace maxbl4.RfidCheckpointService.Services
         public void AppendTag(Tag tag)
         {
             if (tag == null) throw new ArgumentNullException(nameof(tag)); 
-            repo.Insert(new KeyValue<Tag>{Value = tag}, tagCollection);
+            repo.Insert(tag);
         }
 
         public List<Tag> ListTags(DateTime? start = null, DateTime? end = null, int? count = null)
         {
-            var query = repo.Query<KeyValue<Tag>>(tagCollection);
-            return query.Where(x => (start == null || x.Value.DiscoveryTime >= start.Value) && (end == null || x.Value.DiscoveryTime < end.Value))
-                .Select(x => x.Value)
+            var query = repo.Query<Tag>();
+            return query.Where(x => (start == null || x.DiscoveryTime >= start.Value) && (end == null || x.DiscoveryTime < end.Value))
                 .Limit(count ?? int.MaxValue)
                 .ToList();
         }
         
         public int DeleteTags(DateTime? start = null, DateTime? end = null)
         {
-            return repo.Database.GetCollection<KeyValue<Tag>>(tagCollection).DeleteMany(x =>
-                (start == null || x.Value.DiscoveryTime >= start.Value) && (end == null || x.Value.DiscoveryTime < end.Value));
+            return repo.Database.GetCollection<Tag>().DeleteMany(x =>
+                (start == null || x.DiscoveryTime >= start.Value) && (end == null || x.DiscoveryTime < end.Value));
         }
 
         public RfidOptions GetRfidOptions()
@@ -125,12 +122,6 @@ namespace maxbl4.RfidCheckpointService.Services
         public void Dispose()
         {
             repo.DisposeSafe();
-        }
-        
-        class KeyValue<T>
-        {
-            public long Id { get; set; }
-            public T Value { get; set; }
         }
     }
 }

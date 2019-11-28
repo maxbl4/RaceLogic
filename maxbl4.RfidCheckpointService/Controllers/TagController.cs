@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using maxbl4.RaceLogic.Checkpoints;
+using maxbl4.RfidCheckpointService.Model;
 using maxbl4.RfidCheckpointService.Services;
-using maxbl4.RfidDotNet;
 using Microsoft.AspNetCore.Mvc;
 
 namespace maxbl4.RfidCheckpointService.Controllers
