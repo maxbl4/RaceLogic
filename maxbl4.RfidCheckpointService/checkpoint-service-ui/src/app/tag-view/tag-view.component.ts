@@ -60,6 +60,7 @@ export class TagViewComponent implements OnInit {
 
   constructor(private http: HttpClient, ws: WebSocketConnectionService) {
     this.startTime = ws.subscriptionStartTime;
+    this.load();
   }
 
   ngOnInit() {

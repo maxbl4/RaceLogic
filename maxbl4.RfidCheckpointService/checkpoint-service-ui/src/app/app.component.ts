@@ -19,8 +19,7 @@ import {OptionsService} from "./service/options.service";
             </mat-chip>
           </mat-chip-list>
         </div>
-        <mat-divider></mat-divider>
-        <span>{{optionsService.version}}</span>
+        <mat-divider></mat-divider>        
         <button mat-icon-button (click)="sidenav.toggle()"
                 [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>
     </mat-toolbar>
@@ -35,7 +34,9 @@ import {OptionsService} from "./service/options.service";
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/monitor">Checkpoints</a>
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/tags">Tags</a>
-                <a mat-list-item routerLinkActive="text-danger" routerLink="/logs">Logs</a>                                
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/logs">Logs</a>
+                <mat-divider></mat-divider>
+                <a mat-list-item disabled>{{optionsService.version}}</a>                                
             </mat-nav-list>
         </mat-sidenav>
 
