@@ -3,6 +3,7 @@ import {CheckpointService} from "../service/checkpoint.service";
 import {LowRpsCheckpointAggregatorService} from "../service/low-rps-checkpoint-aggregator.service";
 import {OptionsService} from "../service/options.service";
 import {RfidOptions} from "../model/rfid-options";
+import {HttpClient} from "@angular/common/http";
 
 @Component({
   selector: 'app-dashboard-view',
@@ -45,7 +46,18 @@ import {RfidOptions} from "../model/rfid-options";
                 </div>
             </div>
         </div>
-    </div>      
+    </div>
+    <div class="row">
+        <div class="col-md mb-2">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Restart</h6>
+                    <div>This will force backend to STOP. And it SHOULD be restarted by Docker in 10-20 seconds. Reboot device if backend does not come online</div>
+                    <button mat-raised-button (click)="restart()" color="warn">Restart Backend</button>
+                </div>
+            </div>
+        </div>
+    </div>
   `,
   host: {'class': 'flex-container'},
   styles: []
@@ -55,7 +67,8 @@ export class DashboardViewComponent {
   manualRiderId: string;
 
   constructor(public checkpointService: CheckpointService,
-              public lowRpsService: LowRpsCheckpointAggregatorService, private optionsService: OptionsService) {
+              public lowRpsService: LowRpsCheckpointAggregatorService, private optionsService: OptionsService,
+              private http: HttpClient) {
     optionsService.$options.subscribe(x => this.options = x);
   }
 
@@ -72,6 +85,12 @@ export class DashboardViewComponent {
     if ($event.key == 'Enter') {
       this.checkpointService.sendManualCheckpoint(this.manualRiderId);
       this.manualRiderId = '';
+    }
+  }
+
+  restart() {
+    if (confirm('Restart?')) {
+      this.http.post('restart', {}).subscribe();
     }
   }
 }

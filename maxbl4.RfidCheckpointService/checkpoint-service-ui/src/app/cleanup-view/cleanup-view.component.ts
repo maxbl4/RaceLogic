@@ -8,7 +8,7 @@ import {HttpClient} from "@angular/common/http";
           <div class="col-md mb-2">
               <div class="card h-100">
                   <div class="card-body">
-                      <h6 class="card-title">Reamove Tags</h6>                      
+                      <h6 class="card-title">Remove Tags</h6>                      
                       <button mat-raised-button (click)="removeTags()">Remove</button>
                   </div>
               </div>
@@ -16,7 +16,7 @@ import {HttpClient} from "@angular/common/http";
           <div class="col-md mb-2">
               <div class="card h-100">
                   <div class="card-body">
-                      <h6 class="card-title">Reamove Checkpoints</h6>
+                      <h6 class="card-title">Remove Checkpoints</h6>
                       <button mat-raised-button (click)="removeCheckpoints()">Remove</button>
                   </div>
               </div>
@@ -24,7 +24,7 @@ import {HttpClient} from "@angular/common/http";
           <div class="col-md mb-2">
               <div class="card h-100">
                   <div class="card-body">
-                      <h6 class="card-title">Reamove Logs</h6>
+                      <h6 class="card-title">Remove Logs</h6>
                       <button mat-raised-button (click)="removeLogs()">Remove</button>
                   </div>
               </div>
