@@ -36,7 +36,9 @@ import {OptionsService} from "./service/options.service";
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/tags">Tags</a>
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/logs">Logs</a>
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/cleanup">Cleanup</a>
+                <mat-divider></mat-divider>
                 <a mat-list-item href="/files" (click)="goto('/files')">File Browser</a>
+                <a mat-list-item (click)="portainer('9000')">Portainer</a>
                 <mat-divider></mat-divider>
                 <a mat-list-item disabled>{{optionsService.version}}</a>                                
             </mat-nav-list>
@@ -69,5 +71,9 @@ export class AppComponent implements OnDestroy {
 
   goto(s: string) {
     location.href=s;
+  }
+
+  portainer(port: string) {
+    location.href = `${location.protocol}//${location.hostname}:${port}`;
   }
 }

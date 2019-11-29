@@ -21,15 +21,15 @@ namespace maxbl4.RfidCheckpointService.Controllers
         [HttpGet]
         public IActionResult Get(int? lines, string filter, bool? errors)
         {
-            var logName = errors == true ? errorLogFile.CurrentFile : mainLogFile.CurrentFile;
+            var logfile = errors == true ? errorLogFile : mainLogFile;
 
-            if (logName == null)
-                NotFound();
+            if (!logfile.Exist)
+                return NotFound();
             if (lines == null)
                 lines = 50;
             if (lines < 0)
                 lines = Int32.MaxValue;
-            var logText = new StreamReader(new FileStream(logName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
+            var logText = new StreamReader(new FileStream(logfile.CurrentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
             return Content(string.Join("\r\n", logText.Split(new char[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Contains(filter))
                 .TakeLast(lines.Value)), "text/plain");
@@ -40,6 +40,7 @@ namespace maxbl4.RfidCheckpointService.Controllers
         {
             return errorLogFile.AllCurrentFiles.Concat(mainLogFile.AllCurrentFiles)
                 .Select(x => new FileInfo(x))
+                .Where(x => x.Exists)
                 .Select(x => new LogFileInfo {File = x.Name, Size = (int) x.Length});
         }
 

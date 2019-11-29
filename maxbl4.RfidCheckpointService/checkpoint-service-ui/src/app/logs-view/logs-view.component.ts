@@ -67,8 +67,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     if (this.selectedLogType === LogType.errors) {
       requestUri += `errors=true&`;
     }
-    this.http.get(requestUri, {responseType: "text"}).subscribe(x => this.logs = x);
-    this.http.get('http://192.168.1.199:5050/files/RfidCheckpointServiceRunner.log')
+    this.http.get(requestUri, {responseType: "text"}).subscribe(x => this.logs = x, err => this.logs = 'Not found');
   }
 
   ngOnInit() {
