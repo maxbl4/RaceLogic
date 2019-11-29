@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using maxbl4.Infrastructure;
 using maxbl4.RfidCheckpointService.Model;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,50 +13,42 @@ namespace maxbl4.RfidCheckpointService.Controllers
     [Route("log")]
     public class LogController : ControllerBase
     {
-        private const string logFilenamePattern = "RfidCheckpointServiceRunner*.log";
         private const string dataDirectory = "var/data";
         
-        [HttpGet()]
-        public string Get(int? lines, string filter)
+        private readonly RollingFileInfo mainLogFile = new RollingFileInfo(Path.Combine(dataDirectory, "RfidCheckpointServiceRunner.log"));
+        private readonly RollingFileInfo errorLogFile = new RollingFileInfo(Path.Combine(dataDirectory, "RfidCheckpointServiceRunner-errors.log"));
+        
+        [HttpGet]
+        public IActionResult Get(int? lines, string filter, bool? errors)
         {
-            var logName = Directory.GetFiles(dataDirectory, logFilenamePattern).OrderByDescending(x => x).FirstOrDefault();
-            
+            var logName = errors == true ? errorLogFile.CurrentFile : mainLogFile.CurrentFile;
+
             if (logName == null)
-                return $"Log file not found {logName}";
+                NotFound();
             if (lines == null)
                 lines = 50;
             if (lines < 0)
                 lines = Int32.MaxValue;
             var logText = new StreamReader(new FileStream(logName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
-            return string.Join("\r\n", logText.Split(new char[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
+            return Content(string.Join("\r\n", logText.Split(new char[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Contains(filter))
-                .TakeLast(lines.Value));
+                .TakeLast(lines.Value)), "text/plain");
         }
 
         [HttpGet("info")]
         public IEnumerable<LogFileInfo> Info()
         {
-            return new DirectoryInfo(dataDirectory)
-                .GetFiles(logFilenamePattern)
-                .OrderBy(x => x.Name)
+            return errorLogFile.AllCurrentFiles.Concat(mainLogFile.AllCurrentFiles)
+                .Select(x => new FileInfo(x))
                 .Select(x => new LogFileInfo {File = x.Name, Size = (int) x.Length});
         }
 
         [HttpDelete]
-        public int Delete()
+        public int Delete(bool? errors)
         {
-            var deleted = 0;
-            foreach (var f in Directory.GetFiles(dataDirectory, logFilenamePattern))
-            {
-                try
-                {
-                    System.IO.File.Delete(f);
-                    deleted++;
-                }
-                catch {}
-            }
-
-            return deleted;
+            if (errors == true)
+                return errorLogFile.Delete();
+            return mainLogFile.Delete();
         }
     }
 }

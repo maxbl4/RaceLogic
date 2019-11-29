@@ -35,6 +35,8 @@ import {OptionsService} from "./service/options.service";
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/tags">Tags</a>
                 <a mat-list-item routerLinkActive="text-danger" routerLink="/logs">Logs</a>
+                <a mat-list-item routerLinkActive="text-danger" routerLink="/cleanup">Cleanup</a>
+                <a mat-list-item href="/files" (click)="goto('/files')">File Browser</a>
                 <mat-divider></mat-divider>
                 <a mat-list-item disabled>{{optionsService.version}}</a>                                
             </mat-nav-list>
@@ -63,5 +65,9 @@ export class AppComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+  goto(s: string) {
+    location.href=s;
   }
 }

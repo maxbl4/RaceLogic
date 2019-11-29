@@ -25,7 +25,7 @@ namespace maxbl4.RfidCheckpointService.Controllers
             return storageService.ListTags(start, end, count);
         }
         
-        [HttpDelete()]
+        [HttpDelete]
         public int Delete(DateTime? start, DateTime? end)
         {
             return storageService.DeleteTags(start, end);

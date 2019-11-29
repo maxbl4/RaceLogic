@@ -6,6 +6,13 @@ import {LogFileInfo} from "../model/LogFileInfo";
   selector: 'app-logs-view',
   template: `
       <mat-form-field class="w-100">
+          <mat-label>Log type</mat-label>
+          <mat-select [(ngModel)]="selectedLogType">
+              <mat-option [value]="LogType.everything">Everything</mat-option>
+              <mat-option [value]="LogType.errors">Errors</mat-option>
+          </mat-select>
+      </mat-form-field>
+      <mat-form-field class="w-100">
           <input matInput placeholder="Display Log Count"
                  type="number" [(ngModel)]="logLineCount">
       </mat-form-field>
@@ -36,26 +43,32 @@ import {LogFileInfo} from "../model/LogFileInfo";
   styles: []
 })
 export class LogsViewComponent implements OnInit, OnDestroy {
+  LogType = LogType;
   logs = '';
   logLineCount = 20;
   logFilter = '';
   private interval: NodeJS.Timer;
   logFiles: LogFileInfo[];
+  selectedLogType: LogType = LogType.everything;
 
   constructor(private http: HttpClient) {
     this.interval = setInterval(() => this.updateLogs(), 1000);
     this.loadLogInfos();
   }
 
-  async updateLogs() {
+  updateLogs() {
     let requestUri = 'log?';
     if (this.logLineCount > 0) {
-      requestUri += `lines=${this.logLineCount}&`
+      requestUri += `lines=${this.logLineCount}&`;
     }
     if (this.logFilter != null && this.logFilter.length > 0) {
-      requestUri += `filter=${this.logFilter}&`
+      requestUri += `filter=${this.logFilter}&`;
     }
-    this.logs = (await this.http.get(requestUri, {responseType: "text"}).toPromise()).toString();
+    if (this.selectedLogType === LogType.errors) {
+      requestUri += `errors=true&`;
+    }
+    this.http.get(requestUri, {responseType: "text"}).subscribe(x => this.logs = x);
+    this.http.get('http://192.168.1.199:5050/files/RfidCheckpointServiceRunner.log')
   }
 
   ngOnInit() {
@@ -67,7 +80,11 @@ export class LogsViewComponent implements OnInit, OnDestroy {
 
   clearLogs() {
     if (confirm('Clear logs?')) {
-      this.http.delete<number>('log').subscribe(x => {
+      let requestUri = 'log?'
+      if (this.selectedLogType === LogType.errors) {
+        requestUri += `errors=true&`;
+      }
+      this.http.delete<number>(requestUri).subscribe(x => {
         alert(`Removed ${x} files`);
         this.loadLogInfos();
       });
@@ -77,4 +94,9 @@ export class LogsViewComponent implements OnInit, OnDestroy {
   private loadLogInfos() {
     this.http.get<LogFileInfo[]>('log/info').subscribe(x => this.logFiles = x);
   }
+}
+
+enum LogType {
+  everything,
+  errors
 }
