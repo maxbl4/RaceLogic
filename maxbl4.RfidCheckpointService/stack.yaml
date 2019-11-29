@@ -10,6 +10,8 @@ services:
       "ServiceOptions:InitialRfidOptions:PersistTags": "true"
       "ServiceOptions:InitialRfidOptions:CheckpointAggregationWindowMs": "1000"
       "ServiceOptions:InitialRfidOptions:RpsThreshold": "5"
+    volumes:
+      - cps-data:/app/var/data
     ports:
       - 5050:80
     deploy:
@@ -27,7 +29,11 @@ services:
       replicas: 1
       restart_policy:
         condition: any
-      
+
+volumes:
+  cps-data:
+    driver: local
+    
 networks:
   checkpoint-test-net:
     driver: overlay
