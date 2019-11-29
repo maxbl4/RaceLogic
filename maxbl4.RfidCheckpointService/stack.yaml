@@ -2,7 +2,8 @@
 
 services:
   checkpoint-service:
-    image: maxbl4/checkpoint-service-${cps_arch:-amd64}:latest    
+    image: maxbl4/checkpoint-service-${cps_arch:-amd64}:latest
+    privileged: true
     networks:
       - checkpoint-test-net
     environment:
