@@ -81,8 +81,9 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
 
         string GetNameForDbFile(ITestOutputHelper outputHelper)
         {
+            Directory.CreateDirectory("var/data");
             var parts = outputHelper.GetTest().DisplayName.Split(".");
-            return "_" + string.Join("-", parts.Skip(Math.Max(parts.Length - 2, 0))) + ".litedb";
+            return "var/data/" + "_" + string.Join("-", parts.Skip(Math.Max(parts.Length - 2, 0))) + ".litedb";
         }
     }
 }

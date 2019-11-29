@@ -12,11 +12,12 @@ namespace maxbl4.RfidCheckpointService.Controllers
     public class LogController : ControllerBase
     {
         private const string logFilenamePattern = "RfidCheckpointServiceRunner*.log";
+        private const string dataDirectory = "var/data";
         
         [HttpGet()]
         public string Get(int? lines, string filter)
         {
-            var logName = Directory.GetFiles(Environment.CurrentDirectory, logFilenamePattern).OrderByDescending(x => x).FirstOrDefault();
+            var logName = Directory.GetFiles(dataDirectory, logFilenamePattern).OrderByDescending(x => x).FirstOrDefault();
             
             if (logName == null)
                 return $"Log file not found {logName}";
@@ -33,7 +34,7 @@ namespace maxbl4.RfidCheckpointService.Controllers
         [HttpGet("info")]
         public IEnumerable<LogFileInfo> Info()
         {
-            return new DirectoryInfo(Environment.CurrentDirectory)
+            return new DirectoryInfo(dataDirectory)
                 .GetFiles(logFilenamePattern)
                 .OrderBy(x => x.Name)
                 .Select(x => new LogFileInfo {File = x.Name, Size = (int) x.Length});
@@ -43,7 +44,7 @@ namespace maxbl4.RfidCheckpointService.Controllers
         public int Delete()
         {
             var deleted = 0;
-            foreach (var f in Directory.GetFiles(Environment.CurrentDirectory, logFilenamePattern))
+            foreach (var f in Directory.GetFiles(dataDirectory, logFilenamePattern))
             {
                 try
                 {

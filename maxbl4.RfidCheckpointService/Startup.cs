@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reactive.PlatformServices;
 using System.Threading;
 using AutoMapper;
@@ -8,8 +9,10 @@ using maxbl4.RfidCheckpointService.Hubs;
 using maxbl4.RfidCheckpointService.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -61,7 +64,19 @@ namespace maxbl4.RfidCheckpointService
 
             app.UseRouting();
             app.UseDefaultFiles();
+            app.UseDirectoryBrowser();
             app.UseStaticFiles();
+            var shared = new SharedOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "var", "data")),
+                RequestPath = "/files"
+            };
+            app.UseDirectoryBrowser(new DirectoryBrowserOptions(shared));
+            app.UseStaticFiles(new StaticFileOptions(shared)
+            {
+                ServeUnknownFileTypes = true,
+            });
 
             app.UseAuthorization();
 

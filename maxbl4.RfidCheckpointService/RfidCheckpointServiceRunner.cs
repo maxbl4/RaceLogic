@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
@@ -56,6 +57,7 @@ namespace maxbl4.RfidCheckpointService
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
+                        .UseWebRoot(Path.Combine("var", "www"))
                         .UseStartup<Startup>()
                         .UseSerilog((builder, loggerConfig) =>
                             {
