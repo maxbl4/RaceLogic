@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Reactive.PlatformServices;
-using System.Threading;
 using Easy.MessageHub;
 using LiteDB;
+using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.RaceLogic.Checkpoints;
@@ -20,19 +21,41 @@ namespace maxbl4.RfidCheckpointService.Services
         private readonly IMessageHub messageHub;
         private readonly ILogger logger = Log.ForContext<StorageService>();
         private readonly ISystemClock systemClock;
-        private readonly LiteRepository repo;
-        private long checkpointId;
+        private LiteRepository repo;
 
-        public StorageService(IOptions<ServiceOptions> serviceOptions, IMessageHub messageHub, ISystemClock systemClock)
+        public StorageService(IOptions<ServiceOptions> serviceOptions,
+            IMessageHub messageHub, ISystemClock systemClock)
         {
             this.serviceOptions = serviceOptions;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
-            logger.Information($"Using storage connection string {serviceOptions.Value?.StorageConnectionString}");
-            var connectionString = new ConnectionString(serviceOptions.Value.StorageConnectionString) {UtcDate = true};
+            var cs = new ConnectionString(serviceOptions.Value.StorageConnectionString){UtcDate = true};
+            logger.SwallowError(() => Initialize(cs), ex =>
+            {
+                cs = TryRotateDatabase(cs);
+                Initialize(cs);
+            });
+        }
+
+        private void Initialize(ConnectionString connectionString)
+        {
+            connectionString.Filename = new RollingFileInfo(connectionString.Filename).CurrentFile;
+            logger.Information($"Using storage file {connectionString.Filename}");
             repo = new LiteRepository(connectionString);
             SetupIndexes();
-            checkpointId = GetLastCheckpointId();
+            ValidateDatabase();
+        }
+
+        private ConnectionString TryRotateDatabase(ConnectionString connectionString)
+        {
+            connectionString.Filename = new RollingFileInfo(connectionString.Filename).NextFile;
+            return connectionString;
+        }
+
+        private void ValidateDatabase()
+        {
+            repo.Query<Checkpoint>().OrderBy(x => x.Id).FirstOrDefault();
+            repo.Query<Tag>().OrderBy(x => x.Id).FirstOrDefault();
         }
 
         private void SetupIndexes()
@@ -44,7 +67,7 @@ namespace maxbl4.RfidCheckpointService.Services
         public void AppendCheckpoint(Checkpoint cp)
         {
             if (cp == null) throw new ArgumentNullException(nameof(cp));
-            cp.Id = NextCheckpointId();
+            cp.Id = 0;
             repo.Insert(cp);
         }
 
@@ -98,7 +121,7 @@ namespace maxbl4.RfidCheckpointService.Services
             logger.Information($"Persisting RfidOptions {rfidOptions}");
             rfidOptions.Timestamp = systemClock.UtcNow.UtcDateTime; 
             repo.Upsert(rfidOptions);
-            logger.SwallowError(() => messageHub.Publish(rfidOptions));
+            logger.Swallow(() => messageHub.Publish(rfidOptions));
         }
 
         public void UpdateRfidOptions(Action<RfidOptions> modifier)
@@ -106,17 +129,6 @@ namespace maxbl4.RfidCheckpointService.Services
             var opts = GetRfidOptions();
             modifier(opts);
             SetRfidOptions(opts);
-        }
-
-        private long NextCheckpointId()
-        {
-            return Interlocked.Increment(ref checkpointId);
-        }
-
-        private long GetLastCheckpointId()
-        {
-            var lastCheckpoint = repo.Query<Checkpoint>().OrderByDescending(x => x.Id).FirstOrDefault();
-            return lastCheckpoint?.Id ?? 0;
         }
 
         public void Dispose()

@@ -31,7 +31,7 @@ namespace maxbl4.RfidCheckpointService.Services
         private TimestampCheckpointAggregator aggregator;
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
-        public RfidService(StorageService storageService, IMessageHub messageHub, 
+        public RfidService(StorageService storageService, IMessageHub messageHub,
             ISystemClock systemClock, IMapper mapper)
         {
             this.storageService = storageService;
@@ -50,7 +50,8 @@ namespace maxbl4.RfidCheckpointService.Services
             DisableRfid();
             logger.Information("Using RfidOptions: {options}", options);
             if (ShouldStartRfid(options))
-                logger.SwallowError(() => EnableRfid(options)).Wait(0);
+                logger.SwallowError(() => EnableRfid(options))
+                    .Wait(0);
         }
 
         private bool ShouldStartRfid(RfidOptions options)

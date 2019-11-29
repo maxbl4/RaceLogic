@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using AutoMapper;
 using Easy.MessageHub;
+using maxbl4.Infrastructure;
 using maxbl4.RaceLogic.Tests.Ext;
 using maxbl4.RfidCheckpointService;
 using maxbl4.RfidCheckpointService.Services;
@@ -34,11 +35,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
             
             var fileName = GetNameForDbFile(outputHelper);
             Logger.Debug("Storage {@fileName}", fileName);
-            if (File.Exists(fileName))
-            {
-                Logger.Debug("Remove existing {@filename}", fileName);
-                File.Delete(fileName);
-            }
+            new RollingFileInfo(fileName).Delete();
             storageConnectionString = $"Filename={fileName};UtcDate=true";
             Mapper = new MapperConfiguration(x => x.AddMaps(typeof(Startup)))
                 .CreateMapper();
@@ -47,14 +44,16 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         public void WithStorageService(Action<StorageService> storageServiceInitializer)
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), 
+                MessageHub, SystemClock);
             storageServiceInitializer(storageService);
         }
         
         public void WithRfidService(Action<StorageService, RfidService> action)
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}),
+                MessageHub, SystemClock);
             using var rfidService = new RfidService(storageService, MessageHub, SystemClock, Mapper);
             action(storageService, rfidService);
         }
@@ -62,7 +61,8 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService
         public T WithStorageService<T>(Func<StorageService, T> storageServiceInitializer)
         {
             Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub, SystemClock);
+            using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}),
+                MessageHub, SystemClock);
             return storageServiceInitializer(storageService);
         }
         

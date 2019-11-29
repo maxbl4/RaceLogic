@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using LiteDB;
+using maxbl4.Infrastructure;
 using maxbl4.RaceLogic.Checkpoints;
 using maxbl4.RfidCheckpointService.Services;
 using maxbl4.RfidDotNet;
@@ -177,6 +180,31 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
             opts.InitialRfidOptions.ShouldNotBeNull();
             opts.InitialRfidOptions.Enabled.ShouldBeFalse();
             opts.InitialRfidOptions.PersistTags.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Should_rotate_database_in_case_of_validation_failure()
+        {
+            var cs = new LiteDB.ConnectionString(storageConnectionString);
+            var dbFile = new RollingFileInfo(cs.Filename);
+            dbFile.BaseExists.ShouldBeFalse();
+            using (var repo = new LiteRepository(storageConnectionString))
+            {
+                repo.Insert(new BadCheckpoint{Count = 1.1m}, nameof(Checkpoint));
+            }
+            dbFile.BaseExists.ShouldBeTrue();
+            dbFile.Index.ShouldBe(0);
+
+            WithStorageService(storage =>
+            {
+                dbFile.Index.ShouldBe(1);
+            });
+        }
+
+        class BadCheckpoint
+        {
+            public long Id { get; set; }
+            public decimal Count { get; set; }
         }
     }
 }
