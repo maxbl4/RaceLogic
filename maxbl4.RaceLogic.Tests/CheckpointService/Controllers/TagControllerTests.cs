@@ -35,7 +35,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             {
                 storageService.AppendTag(new Tag{ TagId = "stored1", DiscoveryTime = ts});
                 storageService.AppendTag(new Tag{ TagId = "stored2", DiscoveryTime = ts.AddSeconds(100)});
-                for (var i = 0; i < 200; i++)
+                for (var i = 0; i < 98; i++)
                 {
                     storageService.AppendTag(new Tag{ TagId = "tag", DiscoveryTime = ts.AddSeconds(i + 105)});
                 }
@@ -47,13 +47,13 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Controllers
             
             tags.ShouldNotBeNull();
             tags.Count.ShouldBe(100);
-            tags[0].TagId.ShouldBe("stored1");
-            tags[1].TagId.ShouldBe("stored2");
+            tags[99].TagId.ShouldBe("stored1");
+            tags[98].TagId.ShouldBe("stored2");
             
-            tags = await client.GetAsync<List<Tag>>($"http://localhost:5000/tag?count=2&start={ts.AddSeconds(50):u}");
+            tags = await client.GetAsync<List<Tag>>($"http://localhost:5000/tag?count=2&start={ts.AddSeconds(50):u}&end={ts.AddSeconds(106):u}");
             tags.Count.ShouldBe(2);
-            tags[0].TagId.ShouldBe("stored2");
-            tags[1].TagId.ShouldBe("tag");
+            tags[1].TagId.ShouldBe("stored2");
+            tags[0].TagId.ShouldBe("tag");
         }
         
         [Fact]

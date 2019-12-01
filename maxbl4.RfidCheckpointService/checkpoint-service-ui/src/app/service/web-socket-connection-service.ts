@@ -12,7 +12,8 @@ export class WebSocketConnectionService {
   readonly $checkpoints = new ReplaySubject<Checkpoint[]>();
   readonly $readerStatus = new BehaviorSubject<ReaderStatus>({isConnected: false, heartbeat: ''});
   readonly $rfidOptions = new BehaviorSubject<RfidOptions>({});
-  readonly subscriptionStartTime = moment().utc().startOf('day').format();
+  readonly subscriptionStartTime = moment().utc().startOf('day')
+    .subtract(5, 'days').format();
 
   constructor() {
     this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();

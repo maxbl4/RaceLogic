@@ -52,8 +52,6 @@ export class LogsViewComponent implements OnInit, OnDestroy {
   selectedLogType: LogType = LogType.everything;
 
   constructor(private http: HttpClient) {
-    this.interval = setInterval(() => this.updateLogs(), 1000);
-    this.loadLogInfos();
   }
 
   updateLogs() {
@@ -71,6 +69,8 @@ export class LogsViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.interval = setInterval(() => this.updateLogs(), 1000);
+    this.loadLogInfos();
   }
 
   ngOnDestroy(): void {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Reactive.PlatformServices;
 using Easy.MessageHub;
 using LiteDB;
@@ -67,7 +66,6 @@ namespace maxbl4.RfidCheckpointService.Services
         public void AppendCheckpoint(Checkpoint cp)
         {
             if (cp == null) throw new ArgumentNullException(nameof(cp));
-            cp.Id = 0;
             repo.Insert(cp);
         }
 
@@ -91,7 +89,7 @@ namespace maxbl4.RfidCheckpointService.Services
         
         public void AppendTag(Tag tag)
         {
-            if (tag == null) throw new ArgumentNullException(nameof(tag)); 
+            if (tag == null) throw new ArgumentNullException(nameof(tag));
             repo.Insert(tag);
         }
 
@@ -99,6 +97,7 @@ namespace maxbl4.RfidCheckpointService.Services
         {
             var query = repo.Query<Tag>();
             return query.Where(x => (start == null || x.DiscoveryTime >= start.Value) && (end == null || x.DiscoveryTime < end.Value))
+                .OrderByDescending(x => x.DiscoveryTime)
                 .Limit(count ?? int.MaxValue)
                 .ToList();
         }

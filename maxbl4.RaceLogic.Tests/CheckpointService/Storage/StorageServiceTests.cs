@@ -119,7 +119,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 list.Count.ShouldBe(10);
                 for (var i = 1; i <= 10; i++)
                 {
-                    var t = list[i - 1];
+                    var t = list[10 - i];
                     t.Antenna.ShouldBe(i);
                     t.Rssi.ShouldBe(i);
                     t.DiscoveryTime.ShouldBe(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
@@ -134,7 +134,7 @@ namespace maxbl4.RaceLogic.Tests.CheckpointService.Storage
                 list.Count.ShouldBe(3);
                 for (var i = 8; i <= 10; i++)
                 {
-                    var t = list[i - 8];
+                    var t = list[10 - i];
                     t.Antenna.ShouldBe(i);
                     t.Rssi.ShouldBe(i);
                     t.DiscoveryTime.ShouldBe(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));

@@ -62,14 +62,17 @@ import {HttpClient} from "@angular/common/http";
   host: {'class': 'flex-container'},
   styles: []
 })
-export class DashboardViewComponent {
+export class DashboardViewComponent implements OnInit {
   options: RfidOptions = { enabled: false };
   manualRiderId: string;
 
   constructor(public checkpointService: CheckpointService,
               public lowRpsService: LowRpsCheckpointAggregatorService, private optionsService: OptionsService,
               private http: HttpClient) {
-    optionsService.$options.subscribe(x => this.options = x);
+  }
+
+  ngOnInit(): void {
+    this.optionsService.$options.subscribe(x => this.options = x);
   }
 
   get rfidEnabled() {

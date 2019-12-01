@@ -35,15 +35,13 @@ import {OptionsService} from "../service/options.service";
 export class OptionsViewComponent implements OnInit {
   rfidOptions: RfidOptions = {};
 
-  constructor(public optionsService: OptionsService) {
-    this.optionsService.$options.subscribe(o => this.rfidOptions = Object.assign({}, o));
-  }
+  constructor(public optionsService: OptionsService) { }
 
   saveOptions() {
     this.optionsService.saveOptions(this.rfidOptions);
   }
 
   ngOnInit() {
+    this.optionsService.$options.subscribe(o => this.rfidOptions = Object.assign({}, o));
   }
-
 }
