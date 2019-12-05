@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.Race.Logic", "maxbl4.Race.Logic\maxbl4.Race.Logic.csproj", "{02DB51C0-0C0C-48B8-BCD1-475F74635AFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logic", "Logic\Logic.csproj", "{02DB51C0-0C0C-48B8-BCD1-475F74635AFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.Race.Tests", "maxbl4.Race.Tests\maxbl4.Race.Tests.csproj", "{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{DF8DD94D-35F3-484C-8FEF-6A6A2A653366}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.Race.CheckpointService", "maxbl4.Race.CheckpointService\maxbl4.Race.CheckpointService.csproj", "{DA6B91E7-D2D1-4F45-B296-135349DF7338}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckpointService", "CheckpointService\CheckpointService.csproj", "{DA6B91E7-D2D1-4F45-B296-135349DF7338}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "maxbl4.Race.DataService", "maxbl4.Race.DataService\maxbl4.Race.DataService.csproj", "{6D2D26D3-4D31-4B59-B6D3-89349260936F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataService", "DataService\DataService.csproj", "{6D2D26D3-4D31-4B59-B6D3-89349260936F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

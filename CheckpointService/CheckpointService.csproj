@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>maxbl4.Race.CheckpointService</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="9.0.0" />
+      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+      <PackageReference Include="Easy.MessageHub" Version="5.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0-preview2.19528.8" />
+      <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+      <PackageReference Include="System.Reactive.Linq" Version="4.2.0" />
+      <PackageReference Include="LiteDB" Version="5.0.0-beta" />
+      <PackageReference Include="maxbl4.Infrastructure" Version="1.0.36" />
+      <PackageReference Include="maxbl4.RfidDotNet" Version="1.0.60" />
+      <PackageReference Include="maxbl4.RfidDotNet.AlienTech" Version="1.0.60" />
+      <PackageReference Include="maxbl4.RfidDotNet.GenericSerial" Version="1.0.60" />
+      <PackageReference Include="Serilog.AspNetCore" Version="3.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="_build\bin\web.config" />
+      <_ContentIncludedByDefault Remove="_build\bin\appsettings.Development.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\appsettings.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\angular.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\e2e\tsconfig.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\package-lock.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\package.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\tsconfig.app.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\tsconfig.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\tsconfig.spec.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\tslint.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\maxbl4.CheckpointService.deps.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\maxbl4.CheckpointService.runtimeconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Logic\Logic.csproj" />
+    </ItemGroup>
+
+</Project>
