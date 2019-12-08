@@ -33,14 +33,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
-            var tags = await client.GetAsync<List<Tag>>("http://localhost:5000/tag");
+            var tags = await client.GetAsync<List<Tag>>($"{CheckpointsUri}/tag");
             
             tags.ShouldNotBeNull();
             tags.Count.ShouldBe(100);
             tags[99].TagId.ShouldBe("stored1");
             tags[98].TagId.ShouldBe("stored2");
             
-            tags = await client.GetAsync<List<Tag>>($"http://localhost:5000/tag?count=2&start={ts.AddSeconds(50):u}&end={ts.AddSeconds(106):u}");
+            tags = await client.GetAsync<List<Tag>>($"{CheckpointsUri}/tag?count=2&start={ts.AddSeconds(50):u}&end={ts.AddSeconds(106):u}");
             tags.Count.ShouldBe(2);
             tags[1].TagId.ShouldBe("stored2");
             tags[0].TagId.ShouldBe("tag");
@@ -58,14 +58,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var cli = new HttpClient();
             
-            var response = await cli.DeleteAsync("http://localhost:5000/tag");
+            var response = await cli.DeleteAsync($"{CheckpointsUri}/tag");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).ShouldBe(1);
             
-            response = await cli.DeleteAsync($"http://localhost:5000/tag");
+            response = await cli.DeleteAsync($"{CheckpointsUri}/tag");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).ShouldBe(0);
-            var tags = await cli.GetAsync<List<Tag>>("http://localhost:5000/tag");
+            var tags = await cli.GetAsync<List<Tag>>($"{CheckpointsUri}/tag");
             tags.Count.ShouldBe(0);
         }
         
@@ -75,7 +75,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var cli = new HttpClient();
             
-            var response = await cli.GetStringAsync("http://localhost:5000/version");
+            var response = await cli.GetStringAsync($"{CheckpointsUri}/version");
             response.ShouldBe("1.0.0.0");
         }
     }
