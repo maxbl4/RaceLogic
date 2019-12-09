@@ -10,54 +10,29 @@ using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.Logic.Checkpoints;
 using Microsoft.Extensions.Options;
 using Serilog;
+using ServiceBase;
 using ConnectionString = LiteDB.ConnectionString;
 
 namespace maxbl4.Race.CheckpointService.Services
 {
-    public class StorageService : IDisposable
+    public class StorageService : StorageServiceBase
     {
         private readonly IOptions<ServiceOptions> serviceOptions;
-        private readonly IMessageHub messageHub;
-        private readonly ILogger logger = Log.ForContext<StorageService>();
-        private readonly ISystemClock systemClock;
-        private LiteRepository repo;
 
         public StorageService(IOptions<ServiceOptions> serviceOptions,
-            IMessageHub messageHub, ISystemClock systemClock)
+            IMessageHub messageHub, ISystemClock systemClock): 
+            base(serviceOptions.Value.StorageConnectionString, messageHub, systemClock)
         {
             this.serviceOptions = serviceOptions;
-            this.messageHub = messageHub;
-            this.systemClock = systemClock;
-            var cs = new ConnectionString(serviceOptions.Value.StorageConnectionString){UtcDate = true};
-            logger.SwallowError(() => Initialize(cs), ex =>
-            {
-                cs = TryRotateDatabase(cs);
-                Initialize(cs);
-            });
         }
 
-        private void Initialize(ConnectionString connectionString)
-        {
-            connectionString.Filename = new RollingFileInfo(connectionString.Filename).CurrentFile;
-            logger.Information($"Using storage file {connectionString.Filename}");
-            repo = new LiteRepository(connectionString);
-            SetupIndexes();
-            ValidateDatabase();
-        }
-
-        private ConnectionString TryRotateDatabase(ConnectionString connectionString)
-        {
-            connectionString.Filename = new RollingFileInfo(connectionString.Filename).NextFile;
-            return connectionString;
-        }
-
-        private void ValidateDatabase()
+        protected override void ValidateDatabase()
         {
             repo.Query<Checkpoint>().OrderBy(x => x.Id).FirstOrDefault();
             repo.Query<Tag>().OrderBy(x => x.Id).FirstOrDefault();
         }
 
-        private void SetupIndexes()
+        protected override void SetupIndexes()
         {
             repo.Database.GetCollection<Checkpoint>().EnsureIndex(x => x.Timestamp);
             repo.Database.GetCollection<Tag>().EnsureIndex(x => x.DiscoveryTime);
@@ -128,11 +103,6 @@ namespace maxbl4.Race.CheckpointService.Services
             var opts = GetRfidOptions();
             modifier(opts);
             SetRfidOptions(opts);
-        }
-
-        public void Dispose()
-        {
-            repo.DisposeSafe();
         }
     }
 }
