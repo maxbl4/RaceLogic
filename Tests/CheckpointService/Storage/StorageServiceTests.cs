@@ -163,18 +163,15 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         {
             var dict = new Dictionary<string, string>();
             dict.Add("ServiceOptions:InitialRfidOptions:ConnectionString", "Protocol=Alien;Network=sim:20023");
-            //dict.Add("ServiceOptions:InitialRfidOptions:Enabled", "true");
             dict.Add("ServiceOptions:InitialRfidOptions:PersistTags", "true");
             dict.Add("ServiceOptions:InitialRfidOptions:CheckpointAggregationWindowMs", "1000");
             dict.Add("ServiceOptions:InitialRfidOptions:RpsThreshold", "1000");
-            //dict.Add("ServiceOptions:StorageConnectionString", "aaa");
             
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(dict)
                 .Build();
             var opts = config.GetSection(nameof(ServiceOptions))
                 .Get<ServiceOptions>();
-            //opts.StorageConnectionString.ShouldBe("aaa");
             opts.InitialRfidOptions.ShouldNotBeNull();
             opts.InitialRfidOptions.Enabled.ShouldBeFalse();
             opts.InitialRfidOptions.PersistTags.ShouldBeTrue();
