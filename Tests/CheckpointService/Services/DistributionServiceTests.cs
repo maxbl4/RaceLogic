@@ -26,7 +26,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
         public void Should_distribute()
         {
             // One client may throw in OnNext, but observable should not fail and continue sending
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var hubContext = Substitute.For<IHubContext<CheckpointsHub>>();
                 var cps = new List<Checkpoint>();
@@ -51,7 +51,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
         public void Should_send_to_other_clients_when_one_fails()
         {
             // One client may throw in OnNext, but observable should not fail and continue sending
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var hubContext = Substitute.For<IHubContext<CheckpointsHub>>();
                 var log = new List<string>();

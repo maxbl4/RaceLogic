@@ -1,3 +1,7 @@
+using System.Reactive.PlatformServices;
+using System.Threading;
+using AutoMapper;
+using Easy.MessageHub;
 using maxbl4.Race.DataService.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
+using maxbl4.Race.DataService.Options;
 
 namespace maxbl4.Race.DataService
 {
@@ -20,8 +25,14 @@ namespace maxbl4.Race.DataService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ISystemClock, DefaultSystemClock>();
+            services.AddSingleton<IMessageHub, MessageHub>();
+            services.AddSingleton<StorageService>();
+            services.AddAutoMapper(typeof(Startup));
             services.RegisterHostedService<CheckpointServiceClient>();
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
+            services.AddSignalR();
+            services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

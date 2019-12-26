@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using LiteDB;
 using maxbl4.Race.DataService.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -29,10 +31,13 @@ namespace maxbl4.Race.DataService.Controllers
         }
         
         [HttpPost("{collection}/upsert")]
-        public IActionResult Upsert(string collection, [FromBody]BsonDocument document)
+        public async Task<IActionResult> Upsert(string collection)
         {
+            using var sr = new StreamReader(Request.Body, Encoding.UTF8);
+            var stringBody = await sr.ReadToEndAsync();
+            var document = JsonSerializer.Deserialize(stringBody);
             storageService.Upsert(collection, document);
-            return Ok();
+            return Accepted();
         }
     }
 }

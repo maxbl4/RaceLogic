@@ -43,7 +43,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_return_stored_checkpoints()
         {
             var ts = DateTime.UtcNow;
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 storageService.AppendCheckpoint(new Checkpoint("stored1", ts));
                 storageService.AppendCheckpoint(new Checkpoint("stored2", ts.AddSeconds(100)));
@@ -62,7 +62,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_stream_checkpoints_over_websocket()
         {
             SystemClock.UseRealClock();
-            var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
+            var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateCheckpointService();
             tagListHandler.ReturnOnce(new Tag{TagId = "1"});
@@ -89,7 +89,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_append_manual_checkpoint()
         {
             SystemClock.UseRealClock();
-            var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
+            var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateCheckpointService();
             var wsConnection = new HubConnectionBuilder()
@@ -116,7 +116,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_ignore_empty_manual_checkpoint()
         {
             SystemClock.UseRealClock();
-            var tagListHandler = WithStorageService(storageService => new SimulatorBuilder(storageService).Build());
+            var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateCheckpointService();
             var wsConnection = new HubConnectionBuilder()
@@ -142,7 +142,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_remove_checkpoints()
         {
             var now = DateTime.UtcNow;
-            var tagListHandler = WithStorageService(storageService =>
+            var tagListHandler = WithCheckpointStorageService(storageService =>
                 {
                     storageService.AppendCheckpoint(new Checkpoint{Id = 1, RiderId = "111", Timestamp = now});
                     storageService.AppendCheckpoint(new Checkpoint{Id = 2, RiderId = "222", Timestamp = now.AddMinutes(1)});

@@ -11,9 +11,10 @@ using maxbl4.Race.CheckpointService.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
+using ServiceBase;
 using Xunit.Abstractions;
 
-namespace maxbl4.Race.Tests.CheckpointService
+namespace maxbl4.Race.Tests
 {
     public class IntegrationTestBase
     {
@@ -33,7 +34,7 @@ namespace maxbl4.Race.Tests.CheckpointService
         {
             lock (sync)
             {
-                CheckpointServiceRunner.SetupLogger("testsettings");
+                ServiceRunner<Startup>.SetupLogger("testsettings");
             }
             Logger = Log.ForContext(this.GetType());
             
@@ -45,41 +46,63 @@ namespace maxbl4.Race.Tests.CheckpointService
                 .CreateMapper();
         }
 
-        public void WithStorageService(Action<StorageService> storageServiceInitializer)
+        public void WithCheckpointStorageService(Action<StorageService> storageServiceInitializer)
         {
-            Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
+            Logger.Debug("Creating CheckpointStorageServiceService with {@storageConnectionString}", storageConnectionString);
             using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}), 
+                MessageHub, SystemClock);
+            storageServiceInitializer(storageService);
+        }
+        
+        public void WithDataStorageService(Action<maxbl4.Race.DataService.Services.StorageService> storageServiceInitializer)
+        {
+            Logger.Debug("Creating DataStorageServiceService with {@storageConnectionString}", storageConnectionString);
+            using var storageService = new maxbl4.Race.DataService.Services.StorageService(Options.Create(new maxbl4.Race.DataService.Options.ServiceOptions{StorageConnectionString = storageConnectionString}), 
                 MessageHub, SystemClock);
             storageServiceInitializer(storageService);
         }
         
         public void WithRfidService(Action<StorageService, RfidService> action)
         {
-            Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
+            Logger.Debug("Creating CheckpointStorageServiceService with {@storageConnectionString}", storageConnectionString);
             using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}),
                 MessageHub, SystemClock);
             using var rfidService = new RfidService(storageService, MessageHub, SystemClock, Mapper);
             action(storageService, rfidService);
         }
         
-        public T WithStorageService<T>(Func<StorageService, T> storageServiceInitializer)
+        public T WithCheckpointStorageService<T>(Func<StorageService, T> storageServiceInitializer)
         {
-            Logger.Debug("Creating StorageServiceService with {@storageConnectionString}", storageConnectionString);
+            Logger.Debug("Creating CheckpointStorageServiceService with {@storageConnectionString}", storageConnectionString);
             using var storageService = new StorageService(Options.Create(new ServiceOptions{StorageConnectionString = storageConnectionString}),
                 MessageHub, SystemClock);
             return storageServiceInitializer(storageService);
         }
         
-        public CheckpointServiceRunner CreateCheckpointService(int pauseStartupMs = 0)
+        public ServiceRunner<Startup> CreateCheckpointService(int pauseStartupMs = 0)
         {
             Logger.Debug("Creating CheckpointService with {@storageConnectionString}", storageConnectionString);
-            var svc = new CheckpointServiceRunner();
+            var svc = new ServiceRunner<Startup>();
             svc.Start(new []
             {
                 $"--ServiceOptions:StorageConnectionString={storageConnectionString}", 
                 $"--ServiceOptions:PauseInStartupMs={pauseStartupMs}",
                 $"--Environment={Environments.Development}",
                 $"--Urls={CheckpointsUri}"
+            }).Wait(0);
+            return svc;
+        }
+        
+        public ServiceRunner<maxbl4.Race.DataService.Startup> CreateDataService(int pauseStartupMs = 0)
+        {
+            Logger.Debug("Creating CheckpointService with {@storageConnectionString}", storageConnectionString);
+            var svc = new ServiceRunner<maxbl4.Race.DataService.Startup>();
+            svc.Start(new []
+            {
+                $"--ServiceOptions:StorageConnectionString={storageConnectionString}", 
+                $"--ServiceOptions:PauseInStartupMs={pauseStartupMs}",
+                $"--Environment={Environments.Development}",
+                $"--Urls={DataUri}"
             }).Wait(0);
             return svc;
         }

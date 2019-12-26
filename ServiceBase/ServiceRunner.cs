@@ -8,17 +8,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace maxbl4.Race.CheckpointService
+namespace ServiceBase
 {
-    public class CheckpointServiceRunner : IDisposable
+    public class ServiceRunner<TStartup> : IDisposable where TStartup : class
     {
         private CancellationTokenSource cts;
         private IHost hostBuilder;
 
+        public IServiceProvider ServiceProvider => hostBuilder.Services;
+
         public async Task<int> Start(string[] args = null)
         {
             SetupLogger("appsettings");
-            var logger = Log.ForContext<CheckpointServiceRunner>();
+            var logger = Log.ForContext(GetType());
             Dispose();
             cts = new CancellationTokenSource();
             try
@@ -38,7 +40,7 @@ namespace maxbl4.Race.CheckpointService
                 Log.CloseAndFlush();
             }
         }
-
+        
         public static void SetupLogger(string configFileBaseName,string[] args = null)
         {
             var config = new ConfigurationBuilder()
@@ -58,7 +60,7 @@ namespace maxbl4.Race.CheckpointService
                 {
                     webBuilder
                         .UseWebRoot(Path.Combine("var", "www"))
-                        .UseStartup<Startup>()
+                        .UseStartup<TStartup>()
                         .UseSerilog((builder, loggerConfig) =>
                             {
                                 loggerConfig.ReadFrom.Configuration(builder.Configuration);

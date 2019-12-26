@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using ServiceBase;
 
 namespace maxbl4.Race.CheckpointService
 {
@@ -6,7 +7,7 @@ namespace maxbl4.Race.CheckpointService
     {
         public static async Task<int> Main(string[] args)
         {
-            using var svc = new CheckpointServiceRunner();
+            using var svc = new ServiceRunner<Startup>();
             return await svc.Start(args);
         }
     }

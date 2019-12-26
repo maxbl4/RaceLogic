@@ -20,7 +20,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_return_rfid_options()
         {
             SystemClock.UseRealClock();
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
                 storageService.UpdateRfidOptions(opts =>
                 {
                     opts.Enabled = true;
@@ -63,7 +63,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_return_individual_option_property_values()
         {
             SystemClock.UseRealClock();
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
                 storageService.UpdateRfidOptions(opts =>
                 {
                     opts.Enabled = true;
@@ -87,7 +87,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         [Fact]
         public async Task Should_set_individual_option_property_values()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
                 storageService.UpdateRfidOptions(opts =>
                 {
                     opts.Enabled = false;

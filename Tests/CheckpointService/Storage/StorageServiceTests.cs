@@ -22,7 +22,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_store_and_load_utc_date()
         {
-            WithStorageService(s =>
+            WithCheckpointStorageService(s =>
             {
                 var dt = DateTime.UtcNow;
                 s.AppendCheckpoint(new Checkpoint("111", dt));
@@ -33,7 +33,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_save_and_load_rfidsettings()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var settings = storageService.GetRfidOptions();
                 settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
@@ -50,7 +50,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_return_default_rfidsettings()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var settings = storageService.GetRfidOptions();
                 settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
@@ -75,7 +75,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_support_date_filter()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var ts = DateTime.UtcNow;
                 storageService.AppendCheckpoint(new Checkpoint("1", ts));
@@ -94,7 +94,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_update_timestamp()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var options = storageService.GetRfidOptions();
                 options.Timestamp.ShouldBe(default);
@@ -106,7 +106,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_support_tag_operations()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var ts = DateTime.UtcNow;
                 for (var i = 1; i <= 10; i++)
@@ -146,7 +146,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_save_and_load_tags_with_same_tagId()
         {
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 var ts = DateTime.UtcNow;
                 storageService.AppendTag(new Tag{Antenna = 1, DiscoveryTime = ts, TagId = "1"});
@@ -190,7 +190,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             dbFile.BaseExists.ShouldBeTrue();
             dbFile.Index.ShouldBe(0);
 
-            WithStorageService(storage =>
+            WithCheckpointStorageService(storage =>
             {
                 dbFile.Index.ShouldBe(1);
             });

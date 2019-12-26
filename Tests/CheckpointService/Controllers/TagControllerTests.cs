@@ -21,7 +21,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_return_stored_tags()
         {
             var ts = DateTime.UtcNow;
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
             {
                 storageService.AppendTag(new Tag{ TagId = "stored1", DiscoveryTime = ts});
                 storageService.AppendTag(new Tag{ TagId = "stored2", DiscoveryTime = ts.AddSeconds(100)});
@@ -50,7 +50,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         public async Task Should_remove_tags()
         {
             var now = DateTime.UtcNow;
-            WithStorageService(storageService =>
+            WithCheckpointStorageService(storageService =>
                 {
                     storageService.AppendTag(new Tag{TagId = "1"});
                 });

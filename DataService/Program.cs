@@ -1,17 +1,14 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
+using ServiceBase;
 
 namespace maxbl4.Race.DataService
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            using var svc = new ServiceRunner<Startup>();
+            return await svc.Start(args);
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }

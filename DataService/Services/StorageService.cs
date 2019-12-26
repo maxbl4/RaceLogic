@@ -39,7 +39,7 @@ namespace maxbl4.Race.DataService.Services
             return repo.Query<BsonDocument>(collectionName).Where(query).LongCount();
         }
         
-        public BsonValue Upsert(string collectionName, BsonDocument document)
+        public BsonValue Upsert(string collectionName, BsonValue document)
         {
             repo.Upsert(document, collectionName);
             return document["_id"];

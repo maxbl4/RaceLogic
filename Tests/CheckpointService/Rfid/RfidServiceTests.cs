@@ -122,7 +122,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
         [Fact]
         public void Should_disable_stale_rfid()
         {
-            WithStorageService(s =>
+            WithCheckpointStorageService(s =>
             {
                 s.UpdateRfidOptions(o => o.Enabled = true);
             });
