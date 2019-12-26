@@ -31,9 +31,13 @@ namespace maxbl4.Race.DataService.Services
             return repo.Database.GetCollection<T>(collectionName).FindById(key);
         }
         
-        public IEnumerable<BsonDocument> Search(string collectionName, string query, int limit)
+        public IEnumerable<BsonDocument> Search(string collectionName, string @where, string order, int limit)
         {
-            return repo.Query<BsonDocument>(collectionName).Where(query).Limit(limit).ToDocuments();
+            var query = repo.Query<BsonDocument>(collectionName)
+                .Where(@where);
+            if (!string.IsNullOrWhiteSpace(order))
+                query = query.OrderBy(BsonExpression.Create(order));
+            return query.Limit(limit).ToDocuments();
         }
         
         public long Count(string collectionName, string query)

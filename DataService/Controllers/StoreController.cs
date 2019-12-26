@@ -42,11 +42,11 @@ namespace maxbl4.Race.DataService.Controllers
         }
         
         [HttpGet("{collection}/search")]
-        public IActionResult Search(string collection, string @where = null, int limit = 50)
+        public IActionResult Search(string collection, string @where = null, string order = null, int limit = 50)
         {
             if (string.IsNullOrEmpty(@where))
                 @where = "1 = 1";
-            var result = storageService.Search(collection, @where, limit);
+            var result = storageService.Search(collection, @where, order, limit);
             return Content(JsonSerializer.Serialize(new BsonArray(result)), "application/json", Encoding.UTF8);
         }
         
