@@ -17,35 +17,35 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         }
         
         [Fact]
-        public async Task Should_upsert_entity_with_id()
+        public async Task Should_store_entity_with_id()
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
             var id = new Guid("D390C953-3F55-4558-8C0B-77FBAE798C9D");
             var e = new Entity{Id = id, Some = "abc", Int = 123};
             
-            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/upsert", e);
+            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/get/d390c9533f5545588c0b77fbae798c9dg"));
+            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
             (await http.GetBsonAsync<Entity>(response.Headers.Location)).ShouldBe(e);
 
             e.Some = "eee";
-            response = await http.PostBsonAsync($"{DataUri}/store/Entity/upsert", e);
+            response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/get/d390c9533f5545588c0b77fbae798c9dg"));
+            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
             (await http.GetBsonAsync<Entity>(response.Headers.Location)).ShouldBe(e);
         }
         
         [Fact]
-        public async Task Should_upsert_entity_without_id()
+        public async Task Should_store_entity_without_id()
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
             var e = new Entity{Some = "abc", Int = 123};
             
-            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/upsert", e);
+            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             var e2 = await http.GetBsonAsync<Entity>(response.Headers.Location);
@@ -54,13 +54,25 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         }
         
         [Fact]
-        public async Task Should_upsert_bson_without_id()
+        public async Task Should_honor_id_in_uri()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single/5", new EntityInt{ Id = 2, Some = "2"});
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/single/5"));
+            var e = await http.GetBsonAsync<EntityInt>(response.Headers.Location);
+            e.Some.ShouldBe("2");
+        }
+        
+        [Fact]
+        public async Task Should_store_bson_without_id()
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
             var e = new BsonDocument{["abc"] = "def"};
             
-            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/upsert", e);
+            var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             var e2 = await http.GetBsonAsync<BsonDocument>(response.Headers.Location);
@@ -70,22 +82,22 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         }
         
         [Fact]
-        public async Task Should_upsert_entities_with_numeric_ids()
+        public async Task Should_store_entities_with_numeric_ids()
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
             var eInt = new EntityInt{Some = "int"};
-            var responseInt = await http.PostBsonAsync($"{DataUri}/store/EntityInt/upsert", eInt);
+            var responseInt = await http.PostBsonAsync($"{DataUri}/store/Some1/single", eInt);
             responseInt.StatusCode.ShouldBe(HttpStatusCode.Created);
-            responseInt.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/EntityInt/get/1"));
+            responseInt.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Some1/single/1"));
             var respInt = await http.GetBsonAsync<EntityInt>(responseInt.Headers.Location);
             respInt.Id.ShouldBe(1);
             respInt.Some.ShouldBe("int");
             
             var eLong = new EntityLong{Some = "long"};
-            var responseLong = await http.PostBsonAsync($"{DataUri}/store/EntityLong/upsert", eLong);
+            var responseLong = await http.PostBsonAsync($"{DataUri}/store/Some2/single", eLong);
             responseLong.StatusCode.ShouldBe(HttpStatusCode.Created);
-            responseLong.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/EntityLong/get/1L"));
+            responseLong.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Some2/single/1L"));
             var respLong = await http.GetBsonAsync<EntityLong>(responseLong.Headers.Location);
             respLong.Id.ShouldBe(1L);
             respLong.Some.ShouldBe("long");

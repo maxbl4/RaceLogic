@@ -18,11 +18,24 @@ namespace maxbl4.Race.DataService.Controllers
             this.storageService = storageService;
         }
         
-        [HttpGet("{collection}/get/{id}")]
-        public IActionResult Get(string collection, string id)
+        [HttpGet("{collection}/single/{id}")]
+        public IActionResult SingleGet(string collection, string id)
         {
             var bsonId = BsonIdUrlEncoder.Decode(id);
             return Content(JsonSerializer.Serialize(storageService.Get<BsonDocument>(bsonId, collection)), "application/json", Encoding.UTF8);
+        }
+        
+        [HttpPost("{collection}/single/{id?}")]
+        [HttpPut("{collection}/single/{id?}")]
+        public async Task<IActionResult> SinglePut(string collection, string id = null)
+        {
+            var doc = await DocumentFromRequest();
+            if (!string.IsNullOrEmpty(id))
+            {
+                doc["_id"] = BsonIdUrlEncoder.Decode(id);
+            }
+            storageService.Upsert(collection, doc);
+            return CreatedAtAction("SingleGet", new {collection, id = BsonIdUrlEncoder.Encode(doc["_id"])}, null);
         }
         
         [HttpGet("{collection}/search")]
@@ -36,15 +49,12 @@ namespace maxbl4.Race.DataService.Controllers
         {
             return Ok(storageService.Count(collection, query));
         }
-        
-        [HttpPost("{collection}/upsert")]
-        public async Task<IActionResult> Upsert(string collection)
+
+        async Task<BsonDocument> DocumentFromRequest()
         {
             using var sr = new StreamReader(Request.Body, Encoding.UTF8);
             var stringBody = await sr.ReadToEndAsync();
-            var document = JsonSerializer.Deserialize(stringBody).AsDocument;
-            storageService.Upsert(collection, document);
-            return CreatedAtAction("Get", new {collection, id = BsonIdUrlEncoder.Encode(document["_id"])}, null);
+            return JsonSerializer.Deserialize(stringBody).AsDocument;
         }
     }
 }
