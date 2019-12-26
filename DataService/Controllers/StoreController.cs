@@ -28,6 +28,15 @@ namespace maxbl4.Race.DataService.Controllers
             return Content(JsonSerializer.Serialize(doc), "application/json", Encoding.UTF8);
         }
         
+        [HttpDelete("{collection}/single/{id}")]
+        public IActionResult SingleDelete(string collection, string id)
+        {
+            var bsonId = BsonIdUrlEncoder.Decode(id);
+            if (!storageService.Delete<BsonDocument>(bsonId, collection))
+                return NotFound();
+            return Ok();
+        }
+        
         [HttpPost("{collection}/single/{id?}")]
         [HttpPut("{collection}/single/{id?}")]
         public async Task<IActionResult> SinglePut(string collection, string id = null)

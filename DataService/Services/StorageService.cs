@@ -32,6 +32,11 @@ namespace maxbl4.Race.DataService.Services
             return repo.Database.GetCollection<T>(collectionName).FindById(key);
         }
         
+        public bool Delete<T>(BsonValue key, string collectionName = null)
+        {
+            return repo.Database.GetCollection<T>(collectionName).Delete(key);
+        }
+        
         public IEnumerable<BsonDocument> Search(string collectionName, string @where, string order, int limit)
         {
             var query = repo.Query<BsonDocument>(collectionName)

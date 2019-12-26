@@ -114,6 +114,24 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             respLong.Some.ShouldBe("long");
         }
         
+        [Fact]
+        public async Task Should_delete_by_id()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 3; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new EntityInt{Some = i.ToString()});
+                response.EnsureSuccessStatusCode();
+            }
+
+            (await http.DeleteAsync($"{DataUri}/store/Entity/single/1")).EnsureSuccessStatusCode();
+            (await http.DeleteAsync($"{DataUri}/store/Entity/single/2")).EnsureSuccessStatusCode();
+            
+            var e = await http.GetBsonAsync<List<EntityInt>>($"{DataUri}/store/Entity/search");
+            e.Count.ShouldBe(1);
+            e.ShouldContain(x => x.Some == "2");
+        }
         
         [Fact]
         public async Task Should_search_with_where()
