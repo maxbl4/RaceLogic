@@ -35,8 +35,13 @@ namespace maxbl4.Race.DataService.Services
         {
             var query = repo.Query<BsonDocument>(collectionName)
                 .Where(@where);
-            if (!string.IsNullOrWhiteSpace(order))
-                query = query.OrderBy(BsonExpression.Create(order));
+            foreach (var ord in ParseOrder(order))
+            {
+                if (ord.desc)
+                    query = query.OrderByDescending(BsonExpression.Create(ord.field));
+                else
+                    query = query.OrderBy(BsonExpression.Create(ord.field));
+            }
             return query.Limit(limit).ToDocuments();
         }
         
@@ -61,6 +66,28 @@ namespace maxbl4.Race.DataService.Services
                 BsonType.Guid => BsonAutoId.Guid,
                 _ => 0
             };
+        }
+
+        public static IEnumerable<(string field, bool desc)> ParseOrder(string order)
+        {
+            if (string.IsNullOrEmpty(order))
+                yield break;
+            var fields = order.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var f in fields)
+            {
+                var parts = f.Split(new []{' ', '\t', '+'}, StringSplitOptions.RemoveEmptyEntries);
+                switch (parts.Length)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        yield return (parts[0], false);
+                        break;
+                    default:
+                        yield return (parts[0], "desc".Equals(parts[1], StringComparison.OrdinalIgnoreCase));
+                        break;
+                }
+            }
         }
     }
 }
