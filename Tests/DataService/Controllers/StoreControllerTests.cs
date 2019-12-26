@@ -160,28 +160,13 @@ namespace maxbl4.Race.Tests.DataService.Controllers
                 response.EnsureSuccessStatusCode();
             }
             
-            var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?order=Int+desc");
+            var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?order=-Int");
             e.Count.ShouldBe(10);
             for (var i = 0; i < 10; i++)
             {
                 e[i].Int.ShouldBe(9 - i);
             }
         }
-        
-        // [Fact]
-        // public async Task Should_search_with_complex_order()
-        // {
-        //     using var svc = CreateDataService();
-        //     var http = new HttpClient();
-        //     var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = 1, Some = "111", Some2 = "aaa"});
-        //
-        //     var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?order=Int+desc");
-        //     e.Count.ShouldBe(10);
-        //     for (var i = 0; i < 10; i++)
-        //     {
-        //         e[i].Int.ShouldBe(9 - i);
-        //     }
-        // }
         
         [Fact]
         public async Task Should_search_with_empty_where_and_have_default_limit_of_50()

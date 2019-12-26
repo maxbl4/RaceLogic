@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Reactive.PlatformServices;
 using Easy.MessageHub;
 using LiteDB;
@@ -35,7 +36,7 @@ namespace maxbl4.Race.DataService.Services
         {
             var query = repo.Query<BsonDocument>(collectionName)
                 .Where(@where);
-            foreach (var ord in ParseOrder(order))
+            if (TryParseOrder(order, out var ord))
             {
                 if (ord.desc)
                     query = query.OrderByDescending(BsonExpression.Create(ord.field));
@@ -68,26 +69,19 @@ namespace maxbl4.Race.DataService.Services
             };
         }
 
-        public static IEnumerable<(string field, bool desc)> ParseOrder(string order)
+        public static bool TryParseOrder(string order, out (string field, bool desc) result)
         {
             if (string.IsNullOrEmpty(order))
-                yield break;
-            var fields = order.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            foreach (var f in fields)
             {
-                var parts = f.Split(new []{' ', '\t', '+'}, StringSplitOptions.RemoveEmptyEntries);
-                switch (parts.Length)
-                {
-                    case 0:
-                        break;
-                    case 1:
-                        yield return (parts[0], false);
-                        break;
-                    default:
-                        yield return (parts[0], "desc".Equals(parts[1], StringComparison.OrdinalIgnoreCase));
-                        break;
-                }
+                result = default;
+                return false;
             }
+
+            if (order.StartsWith('-'))
+                result = (order.Substring(1), true);
+            else
+                result = (order, false);
+            return true;
         }
     }
 }
