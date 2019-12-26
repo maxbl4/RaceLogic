@@ -12,13 +12,10 @@ namespace maxbl4.Race.DataService.Services
 {
     public class StorageService : StorageServiceBase
     {
-        private readonly IOptions<ServiceOptions> serviceOptions;
-     
         public StorageService(IOptions<ServiceOptions> serviceOptions,
             IMessageHub messageHub, ISystemClock systemClock) :
             base(serviceOptions.Value.StorageConnectionString, messageHub, systemClock)
         {
-            this.serviceOptions = serviceOptions;
         }
 
         protected override void ValidateDatabase()
@@ -29,6 +26,11 @@ namespace maxbl4.Race.DataService.Services
         {
         }
 
+        public T Get<T>(BsonValue key, string collectionName = null)
+        {
+            return repo.Database.GetCollection<T>(collectionName).FindById(key);
+        }
+        
         public IEnumerable<BsonDocument> Search(string collectionName, string query, int limit)
         {
             return repo.Query<BsonDocument>(collectionName).Where(query).Limit(limit).ToDocuments();
@@ -39,10 +41,22 @@ namespace maxbl4.Race.DataService.Services
             return repo.Query<BsonDocument>(collectionName).Where(query).LongCount();
         }
         
-        public BsonValue Upsert(string collectionName, BsonValue document)
+        public bool Upsert(string collectionName, BsonDocument document)
         {
-            repo.Upsert(document, collectionName);
-            return document["_id"];
+            return repo.Database.GetCollection(collectionName, GetAutoId(document)).Upsert(document);
+        }
+
+        public static BsonAutoId GetAutoId(BsonDocument document)
+        {
+            if (!document.TryGetValue("_id", out var id)) return BsonAutoId.Guid;
+            return id.Type switch
+            {
+                BsonType.Int32 => BsonAutoId.Int32,
+                BsonType.Int64 => BsonAutoId.Int64,
+                BsonType.ObjectId => BsonAutoId.ObjectId,
+                BsonType.Guid => BsonAutoId.Guid,
+                _ => 0
+            };
         }
     }
 }

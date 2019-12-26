@@ -18,6 +18,13 @@ namespace maxbl4.Race.DataService.Controllers
             this.storageService = storageService;
         }
         
+        [HttpGet("{collection}/get/{id}")]
+        public IActionResult Get(string collection, string id)
+        {
+            var bsonId = BsonIdUrlEncoder.Decode(id);
+            return Content(JsonSerializer.Serialize(storageService.Get<BsonDocument>(bsonId, collection)), "application/json", Encoding.UTF8);
+        }
+        
         [HttpGet("{collection}/search")]
         public IActionResult Search(string collection, string query, int limit)
         {
@@ -35,9 +42,9 @@ namespace maxbl4.Race.DataService.Controllers
         {
             using var sr = new StreamReader(Request.Body, Encoding.UTF8);
             var stringBody = await sr.ReadToEndAsync();
-            var document = JsonSerializer.Deserialize(stringBody);
+            var document = JsonSerializer.Deserialize(stringBody).AsDocument;
             storageService.Upsert(collection, document);
-            return Accepted();
+            return CreatedAtAction("Get", new {collection, id = BsonIdUrlEncoder.Encode(document["_id"])}, null);
         }
     }
 }
