@@ -22,7 +22,10 @@ namespace maxbl4.Race.DataService.Controllers
         public IActionResult SingleGet(string collection, string id)
         {
             var bsonId = BsonIdUrlEncoder.Decode(id);
-            return Content(JsonSerializer.Serialize(storageService.Get<BsonDocument>(bsonId, collection)), "application/json", Encoding.UTF8);
+            var doc = storageService.Get<BsonDocument>(bsonId, collection);
+            if (doc == null)
+                return NotFound();
+            return Content(JsonSerializer.Serialize(doc), "application/json", Encoding.UTF8);
         }
         
         [HttpPost("{collection}/single/{id?}")]

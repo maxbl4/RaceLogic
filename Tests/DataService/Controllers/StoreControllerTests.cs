@@ -66,6 +66,15 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         }
         
         [Fact]
+        public async Task Should_return_404_on_invalid_key()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            var response = await http.GetAsync($"{DataUri}/store/Entity/single/5");
+            response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        }
+        
+        [Fact]
         public async Task Should_store_bson_without_id()
         {
             using var svc = CreateDataService();
