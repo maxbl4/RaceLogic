@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using LiteDB;
 using maxbl4.Race.Tests.Extensions;
@@ -110,6 +112,105 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             var respLong = await http.GetBsonAsync<EntityLong>(responseLong.Headers.Location);
             respLong.Id.ShouldBe(1L);
             respLong.Some.ShouldBe("long");
+        }
+        
+        
+        [Fact]
+        public async Task Should_search_with_where()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = i});
+                response.EnsureSuccessStatusCode();
+            }
+            
+            var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?where=" + UrlEncoder.Default.Encode("Int > 3 and Int <= 7"));
+            e.Count.ShouldBe(4);
+            e.ShouldContain(x => x.Int == 4);
+            e.ShouldContain(x => x.Int == 5);
+            e.ShouldContain(x => x.Int == 6);
+            e.ShouldContain(x => x.Int == 7);
+        }
+        
+        [Fact]
+        public async Task Should_search_with_limit()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = i});
+                response.EnsureSuccessStatusCode();
+            }
+            
+            var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?limit=2&where=" + UrlEncoder.Default.Encode("Int > 3 and Int <= 7"));
+            e.Count.ShouldBe(2);
+        }
+        
+        [Fact]
+        public async Task Should_search_with_order()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = i});
+                response.EnsureSuccessStatusCode();
+            }
+            
+            var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?order=Int");
+            e.Count.ShouldBe(10);
+            for (var i = 0; i < 10; i++)
+            {
+                e[i].Int.ShouldBe(i);
+            }
+        }
+        
+        [Fact]
+        public async Task Should_search_with_empty_where_and_have_default_limit_of_50()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 60; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = i});
+                response.EnsureSuccessStatusCode();
+            }
+            
+            var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search");
+            e.Count.ShouldBe(50);
+        }
+        
+        [Fact]
+        public async Task Should_get_count_with_where()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = i});
+                response.EnsureSuccessStatusCode();
+            }
+            
+            var e = await http.GetStringAsync($"{DataUri}/store/Entity/count?where=" + UrlEncoder.Default.Encode("Int > 3 and Int <= 7"));
+            e.ShouldBe("4");
+        }
+        
+        [Fact]
+        public async Task Should_get_count_without_where()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", new Entity{Int = i});
+                response.EnsureSuccessStatusCode();
+            }
+            
+            var e = await http.GetStringAsync($"{DataUri}/store/Entity/count");
+            e.ShouldBe("10");
         }
 
         class Entity

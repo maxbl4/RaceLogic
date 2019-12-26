@@ -42,15 +42,20 @@ namespace maxbl4.Race.DataService.Controllers
         }
         
         [HttpGet("{collection}/search")]
-        public IActionResult Search(string collection, string query, int limit)
+        public IActionResult Search(string collection, string @where = null, int limit = 50)
         {
-            return Ok(storageService.Search(collection, query, limit));
+            if (string.IsNullOrEmpty(@where))
+                @where = "1 = 1";
+            var result = storageService.Search(collection, @where, limit);
+            return Content(JsonSerializer.Serialize(new BsonArray(result)), "application/json", Encoding.UTF8);
         }
         
         [HttpGet("{collection}/count")]
-        public IActionResult Count(string collection, string query)
+        public IActionResult Count(string collection, string @where)
         {
-            return Ok(storageService.Count(collection, query));
+            if (string.IsNullOrEmpty(@where))
+                @where = "1 = 1";
+            return Ok(storageService.Count(collection, @where));
         }
 
         async Task<BsonDocument> DocumentFromRequest()
