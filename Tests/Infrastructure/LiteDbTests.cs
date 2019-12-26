@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using AutoMapper.Mappers;
 using LiteDB;
 using Shouldly;
@@ -55,6 +56,71 @@ namespace maxbl4.Race.Tests.Infrastructure
             repo.Insert(new Entity { Data = "555"});
             var e = repo.Query<Entity>().Where($"Date < DATE('{DateTime.UtcNow:u}')").First();
             e.Data.ShouldBe("555");
+        }
+        
+        [Fact]
+        public void Should_insert_new_bson_document_with_guid_id()
+        {
+            using var repo = new LiteRepository(dbFile);
+            var collection = repo.Database.GetCollection("Entity", BsonAutoId.Guid);
+            var doc = new BsonDocument {["Data"] = "666"};
+            collection.Upsert(doc);
+            repo.Insert(new Entity { Data = "555"});
+            var docs = repo.Query<Entity>().ToList();
+            docs.ShouldAllBe(x => x.Id != Guid.Empty);
+        }
+
+        [Fact]
+        public void Should_store_documents_with_int_key_in_sorted_order()
+        {
+            using (var repo = new LiteRepository(dbFile))
+            {
+                repo.Insert(new EntityInt {Id = 5,});
+                repo.Insert(new EntityInt {Id = 4,});
+                repo.Insert(new EntityInt {Id = 7,});
+                repo.Insert(new EntityInt {Id = 3,});
+            }
+            
+            using (var repo = new LiteRepository(dbFile))
+            {
+                var docs = repo.Query<EntityInt>().ToList();
+                docs[0].Id.ShouldBe(3);
+                docs[1].Id.ShouldBe(4);
+                docs[2].Id.ShouldBe(5);
+                docs[3].Id.ShouldBe(7);
+            }
+        }
+        
+        [Fact]
+        public void Should_store_documents_with_guid_key_in_sorted_order()
+        {
+            using (var repo = new LiteRepository(dbFile))
+            {
+                repo.Insert(new Entity {Id = new Guid("5B8E621A-CBC4-4052-B58C-4ACAFC3A6864")});
+                repo.Insert(new Entity {Id = new Guid("1B8E621A-CBC4-4052-B58C-4ACAFC3A6864")});
+            }
+            
+            using (var repo = new LiteRepository(dbFile))
+            {
+                var docs = repo.Query<Entity>().ToList();
+                docs[0].Id.ShouldBe(new Guid("1B8E621A-CBC4-4052-B58C-4ACAFC3A6864"));
+            }
+        }
+        
+        [Fact(Skip = "Long running")]
+        public void Should_insert_many_documents()
+        {
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
+            var token = cts.Token;
+            using (var repo = new LiteRepository(dbFile))
+            {
+                for (var i = 0; i < 10000000; i++)
+                {
+                    repo.Insert(new Entity {Data = i.ToString()});
+                    if (token.IsCancellationRequested)
+                        break;
+                }
+            }
         }
 
         class Entity
