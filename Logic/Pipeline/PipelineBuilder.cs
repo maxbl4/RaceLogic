@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.RoundTiming;
 
@@ -23,9 +24,9 @@ namespace maxbl4.Race.Logic.Pipeline
             return this;
         }
 
-        public PipelineBuilder WithCheckpointProvider(IObservable<Checkpoint> checkpointProvider)
+        public PipelineBuilder WithCheckpointProvider(params IObservable<Checkpoint>[] checkpointProvider)
         {
-            checkpointProviders.Add(checkpointProvider);
+            checkpointProviders = checkpointProvider.ToList();
             return this;
         }
 

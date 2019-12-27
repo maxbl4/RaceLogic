@@ -9,14 +9,13 @@ namespace maxbl4.Race.Logic.RiderIdResolving
         /// <summary>
         /// Should be used to resolve RiderId from input data, e.g. from number entered manually or RFID tag string.
         ///  This method should be implemented as quick in-memory lookup and work for most real-life inputs.
-        /// E.g. numbers of riders are know prior to race and can be put input a map.
+        /// E.g. numbers of riders are known prior to race and can be put input a map.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="riderId"></param>
         /// <returns>True if successfully resolved. In case False was returned, ResolveCreateWhenMissing method should be called.
         /// Depending on implementation, method can create new record in database, thus it should be implemented as async Task.</returns>
-        bool Resolve(string input, out string riderId);
-        Task<string> ResolveCreateWhenMissing(string input);
+        ValueTask<string> Resolve(string input);
     }
 
     public class SimpleMapRiderIdResolver : IRiderIdResolver
@@ -30,12 +29,14 @@ namespace maxbl4.Race.Logic.RiderIdResolving
             this.createRiderId = createRiderId;
         }
 
-        public bool Resolve(string input, out string riderId)
+        public async ValueTask<string> Resolve(string input)
         {
-            return map.TryGetValue(input, out riderId);
+            if (map.TryGetValue(input, out var riderId))
+                return riderId;
+            return await ResolveCreateWhenMissing(input);
         }
 
-        public async Task<string> ResolveCreateWhenMissing(string input)
+        async ValueTask<string> ResolveCreateWhenMissing(string input)
         {
             if (!map.TryGetValue(input, out var riderId))
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -8,7 +9,7 @@ using maxbl4.Race.Logic.RiderIdResolving;
 using maxbl4.Race.Logic.RoundTiming;
 using Xunit;
 
-namespace maxbl4.Race.Tests.Logic
+namespace maxbl4.Race.Tests.Logic.Pipeline
 {
     public class PipelineTests
     {
@@ -38,6 +39,30 @@ namespace maxbl4.Race.Tests.Logic
             sequence.Count.Should().Be(2);
             sequence[0].RiderId.Should().Be("Eleven");
             sequence[1].RiderId.Should().Be("15");
+        }
+
+        [Fact]
+        public void Should()
+        {
+            // Should implement only batch interface and optimize it for speed.
+            // Now way to calculate race results incrementally
+            var rfidToRider = new ConcurrentDictionary<string, string>
+            {
+                ["ABC"] = "Rider_1",
+                ["XXX"] = "Rider_2",
+            };
+            var rfidCheckpoints = new CheckpointProvider(new SimpleMapRiderIdResolver(rfidToRider, x => Task.FromResult($"Rider_{x}")));
+            
+            var numberToRider = new ConcurrentDictionary<string, string>
+            {
+                ["1"] = "Rider_1",
+                ["2"] = "Rider_2"
+            };
+            
+            var manualCheckpoints = new CheckpointProvider(new SimpleMapRiderIdResolver(numberToRider, x => Task.FromResult($"Manual_{x}")));
+
+            new PipelineBuilder()
+                .WithCheckpointProvider(rfidCheckpoints, manualCheckpoints);
         }
     }
 }

@@ -17,10 +17,7 @@ namespace maxbl4.Race.Logic.Checkpoints
 
         public async Task ProvideInput(string value, DateTime? timeStamp = null)
         {
-            if (!riderIdResolver.Resolve(value, out var riderId))
-            {
-                riderId = await riderIdResolver.ResolveCreateWhenMissing(value);
-            }
+            var riderId = await riderIdResolver.Resolve(value);
             checkpoints.OnNext(new Checkpoint(riderId, timeStamp));
         }
 
