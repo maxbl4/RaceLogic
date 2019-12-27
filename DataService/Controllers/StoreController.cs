@@ -17,6 +17,23 @@ namespace maxbl4.Race.DataService.Controllers
         {
             this.storageService = storageService;
         }
+
+        [HttpGet("")]
+        [HttpGet("{collection}")]
+        public IActionResult ShowHelp()
+        {
+            return Ok(new
+            {
+                Description = "This is a simple storage API",
+                Examples = new object[]
+                {
+                    new { Query = new { Uri = "GET /store/Riders/single/1"}, Returns = new { Code = 200, Data = new { Id = 1, Name = "Rider Name", OtherRiderAttribute = "123" }}},
+                    new { Query = new { Uri = "PUT|POST /store/Riders/single", Body = new { Name = "New Rider Name", Some="More data"}}, 
+                        Returns = new { Code = 201, Headers = new { Location = "/store/Riders/single/5"}, Comment = "Location header has id of new entity"}},
+                    new { Query = new { Uri = "PUT|POST /store/Riders/single/1", Comment = "Explicit new id can be specified"}},
+                }
+            });
+        }
         
         [HttpGet("{collection}/single/{id}")]
         public IActionResult SingleGet(string collection, string id)
