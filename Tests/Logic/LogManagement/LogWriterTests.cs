@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using maxbl4.Race.Logic.LogManagement.IO;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.LogManagement
@@ -38,7 +38,7 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
                 Id = 3
             });
 
-            sw.ToString().ShouldBe(simpleLog1);
+            sw.ToString().Should().Be(simpleLog1);
         }
         
         [Fact]
@@ -48,14 +48,14 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
             var logReader = new LogReader();
             var entries = logReader.Read(sr).ToList();
             
-            entries.Count.ShouldBe(3);
-            entries[0].ShouldBeOfType<SessionStart>();
-            entries[1].ShouldBeOfType<RfidCheckpoint>();
-            entries[2].ShouldBeOfType<ManualCheckpoint>();
+            entries.Count.Should().Be(3);
+            entries[0].Should().BeOfType<SessionStart>();
+            entries[1].Should().BeOfType<RfidCheckpoint>();
+            entries[2].Should().BeOfType<ManualCheckpoint>();
             
-            entries[0].Timestamp.ShouldBe(new DateTime(1000000));
-            entries[0].Id.ShouldBe(1);
-            ((SessionStart)entries[0]).Duration.ShouldBe(TimeSpan.FromMinutes(45));
+            entries[0].Timestamp.Should().Be(new DateTime(1000000));
+            entries[0].Id.Should().Be(1);
+            ((SessionStart)entries[0]).Duration.Should().Be(TimeSpan.FromMinutes(45));
         }
     }
 }

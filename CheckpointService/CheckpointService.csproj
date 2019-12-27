@@ -14,7 +14,7 @@
       <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
       <PackageReference Include="System.Reactive.Linq" Version="4.3.1" />
       <PackageReference Include="LiteDB" Version="5.0.0-beta" />
-      <PackageReference Include="maxbl4.Infrastructure" Version="1.0.36" />
+      <PackageReference Include="maxbl4.Infrastructure" Version="1.0.37" />
       <PackageReference Include="maxbl4.RfidDotNet" Version="1.0.60" />
       <PackageReference Include="maxbl4.RfidDotNet.AlienTech" Version="1.0.60" />
       <PackageReference Include="maxbl4.RfidDotNet.GenericSerial" Version="1.0.60" />
@@ -35,6 +35,8 @@
       <_ContentIncludedByDefault Remove="_build\bin\checkpoint-service-ui\tslint.json" />
       <_ContentIncludedByDefault Remove="_build\bin\maxbl4.CheckpointService.deps.json" />
       <_ContentIncludedByDefault Remove="_build\bin\maxbl4.CheckpointService.runtimeconfig.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\CheckpointService.deps.json" />
+      <_ContentIncludedByDefault Remove="_build\bin\CheckpointService.runtimeconfig.json" />
     </ItemGroup>
 
     <ItemGroup>

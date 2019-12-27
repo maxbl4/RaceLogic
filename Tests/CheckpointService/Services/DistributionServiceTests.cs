@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.RfidDotNet.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -43,7 +42,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 
                 
                 new Timing().Logger(Logger).Expect(() => cps.Count >= 1);
-                cps[0].RiderId.ShouldBe("r1");
+                cps[0].RiderId.Should().Be("r1");
             });
         }
         
@@ -76,8 +75,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 
                 
                 new Timing().Logger(Logger).Expect(() => log.Count >= 2);
-                log[0].ShouldBe("thrown");
-                log[1].ShouldBe("r1");
+                log[0].Should().Be("thrown");
+                log[1].Should().Be("r1");
             });
         }
     }

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.RoundTiming;
 using maxbl4.Race.Logic.Scoring;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.Scoring
@@ -15,22 +15,22 @@ namespace maxbl4.Race.Tests.Logic.Scoring
         public void Static_scoring_should_work()
         {
             var calc = RoundScoringStrategy.FromStaticScores(new []{3, 1, 5});
-            calc.FirstPlacePoints.ShouldBe(0);
-            calc.SubstractBy.ShouldBe(0);
-            calc.GetScoreForPosition(0).ShouldBe(0);
-            calc.GetScoreForPosition(1).ShouldBe(3);
-            calc.GetScoreForPosition(2).ShouldBe(1);
-            calc.GetScoreForPosition(3).ShouldBe(5);
-            calc.GetScoreForPosition(4).ShouldBe(0);
+            calc.FirstPlacePoints.Should().Be(0);
+            calc.SubstractBy.Should().Be(0);
+            calc.GetScoreForPosition(0).Should().Be(0);
+            calc.GetScoreForPosition(1).Should().Be(3);
+            calc.GetScoreForPosition(2).Should().Be(1);
+            calc.GetScoreForPosition(3).Should().Be(5);
+            calc.GetScoreForPosition(4).Should().Be(0);
 
             var scores = calc.Calculate(GetRating(5, 2)).ToList();
-            scores[0].Position.ShouldBe(1);
-            scores[0].Points.ShouldBe(3);
-            scores[1].Position.ShouldBe(2);
-            scores[1].Points.ShouldBe(1);
-            scores[2].Position.ShouldBe(3);
-            scores[2].Points.ShouldBe(5);
-            scores.Skip(3).ShouldAllBe(x => x.Points == 0);
+            scores[0].Position.Should().Be(1);
+            scores[0].Points.Should().Be(3);
+            scores[1].Position.Should().Be(2);
+            scores[1].Points.Should().Be(1);
+            scores[2].Position.Should().Be(3);
+            scores[2].Points.Should().Be(5);
+            scores.Skip(3).Should().OnlyContain(x => x.Points == 0);
         }
 
         [Fact]
@@ -38,14 +38,14 @@ namespace maxbl4.Race.Tests.Logic.Scoring
         {
             var rating = GetRating(3, 2).ToList();
             var calc = RoundScoringStrategy.FromFinishers(rating);
-            calc.FirstPlacePoints.ShouldBe(3);
-            calc.SubstractBy.ShouldBe(1);
+            calc.FirstPlacePoints.Should().Be(3);
+            calc.SubstractBy.Should().Be(1);
             var scores = calc.Calculate(rating).ToList();
-            scores[0].Points.ShouldBe(3);
-            scores[1].Points.ShouldBe(2);
-            scores[2].Points.ShouldBe(1);
-            scores[3].Points.ShouldBe(0);
-            scores[4].Points.ShouldBe(0);
+            scores[0].Points.Should().Be(3);
+            scores[1].Points.Should().Be(2);
+            scores[2].Points.Should().Be(1);
+            scores[3].Points.Should().Be(0);
+            scores[4].Points.Should().Be(0);
         }
         
         [Fact]
@@ -53,17 +53,17 @@ namespace maxbl4.Race.Tests.Logic.Scoring
         {
             var rating = GetRating(3, 0).ToList();
             var calc = RoundScoringStrategy.FromFirstPlacePoints(9, 3);
-            calc.FirstPlacePoints.ShouldBe(9);
-            calc.SubstractBy.ShouldBe(3);
+            calc.FirstPlacePoints.Should().Be(9);
+            calc.SubstractBy.Should().Be(3);
             var scores = calc.Calculate(rating, new []{"21", "22"}).ToList();
-            scores.Count.ShouldBe(5);
-            scores[0].Points.ShouldBe(9);
-            scores[1].Points.ShouldBe(6);
-            scores[2].Points.ShouldBe(3);
-            scores[3].RiderId.ShouldBe("21");
-            scores[3].Points.ShouldBe(0);
-            scores[4].RiderId.ShouldBe("22");
-            scores[4].Points.ShouldBe(0);
+            scores.Count.Should().Be(5);
+            scores[0].Points.Should().Be(9);
+            scores[1].Points.Should().Be(6);
+            scores[2].Points.Should().Be(3);
+            scores[3].RiderId.Should().Be("21");
+            scores[3].Points.Should().Be(0);
+            scores[4].RiderId.Should().Be("22");
+            scores[4].Points.Should().Be(0);
         }
         
         [Fact]
@@ -72,17 +72,17 @@ namespace maxbl4.Race.Tests.Logic.Scoring
             var rating = GetRating(3, 0).ToList();
             var calc = RoundScoringStrategy.FromFirstPlacePoints(9, 3);
             var scores = calc.Calculate(rating, new []{"11", "12", "13", "21", "22"}).ToList();
-            scores.Count.ShouldBe(5);
-            scores[0].Points.ShouldBe(9);
-            scores[0].RiderId.ShouldBe("11");
-            scores[1].Points.ShouldBe(6);
-            scores[1].RiderId.ShouldBe("12");
-            scores[2].Points.ShouldBe(3);
-            scores[2].RiderId.ShouldBe("13");
-            scores[3].RiderId.ShouldBe("21");
-            scores[3].Points.ShouldBe(0);
-            scores[4].RiderId.ShouldBe("22");
-            scores[4].Points.ShouldBe(0);
+            scores.Count.Should().Be(5);
+            scores[0].Points.Should().Be(9);
+            scores[0].RiderId.Should().Be("11");
+            scores[1].Points.Should().Be(6);
+            scores[1].RiderId.Should().Be("12");
+            scores[2].Points.Should().Be(3);
+            scores[2].RiderId.Should().Be("13");
+            scores[3].RiderId.Should().Be("21");
+            scores[3].Points.Should().Be(0);
+            scores[4].RiderId.Should().Be("22");
+            scores[4].Points.Should().Be(0);
         }
         
         [Fact]
@@ -91,21 +91,21 @@ namespace maxbl4.Race.Tests.Logic.Scoring
             var rating = GetRating(2, 1).ToList();
             var scores = RoundScoringStrategy.FromFirstPlacePoints(10, rateDnfs: false)
                 .Calculate(rating, new []{"21", "22"}).ToList();
-            scores.Count.ShouldBe(5);
-            scores[0].Points.ShouldBe(10);
-            scores[1].Points.ShouldBe(9);
-            scores[2].Points.ShouldBe(0);
-            scores[3].Points.ShouldBe(0);
-            scores[4].Points.ShouldBe(0);
+            scores.Count.Should().Be(5);
+            scores[0].Points.Should().Be(10);
+            scores[1].Points.Should().Be(9);
+            scores[2].Points.Should().Be(0);
+            scores[3].Points.Should().Be(0);
+            scores[4].Points.Should().Be(0);
             
             scores = RoundScoringStrategy.FromFirstPlacePoints(10, rateDnfs: true)
                 .Calculate(rating, new []{"21", "22"}).ToList();
-            scores.Count.ShouldBe(5);
-            scores[0].Points.ShouldBe(10);
-            scores[1].Points.ShouldBe(9);
-            scores[2].Points.ShouldBe(8);
-            scores[3].Points.ShouldBe(0);
-            scores[4].Points.ShouldBe(0);
+            scores.Count.Should().Be(5);
+            scores[0].Points.Should().Be(10);
+            scores[1].Points.Should().Be(9);
+            scores[2].Points.Should().Be(8);
+            scores[3].Points.Should().Be(0);
+            scores[4].Points.Should().Be(0);
         }
 
         IEnumerable<RoundPosition> GetRating(int finishers, int starters)

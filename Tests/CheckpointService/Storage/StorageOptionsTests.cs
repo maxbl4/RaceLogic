@@ -1,6 +1,6 @@
-﻿using maxbl4.Race.CheckpointService.Services;
+﻿using FluentAssertions;
+using maxbl4.Race.CheckpointService.Services;
 using Newtonsoft.Json;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.CheckpointService.Storage
@@ -14,8 +14,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 {StorageConnectionString = "Filename=storage.litedb;InitialSize=123;UtcDate=true"};
             var s = JsonConvert.SerializeObject(options);
             var deserialized = JsonConvert.DeserializeObject<ServiceOptions>(s);
-            deserialized.ShouldNotBeSameAs(options);
-            deserialized.StorageConnectionString.ShouldBe("Filename=storage.litedb;InitialSize=123;UtcDate=true");
+            deserialized.Should().NotBeSameAs(options);
+            deserialized.StorageConnectionString.Should().Be("Filename=storage.litedb;InitialSize=123;UtcDate=true");
         }
     }
 }

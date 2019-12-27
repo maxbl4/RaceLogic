@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using maxbl4.Infrastructure.Extensions.DictionaryExt;
-using maxbl4.Race.Logic.Extensions;
 
 namespace maxbl4.Race.Logic.Scoring
 {

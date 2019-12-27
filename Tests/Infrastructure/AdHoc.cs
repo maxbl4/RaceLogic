@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Infrastructure
@@ -10,8 +10,8 @@ namespace maxbl4.Race.Tests.Infrastructure
         [Fact]
         public void Pattern_Matching_should_work_for_inherited_classes()
         {
-            Gestring(new Checkpoint("1")).ShouldBe("Checkpoint 1");
-            Gestring(AggCheckpoint.From(new Checkpoint("1"))).ShouldBe("AggCheckpoint 1");
+            Gestring(new Checkpoint("1")).Should().Be("Checkpoint 1");
+            Gestring(AggCheckpoint.From(new Checkpoint("1"))).Should().Be("AggCheckpoint 1");
         }
 
         [Fact]
@@ -21,8 +21,8 @@ namespace maxbl4.Race.Tests.Infrastructure
                 {new Checkpoint("1"), "111"},
                 {AggCheckpoint.From(new Checkpoint("2")), "222"},
             };
-            d[new Checkpoint("1")].ShouldBe("111");
-            d[AggCheckpoint.From(new Checkpoint("1"))].ShouldBe("111");
+            d[new Checkpoint("1")].Should().Be("111");
+            d[AggCheckpoint.From(new Checkpoint("1"))].Should().Be("111");
         }
 
         class MyCheckpointComparer : IEqualityComparer<Checkpoint>

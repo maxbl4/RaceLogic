@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic
@@ -27,11 +27,11 @@ namespace maxbl4.Race.Tests.Logic
                 G("2",2),
                 G("3",3)
             }.ToList(), TimeSpan.FromTicks(10));
-            aggRecords.Count.ShouldBe(3);
-            aggRecords.ShouldAllBe(x => x.Count == 1);
-            aggRecords[0].RiderId.ShouldBe("1");
-            aggRecords[1].RiderId.ShouldBe("2");
-            aggRecords[2].RiderId.ShouldBe("3");
+            aggRecords.Count.Should().Be(3);
+            aggRecords.Should().OnlyContain(x => x.Count == 1);
+            aggRecords[0].RiderId.Should().Be("1");
+            aggRecords[1].RiderId.Should().Be("2");
+            aggRecords[2].RiderId.Should().Be("3");
         }
         
         [Fact]
@@ -45,14 +45,14 @@ namespace maxbl4.Race.Tests.Logic
                 G("2",22),
                 G("3",23),
             }.ToList(), TimeSpan.FromTicks(10)).ToList();
-            aggRecords.Count.ShouldBe(6);
-            aggRecords.ShouldAllBe(x => x.Count == 1);
-            aggRecords[0].RiderId.ShouldBe("1");
-            aggRecords[1].RiderId.ShouldBe("2");
-            aggRecords[2].RiderId.ShouldBe("3");
-            aggRecords[3].RiderId.ShouldBe("1");
-            aggRecords[4].RiderId.ShouldBe("2");
-            aggRecords[5].RiderId.ShouldBe("3");
+            aggRecords.Count.Should().Be(6);
+            aggRecords.Should().OnlyContain(x => x.Count == 1);
+            aggRecords[0].RiderId.Should().Be("1");
+            aggRecords[1].RiderId.Should().Be("2");
+            aggRecords[2].RiderId.Should().Be("3");
+            aggRecords[3].RiderId.Should().Be("1");
+            aggRecords[4].RiderId.Should().Be("2");
+            aggRecords[5].RiderId.Should().Be("3");
         }
         
         [Fact]
@@ -69,46 +69,46 @@ namespace maxbl4.Race.Tests.Logic
                 G("2",22),
                 G("3",23),
             }.ToList(), TimeSpan.FromTicks(10)).ToList();
-            aggRecords.Count.ShouldBe(6);
-            aggRecords.Take(3).ShouldAllBe(x => x.Count == 2);
-            aggRecords.Skip(3).ShouldAllBe(x => x.Count == 1);
-            aggRecords[0].RiderId.ShouldBe("1");
-            aggRecords[1].RiderId.ShouldBe("2");
-            aggRecords[2].RiderId.ShouldBe("3");
-            aggRecords[3].RiderId.ShouldBe("1");
-            aggRecords[4].RiderId.ShouldBe("2");
-            aggRecords[5].RiderId.ShouldBe("3");
+            aggRecords.Count.Should().Be(6);
+            aggRecords.Take(3).Should().OnlyContain(x => x.Count == 2);
+            aggRecords.Skip(3).Should().OnlyContain(x => x.Count == 1);
+            aggRecords[0].RiderId.Should().Be("1");
+            aggRecords[1].RiderId.Should().Be("2");
+            aggRecords[2].RiderId.Should().Be("3");
+            aggRecords[3].RiderId.Should().Be("1");
+            aggRecords[4].RiderId.Should().Be("2");
+            aggRecords[5].RiderId.Should().Be("3");
         }
         
         [Fact]
         public void Streaming_simple()
         {
             aggregator.OnNext(G("1",100));
-            checkpoints.Count.ShouldBe(1);
-            checkpoints[0].RiderId.ShouldBe("1");
-            checkpoints[0].Timestamp.ShouldBe(new DateTime(100));
-            aggCheckpoints.Count.ShouldBe(0);
+            checkpoints.Count.Should().Be(1);
+            checkpoints[0].RiderId.Should().Be("1");
+            checkpoints[0].Timestamp.Should().Be(new DateTime(100));
+            aggCheckpoints.Count.Should().Be(0);
             
             aggregator.OnNext(G("1",120));
             
-            checkpoints.Count.ShouldBe(2);
-            checkpoints[1].RiderId.ShouldBe("1");
-            checkpoints[1].Timestamp.ShouldBe(new DateTime(120));
-            aggCheckpoints.Count.ShouldBe(1);
-            aggCheckpoints[0].RiderId.ShouldBe("1");
-            aggCheckpoints[0].Timestamp.ShouldBe(new DateTime(100));
-            aggCheckpoints[0].LastSeen.ShouldBe(new DateTime(100));
+            checkpoints.Count.Should().Be(2);
+            checkpoints[1].RiderId.Should().Be("1");
+            checkpoints[1].Timestamp.Should().Be(new DateTime(120));
+            aggCheckpoints.Count.Should().Be(1);
+            aggCheckpoints[0].RiderId.Should().Be("1");
+            aggCheckpoints[0].Timestamp.Should().Be(new DateTime(100));
+            aggCheckpoints[0].LastSeen.Should().Be(new DateTime(100));
             
             aggregator.OnNext(G("1",125));
             aggregator.OnNext(G("1",140));
             
-            checkpoints.Count.ShouldBe(3);
-            checkpoints[2].RiderId.ShouldBe("1");
-            checkpoints[2].Timestamp.ShouldBe(new DateTime(140));
-            aggCheckpoints.Count.ShouldBe(2);
-            aggCheckpoints[1].RiderId.ShouldBe("1");
-            aggCheckpoints[1].Timestamp.ShouldBe(new DateTime(120));
-            aggCheckpoints[1].LastSeen.ShouldBe(new DateTime(125));
+            checkpoints.Count.Should().Be(3);
+            checkpoints[2].RiderId.Should().Be("1");
+            checkpoints[2].Timestamp.Should().Be(new DateTime(140));
+            aggCheckpoints.Count.Should().Be(2);
+            aggCheckpoints[1].RiderId.Should().Be("1");
+            aggCheckpoints[1].Timestamp.Should().Be(new DateTime(120));
+            aggCheckpoints[1].LastSeen.Should().Be(new DateTime(125));
         }
         
         [Fact]
@@ -117,15 +117,15 @@ namespace maxbl4.Race.Tests.Logic
             aggregator.OnNext(G("1",100));
             aggregator.OnNext(G("1",101));
             aggregator.OnNext(G("1",102));
-            checkpoints.Count.ShouldBe(1);
-            checkpoints[0].RiderId.ShouldBe("1");
-            checkpoints[0].Timestamp.ShouldBe(new DateTime(100));
-            aggCheckpoints.Count.ShouldBe(0);
+            checkpoints.Count.Should().Be(1);
+            checkpoints[0].RiderId.Should().Be("1");
+            checkpoints[0].Timestamp.Should().Be(new DateTime(100));
+            aggCheckpoints.Count.Should().Be(0);
             
             aggregator.OnCompleted();
-            aggCheckpoints.Count.ShouldBe(1);
-            aggCheckpoints[0].Timestamp.ShouldBe(new DateTime(100));
-            aggCheckpoints[0].LastSeen.ShouldBe(new DateTime(102));
+            aggCheckpoints.Count.Should().Be(1);
+            aggCheckpoints[0].Timestamp.Should().Be(new DateTime(100));
+            aggCheckpoints[0].LastSeen.Should().Be(new DateTime(102));
         }
 
         Checkpoint G(string rider, int timeOffset)

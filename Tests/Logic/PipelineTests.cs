@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.Pipeline;
 using maxbl4.Race.Logic.RiderIdResolving;
 using maxbl4.Race.Logic.RoundTiming;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic
@@ -34,10 +34,10 @@ namespace maxbl4.Race.Tests.Logic
             pp.StartRound(roundStartTime);
             await manualCheckpointProvider.ProvideInput("11", new DateTime(1001));
             await manualCheckpointProvider.ProvideInput("15", new DateTime(1005));
-            sequence.ShouldNotBeNull();
-            sequence.Count.ShouldBe(2);
-            sequence[0].RiderId.ShouldBe("Eleven");
-            sequence[1].RiderId.ShouldBe("15");
+            sequence.Should().NotBeNull();
+            sequence.Count.Should().Be(2);
+            sequence[0].RiderId.Should().Be("Eleven");
+            sequence[1].RiderId.Should().Be("15");
         }
     }
 }

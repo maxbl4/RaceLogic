@@ -1,6 +1,6 @@
 using System.Linq;
+using FluentAssertions;
 using maxbl4.Race.Logic.RoundTiming;
-using Shouldly;
 
 namespace maxbl4.Race.Tests.Infrastructure
 {
@@ -21,20 +21,20 @@ namespace maxbl4.Race.Tests.Infrastructure
             {
                 var expected = def.Rating[i];
                 var actual = rating[i];
-                actual.RiderId.ShouldBe(expected.RiderId, 
+                actual.RiderId.Should().Be(expected.RiderId, 
                     $"Place {i + 1} should have #{expected.RiderId}, but was #{actual.RiderId}");
-                actual.Started.ShouldBe(expected.Started,
+                actual.Started.Should().Be(expected.Started,
                     $"#{actual.RiderId} should have Started={expected.Started}, but was {actual.Started}");
-                actual.Finished.ShouldBe(expected.Finished,
+                actual.Finished.Should().Be(expected.Finished,
                     $"#{actual.RiderId} should have Finished={expected.Finished}, but was {actual.Finished}");
-                actual.LapsCount.ShouldBe(expected.LapsCount,
+                actual.LapsCount.Should().Be(expected.LapsCount,
                     $"#{actual.RiderId} should have LapsCount={expected.LapsCount}, but was {actual.LapsCount}");
                 if (verifyTime)
                 {
-                    actual.Start.ShouldBe(def.RoundStartTime,
+                    actual.Start.Should().Be(def.RoundStartTime,
                         $"#{actual.RiderId} should have Start={expected.Start}, but was {actual.Start}");
 
-                    actual.Duration.ShouldBe(expected.Duration,
+                    actual.Duration.Should().Be(expected.Duration,
                         $"#{actual.RiderId} should have Duration={expected.Duration}, but was {actual.Duration}");
                 }
             }

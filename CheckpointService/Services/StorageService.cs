@@ -2,16 +2,11 @@
 using System.Collections.Generic;
 using System.Reactive.PlatformServices;
 using Easy.MessageHub;
-using LiteDB;
-using maxbl4.Infrastructure;
-using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.Logic.Checkpoints;
 using Microsoft.Extensions.Options;
-using Serilog;
 using ServiceBase;
-using ConnectionString = LiteDB.ConnectionString;
 
 namespace maxbl4.Race.CheckpointService.Services
 {

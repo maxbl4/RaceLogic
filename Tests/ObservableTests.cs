@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.RaceLogic.Tests;
-using maxbl4.RfidDotNet.Infrastructure;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests
@@ -37,7 +35,7 @@ namespace maxbl4.Race.Tests
 
             Assert.Throws<ArgumentException>(() => subject.OnNext(1));
             subject.OnNext(2);
-            s.ShouldBe("1");
+            s.Should().Be("1");
         }
         
         [Fact]
@@ -55,8 +53,8 @@ namespace maxbl4.Race.Tests
 
             subject.OnNext(1);
             subject.OnNext(2);
-            s.ShouldBe("12");
-            logger.messages.Count.ShouldBe(2);
+            s.Should().Be("12");
+            logger.messages.Count.Should().Be(2);
             
         }
 

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 using Tag = maxbl4.Race.CheckpointService.Model.Tag;
@@ -26,7 +26,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             {
                 var dt = DateTime.UtcNow;
                 s.AppendCheckpoint(new Checkpoint("111", dt));
-                s.ListCheckpoints()[0].Timestamp.ShouldBe(dt, TimeSpan.FromSeconds(1));
+                s.ListCheckpoints()[0].Timestamp.Should().BeCloseTo(dt, TimeSpan.FromSeconds(1));
             });
         }
 
@@ -36,14 +36,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             WithCheckpointStorageService(storageService =>
             {
                 var settings = storageService.GetRfidOptions();
-                settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
+                settings.ConnectionString.Should().Be(RfidOptions.DefaultConnectionString);
                 settings.Enabled = true;
                 settings.ConnectionString = "Protocol=Alien;Network=8.8.8.8:500";
                 storageService.SetRfidOptions(settings);
                 settings = storageService.GetRfidOptions();
-                settings.ShouldNotBeSameAs(RfidOptions.Default);
-                settings.Enabled.ShouldBeTrue();
-                settings.ConnectionString.ShouldBe("Protocol=Alien;Network=8.8.8.8:500");
+                settings.Should().NotBeSameAs(RfidOptions.Default);
+                settings.Enabled.Should().BeTrue();
+                settings.ConnectionString.Should().Be("Protocol=Alien;Network=8.8.8.8:500");
             });
         }
 
@@ -53,7 +53,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             WithCheckpointStorageService(storageService =>
             {
                 var settings = storageService.GetRfidOptions();
-                settings.ConnectionString.ShouldBe(RfidOptions.DefaultConnectionString);
+                settings.ConnectionString.Should().Be(RfidOptions.DefaultConnectionString);
             });
         }
         
@@ -69,7 +69,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 }), MessageHub, SystemClock);
             
             var settings = storageService.GetRfidOptions();
-            settings.ShouldBeSameAs(opts);
+            settings.Should().BeSameAs(opts);
         }
         
         [Fact]
@@ -80,14 +80,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 var ts = DateTime.UtcNow;
                 storageService.AppendCheckpoint(new Checkpoint("1", ts));
                 storageService.AppendCheckpoint(new Checkpoint("2", ts.AddSeconds(100)));
-                storageService.ListCheckpoints().Count.ShouldBe(2);
+                storageService.ListCheckpoints().Count.Should().Be(2);
                 var firstCp = storageService.ListCheckpoints(ts, ts.AddSeconds(10));
-                firstCp.Count.ShouldBe(1);
-                firstCp[0].RiderId.ShouldBe("1");
+                firstCp.Count.Should().Be(1);
+                firstCp[0].RiderId.Should().Be("1");
 
                 var secondCp = storageService.ListCheckpoints(ts.AddSeconds(10));
-                secondCp.Count.ShouldBe(1);
-                secondCp[0].RiderId.ShouldBe("2");
+                secondCp.Count.Should().Be(1);
+                secondCp[0].RiderId.Should().Be("2");
             });
         }
         
@@ -97,9 +97,9 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             WithCheckpointStorageService(storageService =>
             {
                 var options = storageService.GetRfidOptions();
-                options.Timestamp.ShouldBe(default);
+                options.Timestamp.Should().Be(default);
                 storageService.SetRfidOptions(options);
-                storageService.GetRfidOptions().Timestamp.ShouldBe(SystemClock.UtcNow.UtcDateTime);
+                storageService.GetRfidOptions().Timestamp.Should().Be(SystemClock.UtcNow.UtcDateTime);
             });
         }
         
@@ -114,31 +114,31 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                     storageService.AppendTag(new Tag{Antenna = i, Rssi = i, DiscoveryTime = ts.AddSeconds(i), LastSeenTime = ts.AddSeconds(i + 1), ReadCount = i, TagId = i.ToString()});
                 }
                 var list = storageService.ListTags();
-                list.Count.ShouldBe(10);
+                list.Count.Should().Be(10);
                 for (var i = 1; i <= 10; i++)
                 {
                     var t = list[10 - i];
-                    t.Antenna.ShouldBe(i);
-                    t.Rssi.ShouldBe(i);
-                    t.DiscoveryTime.ShouldBe(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
-                    t.LastSeenTime.ShouldBe(ts.AddSeconds(i + 1), TimeSpan.FromMilliseconds(10));
-                    t.ReadCount.ShouldBe(i);
-                    t.TagId.ShouldBe(i.ToString());
+                    t.Antenna.Should().Be(i);
+                    t.Rssi.Should().Be(i);
+                    t.DiscoveryTime.Should().BeCloseTo(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
+                    t.LastSeenTime.Should().BeCloseTo(ts.AddSeconds(i + 1), TimeSpan.FromMilliseconds(10));
+                    t.ReadCount.Should().Be(i);
+                    t.TagId.Should().Be(i.ToString());
                 }
 
-                storageService.DeleteTags(ts.AddSeconds(-1), ts.AddSeconds(7.7)).ShouldBe(7);
+                storageService.DeleteTags(ts.AddSeconds(-1), ts.AddSeconds(7.7)).Should().Be(7);
                 
                 list = storageService.ListTags();
-                list.Count.ShouldBe(3);
+                list.Count.Should().Be(3);
                 for (var i = 8; i <= 10; i++)
                 {
                     var t = list[10 - i];
-                    t.Antenna.ShouldBe(i);
-                    t.Rssi.ShouldBe(i);
-                    t.DiscoveryTime.ShouldBe(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
-                    t.LastSeenTime.ShouldBe(ts.AddSeconds(i + 1), TimeSpan.FromMilliseconds(10));
-                    t.ReadCount.ShouldBe(i);
-                    t.TagId.ShouldBe(i.ToString());
+                    t.Antenna.Should().Be(i);
+                    t.Rssi.Should().Be(i);
+                    t.DiscoveryTime.Should().BeCloseTo(ts.AddSeconds(i), TimeSpan.FromMilliseconds(10));
+                    t.LastSeenTime.Should().BeCloseTo(ts.AddSeconds(i + 1), TimeSpan.FromMilliseconds(10));
+                    t.ReadCount.Should().Be(i);
+                    t.TagId.Should().Be(i.ToString());
                 }
             });
         }
@@ -152,9 +152,9 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 storageService.AppendTag(new Tag{Antenna = 1, DiscoveryTime = ts, TagId = "1"});
                 storageService.AppendTag(new Tag{Antenna = 2, DiscoveryTime = ts, TagId = "1"});
                 var list = storageService.ListTags();
-                list.Count.ShouldBe(2);
-                list.ShouldContain(x => x.Antenna == 1);
-                list.ShouldContain(x => x.Antenna == 2);
+                list.Count.Should().Be(2);
+                list.Should().Contain(x => x.Antenna == 1);
+                list.Should().Contain(x => x.Antenna == 2);
             });
         }
 
@@ -172,9 +172,9 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 .Build();
             var opts = config.GetSection(nameof(ServiceOptions))
                 .Get<ServiceOptions>();
-            opts.InitialRfidOptions.ShouldNotBeNull();
-            opts.InitialRfidOptions.Enabled.ShouldBeFalse();
-            opts.InitialRfidOptions.PersistTags.ShouldBeTrue();
+            opts.InitialRfidOptions.Should().NotBeNull();
+            opts.InitialRfidOptions.Enabled.Should().BeFalse();
+            opts.InitialRfidOptions.PersistTags.Should().BeTrue();
         }
 
         [Fact]
@@ -182,17 +182,17 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         {
             var cs = new LiteDB.ConnectionString(storageConnectionString);
             var dbFile = new RollingFileInfo(cs.Filename);
-            dbFile.BaseExists.ShouldBeFalse();
+            dbFile.BaseExists.Should().BeFalse();
             using (var repo = new LiteRepository(storageConnectionString))
             {
                 repo.Insert(new BadCheckpoint{Count = 1.1m}, nameof(Checkpoint));
             }
-            dbFile.BaseExists.ShouldBeTrue();
-            dbFile.Index.ShouldBe(0);
+            dbFile.BaseExists.Should().BeTrue();
+            dbFile.Index.Should().Be(0);
 
             WithCheckpointStorageService(storage =>
             {
-                dbFile.Index.ShouldBe(1);
+                dbFile.Index.Should().Be(1);
             });
         }
 

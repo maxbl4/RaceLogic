@@ -1,5 +1,4 @@
 using System.Reactive.PlatformServices;
-using System.Threading;
 using AutoMapper;
 using Easy.MessageHub;
 using maxbl4.Race.DataService.Services;

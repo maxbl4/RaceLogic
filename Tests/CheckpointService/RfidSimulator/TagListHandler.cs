@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.ReaderSimulator;
 using maxbl4.RfidDotNet.AlienTech.TagStream;
-using Shouldly;
 
 namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 {
@@ -67,7 +67,7 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
                 returnOnceTags = string.Join("\r\n", tags.Select(x => x.ToCustomFormatString()));
             }
 
-            returnTask.Task.Wait(5000).ShouldBeTrue();
+            returnTask.Task.Wait(5000).Should().BeTrue();
         }
         
         public DateTime LastRequestTime { get; private set; }

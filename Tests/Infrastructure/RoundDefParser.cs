@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using maxbl4.Infrastructure.Extensions.DictionaryExt;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.RoundTiming;
 
 namespace maxbl4.Race.Tests.Infrastructure

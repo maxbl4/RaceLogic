@@ -1,6 +1,6 @@
 using System;
+using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.Model
@@ -12,32 +12,32 @@ namespace maxbl4.Race.Tests.Logic.Model
         {
             var ts = new DateTime(1234567);
             var cp = new Checkpoint("123", ts);
-            cp.RiderId.ShouldBe("123");
-            cp.Timestamp.ShouldBe(ts);
+            cp.RiderId.Should().Be("123");
+            cp.Timestamp.Should().Be(ts);
             
             cp = new Checkpoint("456");
-            cp.RiderId.ShouldBe("456");
-            cp.Timestamp.ShouldBe(default);
+            cp.RiderId.Should().Be("456");
+            cp.Timestamp.Should().Be(default);
         }
         
         [Fact]
         public void AggCheckpoint_add_should_work()
         {
             var agg = AggCheckpoint.From(new Checkpoint("11"));
-            agg.Count.ShouldBe(1);
-            agg.Timestamp.ShouldBe(default);
-            agg.LastSeen.ShouldBe(default);
+            agg.Count.Should().Be(1);
+            agg.Timestamp.Should().Be(default);
+            agg.LastSeen.Should().Be(default);
 
             var ts = new DateTime(1234567);
             var agg2 = agg.Add(new Checkpoint("11", ts));
             
-            agg.Count.ShouldBe(1);
-            agg.Timestamp.ShouldBe(default);
-            agg.LastSeen.ShouldBe(default);
+            agg.Count.Should().Be(1);
+            agg.Timestamp.Should().Be(default);
+            agg.LastSeen.Should().Be(default);
             
-            agg2.Count.ShouldBe(2);
-            agg2.Timestamp.ShouldBe(ts);
-            agg2.LastSeen.ShouldBe(ts);
+            agg2.Count.Should().Be(2);
+            agg2.Timestamp.Should().Be(ts);
+            agg2.LastSeen.Should().Be(ts);
 
             Assert.Throws<ArgumentException>(() => agg.Add(new Checkpoint("12")));
         }
@@ -47,23 +47,23 @@ namespace maxbl4.Race.Tests.Logic.Model
         {
             var ts = new DateTime(10000000, DateTimeKind.Utc);
             var agg = AggCheckpoint.From(new Checkpoint("11", ts));
-            agg.Timestamp.ShouldBe(ts);
-            agg.LastSeen.ShouldBe(ts);
-            agg.Rps.ShouldBe(1);
+            agg.Timestamp.Should().Be(ts);
+            agg.LastSeen.Should().Be(ts);
+            agg.Rps.Should().Be(1);
 
             var ts2 = ts.AddSeconds(0.5);
             agg = agg.Add(new Checkpoint("11", ts2));
-            agg.Timestamp.ShouldBe(ts);
-            agg.LastSeen.ShouldBe(ts2);
-            agg.Count.ShouldBe(2);
-            agg.Rps.ShouldBe(4);
+            agg.Timestamp.Should().Be(ts);
+            agg.LastSeen.Should().Be(ts2);
+            agg.Count.Should().Be(2);
+            agg.Rps.Should().Be(4);
             
             var ts3 = ts.AddSeconds(3);
             agg = agg.Add(new Checkpoint("11", ts3));
-            agg.Timestamp.ShouldBe(ts);
-            agg.LastSeen.ShouldBe(ts3);
-            agg.Count.ShouldBe(3);
-            agg.Rps.ShouldBe(1);
+            agg.Timestamp.Should().Be(ts);
+            agg.LastSeen.Should().Be(ts3);
+            agg.Count.Should().Be(3);
+            agg.Rps.Should().Be(1);
         }
         
         [Fact]
@@ -76,10 +76,10 @@ namespace maxbl4.Race.Tests.Logic.Model
                 new Checkpoint("11", ts.AddSeconds(1)),
                 new Checkpoint("11", ts.AddSeconds(2)),
             });
-            agg.Timestamp.ShouldBe(ts);
-            agg.LastSeen.ShouldBe(ts.AddSeconds(2));
-            agg.Count.ShouldBe(3);
-            agg.Rps.ShouldBe(2);
+            agg.Timestamp.Should().Be(ts);
+            agg.LastSeen.Should().Be(ts.AddSeconds(2));
+            agg.Count.Should().Be(3);
+            agg.Rps.Should().Be(2);
         }
         
         [Fact]
@@ -87,7 +87,7 @@ namespace maxbl4.Race.Tests.Logic.Model
         {
             var ts = new DateTime(10000000, DateTimeKind.Utc);
             var agg = new AggCheckpoint("11", ts, ts, 2, false);
-            agg.Rps.ShouldBe(2);
+            agg.Rps.Should().Be(2);
 
             agg = AggCheckpoint.From(new []
             {
@@ -95,10 +95,10 @@ namespace maxbl4.Race.Tests.Logic.Model
                 new Checkpoint("11", ts),
                 new Checkpoint("11", ts),
             });
-            agg.Timestamp.ShouldBe(ts);
-            agg.LastSeen.ShouldBe(ts);
-            agg.Count.ShouldBe(3);
-            agg.Rps.ShouldBe(3);
+            agg.Timestamp.Should().Be(ts);
+            agg.LastSeen.Should().Be(ts);
+            agg.Count.Should().Be(3);
+            agg.Rps.Should().Be(3);
         }
         
         [Fact]
@@ -118,29 +118,29 @@ namespace maxbl4.Race.Tests.Logic.Model
                 new Checkpoint("11", new DateTime(1001)), 
                 new Checkpoint("11", new DateTime(1003)),
             });
-            agg.Count.ShouldBe(5);
-            agg.Timestamp.ShouldBe(new DateTime(1000));
-            agg.LastSeen.ShouldBe(new DateTime(1003));
+            agg.Count.Should().Be(5);
+            agg.Timestamp.Should().Be(new DateTime(1000));
+            agg.LastSeen.Should().Be(new DateTime(1003));
             
             var agg2 = agg.Add(new Checkpoint("11", new DateTime(1004)));
             
-            agg2.Count.ShouldBe(6);
-            agg2.Timestamp.ShouldBe(new DateTime(1000));
-            agg2.LastSeen.ShouldBe(new DateTime(1004));
+            agg2.Count.Should().Be(6);
+            agg2.Timestamp.Should().Be(new DateTime(1000));
+            agg2.LastSeen.Should().Be(new DateTime(1004));
             
             agg2 = agg2.Add(new Checkpoint("11", new DateTime(999)));
             
-            agg2.Count.ShouldBe(7);
-            agg2.Timestamp.ShouldBe(new DateTime(999));
-            agg2.LastSeen.ShouldBe(new DateTime(1004));
+            agg2.Count.Should().Be(7);
+            agg2.Timestamp.Should().Be(new DateTime(999));
+            agg2.LastSeen.Should().Be(new DateTime(1004));
             
-            agg.Count.ShouldBe(5);
-            agg.Timestamp.ShouldBe(new DateTime(1000));
-            agg.LastSeen.ShouldBe(new DateTime(1003));
+            agg.Count.Should().Be(5);
+            agg.Timestamp.Should().Be(new DateTime(1000));
+            agg.LastSeen.Should().Be(new DateTime(1003));
             
             agg = AggCheckpoint.From(new Checkpoint[0]);
-            agg.Count.ShouldBe(0);
-            agg.Timestamp.ShouldBe(default);
+            agg.Count.Should().Be(0);
+            agg.Timestamp.Should().Be(default);
         }
     }
 }

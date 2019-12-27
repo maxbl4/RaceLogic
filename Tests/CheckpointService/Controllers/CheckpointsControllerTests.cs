@@ -4,15 +4,14 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
 using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Tests.CheckpointService.RfidSimulator;
-using maxbl4.RfidDotNet.Infrastructure;
 using Microsoft.AspNetCore.SignalR.Client;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 using Tag = maxbl4.RfidDotNet.Tag;
@@ -34,9 +33,9 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             var client = new HttpClient();
             // Get data from service should succeed, but take 5000+ ms
             var response = await client.GetAsync($"{CheckpointsUri}/cp");
-            (await response.Content.ReadAsStringAsync()).ShouldBe("[]");
+            (await response.Content.ReadAsStringAsync()).Should().Be("[]");
             sw.Stop();
-            sw.ElapsedMilliseconds.ShouldBeGreaterThan(5000);
+            sw.ElapsedMilliseconds.Should().BeGreaterThan(5000);
         }
 
         [Fact]
@@ -52,10 +51,10 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
             var checkpoints = await client.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
-            checkpoints.ShouldNotBeNull();
-            checkpoints.Count.ShouldBe(2);
-            checkpoints.ShouldContain(x => x.RiderId == "stored1");
-            checkpoints.ShouldContain(x => x.RiderId == "stored2");
+            checkpoints.Should().NotBeNull();
+            checkpoints.Count.Should().Be(2);
+            checkpoints.Should().Contain(x => x.RiderId == "stored1");
+            checkpoints.Should().Contain(x => x.RiderId == "stored2");
         }
         
         [Fact]
@@ -109,7 +108,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
                 .Logger(Logger)
                 .FailureDetails(() => $"checkpoints.Count = {checkpoints.Count}")
                 .ExpectAsync(() => checkpoints.Count >= 1);
-            checkpoints.ShouldContain(x => x.RiderId == "555");
+            checkpoints.Should().Contain(x => x.RiderId == "555");
         }
         
         [Fact]
@@ -135,7 +134,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             (await new Timing()
                 .Timeout(5000)
                 .Logger(Logger)
-                .WaitAsync(() => checkpoints.Count > 0)).ShouldBeFalse();
+                .WaitAsync(() => checkpoints.Count > 0)).Should().BeFalse();
         }
         
         [Fact]
@@ -157,23 +156,23 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             var response = await cli.DeleteAsync($"{CheckpointsUri}/cp/1");
             response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).ShouldBe(1);
+            (await response.Content.ReadAs<int>()).Should().Be(1);
             var cps = await cli.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
-            cps.Count.ShouldBe(4);
-            cps.ShouldNotContain(x => x.Id == 1);
+            cps.Count.Should().Be(4);
+            cps.Should().NotContain(x => x.Id == 1);
             
             response = await cli.DeleteAsync($"{CheckpointsUri}/cp?start={now.AddMinutes(1.5):u}&end={now.AddMinutes(3.5):u}");
             response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).ShouldBe(2);
+            (await response.Content.ReadAs<int>()).Should().Be(2);
             cps = await cli.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
-            cps.Count.ShouldBe(2);
-            cps.ShouldNotContain(x => x.Id == 3 || x.Id == 4);
+            cps.Count.Should().Be(2);
+            cps.Should().NotContain(x => x.Id == 3 || x.Id == 4);
             
             response = await cli.DeleteAsync($"{CheckpointsUri}/cp");
             response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).ShouldBe(2);
+            (await response.Content.ReadAs<int>()).Should().Be(2);
             cps = await cli.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
-            cps.Count.ShouldBe(0);
+            cps.Count.Should().Be(0);
         }
     }
 }

@@ -4,9 +4,9 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using FluentAssertions;
 using LiteDB;
 using maxbl4.Race.Tests.Extensions;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,16 +28,16 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             
             var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
-            (await http.GetBsonAsync<Entity>(response.Headers.Location)).ShouldBe(e);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Headers.Location.Should().Be(new Uri($"{DataUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
+            (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
 
             e.Some = "eee";
             response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
-            (await http.GetBsonAsync<Entity>(response.Headers.Location)).ShouldBe(e);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Headers.Location.Should().Be(new Uri($"{DataUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
+            (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
         }
         
         [Fact]
@@ -49,10 +49,10 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             
             var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
             var e2 = await http.GetBsonAsync<Entity>(response.Headers.Location);
-            e2.Id.ShouldNotBe(Guid.Empty);
-            e2.Some.ShouldBe("abc");
+            e2.Id.Should().NotBe(Guid.Empty);
+            e2.Some.Should().Be("abc");
         }
         
         [Fact]
@@ -61,10 +61,10 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             using var svc = CreateDataService();
             var http = new HttpClient();
             var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single/5", new EntityInt{ Id = 2, Some = "2"});
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Entity/single/5"));
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Headers.Location.Should().Be(new Uri($"{DataUri}/store/Entity/single/5"));
             var e = await http.GetBsonAsync<EntityInt>(response.Headers.Location);
-            e.Some.ShouldBe("2");
+            e.Some.Should().Be("2");
         }
         
         [Fact]
@@ -73,7 +73,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             using var svc = CreateDataService();
             var http = new HttpClient();
             var response = await http.GetAsync($"{DataUri}/store/Entity/single/5");
-            response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -85,11 +85,11 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             
             var response = await http.PostBsonAsync($"{DataUri}/store/Entity/single", e);
             
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
             var e2 = await http.GetBsonAsync<BsonDocument>(response.Headers.Location);
-            e2["_id"].Type.ShouldBe(BsonType.Guid);
-            e2["_id"].AsGuid.ShouldNotBe(Guid.Empty);
-            e2["abc"].AsString.ShouldBe("def");
+            e2["_id"].Type.Should().Be(BsonType.Guid);
+            e2["_id"].AsGuid.Should().NotBe(Guid.Empty);
+            e2["abc"].AsString.Should().Be("def");
         }
         
         [Fact]
@@ -99,19 +99,19 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             var http = new HttpClient();
             var eInt = new EntityInt{Some = "int"};
             var responseInt = await http.PostBsonAsync($"{DataUri}/store/Some1/single", eInt);
-            responseInt.StatusCode.ShouldBe(HttpStatusCode.Created);
-            responseInt.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Some1/single/1"));
+            responseInt.StatusCode.Should().Be(HttpStatusCode.Created);
+            responseInt.Headers.Location.Should().Be(new Uri($"{DataUri}/store/Some1/single/1"));
             var respInt = await http.GetBsonAsync<EntityInt>(responseInt.Headers.Location);
-            respInt.Id.ShouldBe(1);
-            respInt.Some.ShouldBe("int");
+            respInt.Id.Should().Be(1);
+            respInt.Some.Should().Be("int");
             
             var eLong = new EntityLong{Some = "long"};
             var responseLong = await http.PostBsonAsync($"{DataUri}/store/Some2/single", eLong);
-            responseLong.StatusCode.ShouldBe(HttpStatusCode.Created);
-            responseLong.Headers.Location.ShouldBe(new Uri($"{DataUri}/store/Some2/single/1L"));
+            responseLong.StatusCode.Should().Be(HttpStatusCode.Created);
+            responseLong.Headers.Location.Should().Be(new Uri($"{DataUri}/store/Some2/single/1L"));
             var respLong = await http.GetBsonAsync<EntityLong>(responseLong.Headers.Location);
-            respLong.Id.ShouldBe(1L);
-            respLong.Some.ShouldBe("long");
+            respLong.Id.Should().Be(1L);
+            respLong.Some.Should().Be("long");
         }
         
         [Fact]
@@ -129,8 +129,8 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             (await http.DeleteAsync($"{DataUri}/store/Entity/single/2")).EnsureSuccessStatusCode();
             
             var e = await http.GetBsonAsync<List<EntityInt>>($"{DataUri}/store/Entity/search");
-            e.Count.ShouldBe(1);
-            e.ShouldContain(x => x.Some == "2");
+            e.Count.Should().Be(1);
+            e.Should().Contain(x => x.Some == "2");
         }
         
         [Fact]
@@ -145,11 +145,11 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
             
             var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?where=" + UrlEncoder.Default.Encode("Int > 3 and Int <= 7"));
-            e.Count.ShouldBe(4);
-            e.ShouldContain(x => x.Int == 4);
-            e.ShouldContain(x => x.Int == 5);
-            e.ShouldContain(x => x.Int == 6);
-            e.ShouldContain(x => x.Int == 7);
+            e.Count.Should().Be(4);
+            e.Should().Contain(x => x.Int == 4);
+            e.Should().Contain(x => x.Int == 5);
+            e.Should().Contain(x => x.Int == 6);
+            e.Should().Contain(x => x.Int == 7);
         }
         
         [Fact]
@@ -164,7 +164,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
             
             var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?limit=2&where=" + UrlEncoder.Default.Encode("Int > 3 and Int <= 7"));
-            e.Count.ShouldBe(2);
+            e.Count.Should().Be(2);
         }
         
         [Fact]
@@ -179,10 +179,10 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
             
             var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search?order=-Int");
-            e.Count.ShouldBe(10);
+            e.Count.Should().Be(10);
             for (var i = 0; i < 10; i++)
             {
-                e[i].Int.ShouldBe(9 - i);
+                e[i].Int.Should().Be(9 - i);
             }
         }
         
@@ -198,7 +198,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
             
             var e = await http.GetBsonAsync<List<Entity>>($"{DataUri}/store/Entity/search");
-            e.Count.ShouldBe(50);
+            e.Count.Should().Be(50);
         }
         
         [Fact]
@@ -213,7 +213,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
             
             var e = await http.GetStringAsync($"{DataUri}/store/Entity/count?where=" + UrlEncoder.Default.Encode("Int > 3 and Int <= 7"));
-            e.ShouldBe("4");
+            e.Should().Be("4");
         }
         
         [Fact]
@@ -228,7 +228,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
             
             var e = await http.GetStringAsync($"{DataUri}/store/Entity/count");
-            e.ShouldBe("10");
+            e.Should().Be("10");
         }
 
         class Entity

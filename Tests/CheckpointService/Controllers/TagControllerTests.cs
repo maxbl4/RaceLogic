@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using FluentAssertions;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 using Tag = maxbl4.Race.CheckpointService.Model.Tag;
@@ -35,15 +35,15 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             var client = new HttpClient();
             var tags = await client.GetAsync<List<Tag>>($"{CheckpointsUri}/tag");
             
-            tags.ShouldNotBeNull();
-            tags.Count.ShouldBe(100);
-            tags[99].TagId.ShouldBe("stored1");
-            tags[98].TagId.ShouldBe("stored2");
+            tags.Should().NotBeNull();
+            tags.Count.Should().Be(100);
+            tags[99].TagId.Should().Be("stored1");
+            tags[98].TagId.Should().Be("stored2");
             
             tags = await client.GetAsync<List<Tag>>($"{CheckpointsUri}/tag?count=2&start={ts.AddSeconds(50):u}&end={ts.AddSeconds(106):u}");
-            tags.Count.ShouldBe(2);
-            tags[1].TagId.ShouldBe("stored2");
-            tags[0].TagId.ShouldBe("tag");
+            tags.Count.Should().Be(2);
+            tags[1].TagId.Should().Be("stored2");
+            tags[0].TagId.Should().Be("tag");
         }
         
         [Fact]
@@ -60,13 +60,13 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             var response = await cli.DeleteAsync($"{CheckpointsUri}/tag");
             response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).ShouldBe(1);
+            (await response.Content.ReadAs<int>()).Should().Be(1);
             
             response = await cli.DeleteAsync($"{CheckpointsUri}/tag");
             response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).ShouldBe(0);
+            (await response.Content.ReadAs<int>()).Should().Be(0);
             var tags = await cli.GetAsync<List<Tag>>($"{CheckpointsUri}/tag");
-            tags.Count.ShouldBe(0);
+            tags.Count.Should().Be(0);
         }
         
         [Fact]
@@ -76,7 +76,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             var cli = new HttpClient();
             
             var response = await cli.GetStringAsync($"{CheckpointsUri}/version");
-            response.ShouldBe("1.0.0.0");
+            response.Should().Be("1.0.0.0");
         }
     }
 }

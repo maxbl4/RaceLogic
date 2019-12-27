@@ -1,6 +1,5 @@
-﻿using System.Linq;
+﻿using FluentAssertions;
 using maxbl4.Race.DataService.Services;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.DataService.Services
@@ -10,12 +9,12 @@ namespace maxbl4.Race.Tests.DataService.Services
         [Fact]
         public void Should_parse_order()
         {
-            StorageService.TryParseOrder(null, out _).ShouldBeFalse();
-            StorageService.TryParseOrder("", out _).ShouldBeFalse();
-            StorageService.TryParseOrder("A", out var order).ShouldBeTrue();
-            order.ShouldBe(("A", false));
-            StorageService.TryParseOrder("-B", out order).ShouldBeTrue();
-            order.ShouldBe(("B", true));
+            StorageService.TryParseOrder(null, out _).Should().BeFalse();
+            StorageService.TryParseOrder("", out _).Should().BeFalse();
+            StorageService.TryParseOrder("A", out var order).Should().BeTrue();
+            order.Should().Be(("A", false));
+            StorageService.TryParseOrder("-B", out order).Should().BeTrue();
+            order.Should().Be(("B", true));
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
+using FluentAssertions;
 using maxbl4.Race.Logic.LogManagement;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.LogManagement
@@ -15,31 +15,31 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
         public void Should_parse_name()
         {
             var (success, logName) = new NameProvider().ParseName(sampleFilename);
-            success.ShouldBeTrue();
-            logName.Timestamp.ShouldBe(sampleDate);
-            logName.Name.ShouldBe("some-name");
-            logName.Filename.ShouldBe(sampleFilename);
+            success.Should().BeTrue();
+            logName.Timestamp.Should().Be(sampleDate);
+            logName.Name.Should().Be("some-name");
+            logName.Filename.Should().Be(sampleFilename);
         }
 
         [Fact]
         public void Should_serialize_name()
         {
             var filename = new NameProvider().SerializeName(new LogName(sampleDate, "some-name", null));
-            filename.ShouldBe(sampleFilename);
+            filename.Should().Be(sampleFilename);
         }
 
         [Fact]
         public void Should_encode_path_string()
         {
             var encoded = new NameProvider().PathEncode("+\t");
-            encoded.ShouldBe(@"+002b+0009");
+            encoded.Should().Be(@"+002b+0009");
         }
 
         [Fact]
         public void Should_decode_path_string()
         {
             var decoded = new NameProvider().PathDecode(@"+002b+0009");
-            decoded.ShouldBe("+\t");
+            decoded.Should().Be("+\t");
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
                 .Select(x => (char)x).ToArray());
             var encoded = new NameProvider().PathEncode(str);
             var decoded = new NameProvider().PathDecode(encoded);
-            decoded.ShouldBe(str);
+            decoded.Should().Be(str);
         }
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Tests.CheckpointService.RfidSimulator;
 using maxbl4.RfidDotNet;
-using maxbl4.RfidDotNet.Infrastructure;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -73,8 +72,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
                 
                 new Timing().Logger(Logger).Expect(() => cps != null);
-                cps.Count.ShouldBe(1);
-                cps[0].RiderId.ShouldBe("1");
+                cps.Count.Should().Be(1);
+                cps[0].RiderId.Should().Be("1");
             });
         }
         
@@ -130,8 +129,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
             WithRfidService((s, r) =>
             {
                 var o = s.GetRfidOptions();
-                o.Enabled.ShouldBeFalse();
-                o.Timestamp.ShouldBe(SystemClock.UtcNow.UtcDateTime);
+                o.Enabled.Should().BeFalse();
+                o.Timestamp.Should().Be(SystemClock.UtcNow.UtcDateTime);
             });
         }
     }

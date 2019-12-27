@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using AutoMapper.Mappers;
+using FluentAssertions;
 using LiteDB;
-using Shouldly;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Infrastructure
@@ -25,8 +24,8 @@ namespace maxbl4.Race.Tests.Infrastructure
             var entity = new Entity {Data = "123"};
             repo.Insert(entity);
             var e = repo.Query<Entity>().Where(x => x.Id == entity.Id).First();
-            e.Data.ShouldBe("123");
-            e.Id.ShouldNotBe(Guid.Empty);
+            e.Data.Should().Be("123");
+            e.Id.Should().NotBe(Guid.Empty);
         }
         
         [Fact]
@@ -36,7 +35,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             using var repo = new LiteRepository(dbFile);
             repo.Insert(new Entity { Id = g, Data = "123"});
             var e = repo.Query<Entity>().Where($"_id = GUID('{g}')").First();
-            e.Data.ShouldBe("123");
+            e.Data.Should().Be("123");
         }
         
         [Fact]
@@ -46,7 +45,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             using var repo = new LiteRepository(dbFile);
             repo.Insert(new Entity { Id = g, Data = "123"});
             var doc = repo.Query<BsonDocument>("Entity").Where($"_id = GUID('{g}')").First();
-            doc["Data"].AsString.ShouldBe("123");
+            doc["Data"].AsString.Should().Be("123");
         }
         
         [Fact]
@@ -55,7 +54,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             using var repo = new LiteRepository(dbFile);
             repo.Insert(new Entity { Data = "555"});
             var e = repo.Query<Entity>().Where($"Date < DATE('{DateTime.UtcNow:u}')").First();
-            e.Data.ShouldBe("555");
+            e.Data.Should().Be("555");
         }
         
         [Fact]
@@ -67,7 +66,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             collection.Upsert(doc);
             repo.Insert(new Entity { Data = "555"});
             var docs = repo.Query<Entity>().ToList();
-            docs.ShouldAllBe(x => x.Id != Guid.Empty);
+            docs.Should().OnlyContain(x => x.Id != Guid.Empty);
         }
 
         [Fact]
@@ -84,10 +83,10 @@ namespace maxbl4.Race.Tests.Infrastructure
             using (var repo = new LiteRepository(dbFile))
             {
                 var docs = repo.Query<EntityInt>().ToList();
-                docs[0].Id.ShouldBe(3);
-                docs[1].Id.ShouldBe(4);
-                docs[2].Id.ShouldBe(5);
-                docs[3].Id.ShouldBe(7);
+                docs[0].Id.Should().Be(3);
+                docs[1].Id.Should().Be(4);
+                docs[2].Id.Should().Be(5);
+                docs[3].Id.Should().Be(7);
             }
         }
         
@@ -103,7 +102,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             using (var repo = new LiteRepository(dbFile))
             {
                 var docs = repo.Query<Entity>().ToList();
-                docs[0].Id.ShouldBe(new Guid("1B8E621A-CBC4-4052-B58C-4ACAFC3A6864"));
+                docs[0].Id.Should().Be(new Guid("1B8E621A-CBC4-4052-B58C-4ACAFC3A6864"));
             }
         }
         

@@ -1,10 +1,10 @@
 ﻿using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Race.CheckpointService.Services;
 using Newtonsoft.Json;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -31,10 +31,10 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
             var opts = await client.GetAsync<RfidOptions>($"{CheckpointsUri}/options");
-            opts.Enabled.ShouldBe(true);
-            opts.ConnectionString.ShouldBe("some");
-            opts.RpsThreshold.ShouldBe(123);
-            opts.CheckpointAggregationWindowMs.ShouldBe(234);
+            opts.Enabled.Should().Be(true);
+            opts.ConnectionString.Should().Be("some");
+            opts.RpsThreshold.Should().Be(123);
+            opts.CheckpointAggregationWindowMs.Should().Be(234);
         }
         
         [Fact]
@@ -53,10 +53,10 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
                 new StringContent(JsonConvert.SerializeObject(opts), Encoding.UTF8, "application/json")))
                 .EnsureSuccessStatusCode();
             var opts2 = await client.GetAsync<RfidOptions>($"{CheckpointsUri}/options");
-            opts2.Enabled.ShouldBe(true);
-            opts2.ConnectionString.ShouldBe("bbb");
-            opts2.RpsThreshold.ShouldBe(666);
-            opts2.CheckpointAggregationWindowMs.ShouldBe(777);
+            opts2.Enabled.Should().Be(true);
+            opts2.ConnectionString.Should().Be("bbb");
+            opts2.RpsThreshold.Should().Be(666);
+            opts2.CheckpointAggregationWindowMs.Should().Be(777);
         }
 
         [Fact]
@@ -75,13 +75,13 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             var client = new HttpClient();
             (await client.GetAsync<bool>($"{CheckpointsUri}/options/{nameof(RfidOptions.Enabled)}"))
-                .ShouldBe(true);
+                .Should().Be(true);
             (await client.GetAsync<string>($"{CheckpointsUri}/options/{nameof(RfidOptions.ConnectionString)}"))
-                .ShouldBe("some");
+                .Should().Be("some");
             (await client.GetAsync<int>($"{CheckpointsUri}/options/{nameof(RfidOptions.RpsThreshold)}"))
-                .ShouldBe(123);
+                .Should().Be(123);
             (await client.GetAsync<int>($"{CheckpointsUri}/options/{nameof(RfidOptions.CheckpointAggregationWindowMs)}"))
-                .ShouldBe(234);
+                .Should().Be(234);
         }
         
         [Fact]
@@ -98,22 +98,22 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
             var opts = await client.GetAsync<RfidOptions>($"{CheckpointsUri}/options");
-            opts.Enabled.ShouldBeFalse();
+            opts.Enabled.Should().BeFalse();
 
             (await client.PutAsync($"{CheckpointsUri}/options/{nameof(RfidOptions.RpsThreshold)}",
                 new StringContent("555", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
             (await client.GetAsync<int>($"{CheckpointsUri}/options/{nameof(RfidOptions.RpsThreshold)}"))
-                .ShouldBe(555);
+                .Should().Be(555);
             
             (await client.PutAsync($"{CheckpointsUri}/options/{nameof(RfidOptions.Enabled)}",
                 new StringContent("true", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
             (await client.GetAsync<bool>($"{CheckpointsUri}/options/{nameof(RfidOptions.Enabled)}"))
-                .ShouldBe(true);
+                .Should().Be(true);
             
             (await client.PutAsync($"{CheckpointsUri}/options/{nameof(RfidOptions.ConnectionString)}",
                 new StringContent("\"true\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
             (await client.GetAsync<string>($"{CheckpointsUri}/options/{nameof(RfidOptions.ConnectionString)}"))
-                .ShouldBe("true");
+                .Should().Be("true");
         }
     }
 }
