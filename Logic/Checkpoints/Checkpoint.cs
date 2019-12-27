@@ -32,6 +32,21 @@ namespace maxbl4.Race.Logic.Checkpoints
         {
             return $"{RiderId} Ts:{Timestamp:t}";
         }
+
+        public Checkpoint WithRiderId(string riderId)
+        {
+            return new Checkpoint
+            {
+                RiderId = riderId,
+                Aggregated = Aggregated,
+                Count = Count,
+                Id = Id,
+                Rps = Rps,
+                Timestamp = Timestamp,
+                IsManual = IsManual,
+                LastSeen = LastSeen
+            };
+        }
         
         private sealed class TimestampRelationalComparer : IComparer<Checkpoint>
         {

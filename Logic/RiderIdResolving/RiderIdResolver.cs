@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using maxbl4.Race.Logic.Checkpoints;
 
 namespace maxbl4.Race.Logic.RiderIdResolving
 {
@@ -16,6 +18,8 @@ namespace maxbl4.Race.Logic.RiderIdResolving
         /// <returns>True if successfully resolved. In case False was returned, ResolveCreateWhenMissing method should be called.
         /// Depending on implementation, method can create new record in database, thus it should be implemented as async Task.</returns>
         ValueTask<string> Resolve(string input);
+
+        IAsyncEnumerable<Checkpoint> ResolveAll(IEnumerable<Checkpoint> checkpoints);
     }
 
     public class SimpleMapRiderIdResolver : IRiderIdResolver
@@ -34,6 +38,21 @@ namespace maxbl4.Race.Logic.RiderIdResolving
             if (map.TryGetValue(input, out var riderId))
                 return riderId;
             return await ResolveCreateWhenMissing(input);
+        }
+
+        public async IAsyncEnumerable<Checkpoint> ResolveAll(IEnumerable<Checkpoint> checkpoints)
+        {
+            foreach (var cp in checkpoints)
+            {
+                if (map.TryGetValue(cp.RiderId, out var riderId))
+                {
+                    yield return cp.WithRiderId(riderId);
+                }else
+                {
+                    riderId = await ResolveCreateWhenMissing(cp.RiderId);
+                    yield return cp.WithRiderId(riderId);
+                }
+            }
         }
 
         async ValueTask<string> ResolveCreateWhenMissing(string input)
