@@ -16,7 +16,7 @@ namespace maxbl4.Race.Tests.Infrastructure
 
         public static void VerifyTrack(this RoundDef def, TrackOfCheckpoints track, bool verifyTime = true)
         {
-            var rating = track.GetSequence().ToList();
+            var rating = track.Sequence;
             for (var i = 0; i < def.Rating.Count; i++)
             {
                 var expected = def.Rating[i];

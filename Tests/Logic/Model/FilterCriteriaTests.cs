@@ -51,7 +51,7 @@ Rating
             // Leader was not marker as finished, so #13 is also not finished  
             fc.HasFinished(def.Rating[2], def.Rating, true).Should().BeFalse();
 
-            def.Rating[1] = def.Rating[1].Finish();
+            def.Rating[1].Finish();
             fc.HasFinished(def.Rating[2], def.Rating, true).Should().BeTrue();
         }
         
@@ -69,7 +69,7 @@ Rating
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeTrue();
             fc.HasFinished(def.Rating[1], def.Rating, false).Should().BeFalse();
             fc.HasFinished(def.Rating[2], def.Rating, false).Should().BeFalse();
-            def.Rating[0] = def.Rating[0].Finish();
+            def.Rating[0].Finish();
             
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeTrue();
             fc.HasFinished(def.Rating[1], def.Rating, false).Should().BeTrue();
@@ -86,7 +86,7 @@ Rating
 11 2 [5 31]");
             var fc = FinishCriteria.FromDuration(TimeSpan.FromSeconds(30), 1);
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeFalse();
-            def.Rating[0] = def.Rating[0].Append(new Checkpoint("11", DateTime.MinValue + TimeSpan.FromSeconds(40))); 
+            def.Rating[0].Append(new Checkpoint("11", DateTime.MinValue + TimeSpan.FromSeconds(40))); 
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeTrue();
         }
         
@@ -101,12 +101,12 @@ Rating
 12 1 [6]");
             var fc = FinishCriteria.FromTotalLaps(3, TimeSpan.FromSeconds(50));
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeFalse();
-            def.Rating[0] = def.Rating[0].Append(new Checkpoint("11", DateTime.MinValue + TimeSpan.FromSeconds(40))); 
+            def.Rating[0].Append(new Checkpoint("11", DateTime.MinValue + TimeSpan.FromSeconds(40))); 
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeTrue();
 
-            def.Rating[0] = def.Rating[0].Finish();
+            def.Rating[0].Finish();
             fc.HasFinished(def.Rating[1], def.Rating, false).Should().BeFalse();
-            def.Rating[1] = def.Rating[1].Append(new Checkpoint("12", DateTime.MinValue + TimeSpan.FromSeconds(60)));
+            def.Rating[1].Append(new Checkpoint("12", DateTime.MinValue + TimeSpan.FromSeconds(60)));
             fc.HasFinished(def.Rating[1], def.Rating, false).Should().BeTrue();
         }
         
@@ -121,12 +121,12 @@ Rating
 12 1 [6]");
             var fc = FinishCriteria.FromTotalLaps(2, TimeSpan.FromSeconds(50), true);
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeFalse();
-            def.Rating[0] = def.Rating[0].Append(new Checkpoint("11", DateTime.MinValue + TimeSpan.FromSeconds(40))); 
+            def.Rating[0].Append(new Checkpoint("11", DateTime.MinValue + TimeSpan.FromSeconds(40))); 
             fc.HasFinished(def.Rating[0], def.Rating, false).Should().BeTrue();
 
-            def.Rating[0] = def.Rating[0].Finish();
+            def.Rating[0].Finish();
             fc.HasFinished(def.Rating[1], def.Rating, false).Should().BeFalse();
-            def.Rating[1] = def.Rating[1].Append(new Checkpoint("12", DateTime.MinValue + TimeSpan.FromSeconds(60)));
+            def.Rating[1].Append(new Checkpoint("12", DateTime.MinValue + TimeSpan.FromSeconds(60)));
             fc.HasFinished(def.Rating[1], def.Rating, false).Should().BeTrue();
         }
     }
