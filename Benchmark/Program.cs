@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using BenchmarkDotNet.Running;
 using maxbl4.Race.Logic.RoundTiming;
 
 namespace Benchmark
@@ -9,9 +8,10 @@ namespace Benchmark
     {
         static void Main(string[] args)
         {
-            var incrementalRunner = new InstanceRunner(() => new TrackOfCheckpoints(new DateTime(1), FinishCriteria.FromForcedFinish()));
-            var cyclicRunner = new InstanceRunner(() => new TrackOfCheckpointsOld(new DateTime(1), FinishCriteria.FromForcedFinish()));
-            var runners = new[] { ("Incremental", incrementalRunner), ("cyclic", cyclicRunner)};
+            var incrementalWithCustomSortRunner = new InstanceRunner(() => new TrackOfCheckpoints(new DateTime(1), FinishCriteria.FromForcedFinish()));
+            var incrementalRunner = new InstanceRunner(() => new TrackOfCheckpointsIncremental(new DateTime(1), FinishCriteria.FromForcedFinish()));
+            var cyclicRunner = new InstanceRunner(() => new TrackOfCheckpointsCyclic(new DateTime(1), FinishCriteria.FromForcedFinish()));
+            var runners = new[] { ("cyclic", cyclicRunner), ("Incremental", incrementalRunner), ("Incremental custom sort", incrementalWithCustomSortRunner)};
             foreach (var runner in runners)
             {
                 Console.Write($".");
