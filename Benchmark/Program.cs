@@ -14,17 +14,17 @@ namespace Benchmark
             var runners = new[] { ("cyclic", cyclicRunner), ("Incremental", incrementalRunner), ("Incremental custom sort", incrementalWithCustomSortRunner)};
             foreach (var runner in runners)
             {
-                Console.Write($".");
                 runner.Item2.Work(100);
                 var sw = Stopwatch.StartNew();
                 for (int i = 0; i < 100; i++)
                 {
-                    runner.Item2.Work(10000);
-                    Console.Write($".");
+                    runner.Item2.Work(1000);
+                    if (i % 10 == 0)
+                        Console.Write($"{i}% ");
                 }
                 sw.Stop();
-                Console.WriteLine($".");
-                Console.WriteLine($"{runner.Item1}: {sw.Elapsed}");
+                Console.WriteLine($"100%");
+                Console.WriteLine($"{runner.Item1}: {sw.ElapsedMilliseconds} ms per 100 iterations");
             }
         }
     }

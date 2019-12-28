@@ -13,6 +13,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         private readonly IFinishCriteria finishCriteria;
         readonly Dictionary<string, RoundPosition> positions = new Dictionary<string, RoundPosition>();
         readonly List<List<Checkpoint>> track = new List<List<Checkpoint>>();
+        readonly HashSet<string> positionsInRating = new HashSet<string>();
         public DateTime RoundStartTime { get; }
 
         public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
@@ -54,28 +55,9 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         private void UpdateSequence(RoundPosition position)
         {
-            if (Sequence.All(x => x.RiderId != position.RiderId))
+            if (positionsInRating.Add(position.RiderId))
                 Sequence.Add(position);
             Sequence.Sort(RoundPosition.LapsCountFinishedComparer);
-        }
-
-        private IEnumerable<RoundPosition> GetSequenceOld()
-        {
-            IEnumerable<RoundPosition> result = null;
-            for (var i = track.Count - 1; i >= 0 ; i--)
-            {
-                var lapIndex = i + 1;
-                var partRating = track[i].Select(x => positions[x.RiderId]).Where(x => x.LapsCount == lapIndex);
-                result = result == null ? partRating : result.Concat(partRating);
-            }
-            if (result == null)
-                return new RoundPosition[0];
-
-            return result.Select((x, i) => new
-                    {Position = x, Index = i, IndexOfStartAndFinish = x.IndexOfStartAndFinish()})
-                .OrderByDescending(x => x.IndexOfStartAndFinish)
-                .ThenBy(x => x.Index)
-                .Select(x => x.Position);
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Benchmark
         void Next(ITrackOfCheckpoints track)
         {
             track.Append(new Checkpoint(r.Next(1, 100).ToString(), new DateTime(timestamp += 10000)));
+            var t = track.Sequence;
         }
     } 
 }
