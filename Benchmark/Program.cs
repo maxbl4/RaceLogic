@@ -21,6 +21,7 @@ namespace Benchmark
             var incrementalRunner = new InstanceRunner(() => new TrackOfCheckpointsIncremental(new DateTime(1), FinishCriteria.FromForcedFinish()));
             var cyclicRunner = new InstanceRunner(() => new TrackOfCheckpointsCyclic(new DateTime(1), FinishCriteria.FromForcedFinish()));
             var runners = new[] {("Incremental custom sort", incrementalWithCustomSortRunner), ("Incremental", incrementalRunner), ("cyclic", cyclicRunner)};
+            long baseLine = 0;
             foreach (var runner in runners)
             {
                 runner.Item2.Work(100);
@@ -32,13 +33,15 @@ namespace Benchmark
                 {
                     runner.Item2.Work(cps);
                     if (i % 10 == 0)
-                        Console.Write($"{i / cycles * 100}% ");
+                        Console.Write($"{i * 100 / cycles}% ");
                 }
                 sw.Stop();
                 Console.WriteLine($"100%");
                 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"{runner.Item1}: Total={sw.ElapsedMilliseconds}ms, {sw.ElapsedMilliseconds*1000/cycles}ns per iteration ");
+                if (baseLine == 0)
+                    baseLine = sw.ElapsedMilliseconds;
+                Console.WriteLine($"{runner.Item1}: Total={sw.ElapsedMilliseconds}ms, PerCycle={sw.ElapsedMilliseconds/(double)cycles:F2}ms, Relative={sw.ElapsedMilliseconds*100/baseLine}%");
             }
         }
     }
