@@ -7,7 +7,15 @@ using maxbl4.Race.Logic.Extensions;
 
 namespace maxbl4.Race.Logic.RoundTiming
 {
-    public class TrackOfCheckpoints : ITrackOfCheckpoints
+    public interface ITrackOfCheckpoints
+    {
+        DateTime RoundStartTime { get; }
+        List<RoundPosition> Sequence { get; }
+        void Append(Checkpoint cp);
+        void ForceFinish();
+    }
+
+    public class TrackOfCheckpointsOld : ITrackOfCheckpoints
     {
         private bool finishForced;
         private readonly IFinishCriteria finishCriteria;
@@ -15,7 +23,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         readonly List<List<Checkpoint>> track = new List<List<Checkpoint>>();
         public DateTime RoundStartTime { get; }
 
-        public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
+        public TrackOfCheckpointsOld(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
         {
             this.finishCriteria = finishCriteria;
             RoundStartTime = roundStartTime ?? default;
@@ -31,35 +39,29 @@ namespace maxbl4.Race.Logic.RoundTiming
             if (track.Count < position.LapsCount)
                 track.Add(new List<Checkpoint>());
             track[position.LapsCount - 1].Add(cp);
-            UpdateSequence(position);
-            if (finishCriteria?.HasFinished(position, Sequence, false) == true)
+            if (finishCriteria?.HasFinished(position, GetSequence(), false) == true)
             {
                 position.Finish();
-                UpdateSequence(position);
             }
+            sequence = null;
         }
 
         public void ForceFinish()
         {
-            foreach (var position in Sequence)
+            foreach (var position in GetSequence())
             {
-                if (finishCriteria?.HasFinished(position, Sequence, true) == true)
+                if (finishCriteria?.HasFinished(position, GetSequence(), true) == true)
                     position.Finish();
             }
-            Sequence.Sort(RoundPosition.LapsCountFinishedComparer);
             finishForced = true;
+
+            sequence = null;
         }
 
-        public List<RoundPosition> Sequence { get; } = new List<RoundPosition>();
+        private List<RoundPosition> sequence = null;
+        public List<RoundPosition> Sequence => sequence ?? (sequence = GetSequence().ToList());
 
-        private void UpdateSequence(RoundPosition position)
-        {
-            if (Sequence.All(x => x.RiderId != position.RiderId))
-                Sequence.Add(position);
-            Sequence.Sort(RoundPosition.LapsCountFinishedComparer);
-        }
-
-        private IEnumerable<RoundPosition> GetSequenceOld()
+        IEnumerable<RoundPosition> GetSequence()
         {
             IEnumerable<RoundPosition> result = null;
             for (var i = track.Count - 1; i >= 0 ; i--)
