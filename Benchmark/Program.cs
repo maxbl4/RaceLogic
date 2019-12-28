@@ -16,11 +16,11 @@ namespace Benchmark
             }
             var cps = int.Parse(args[0]);
             var cycles = int.Parse(args[1]);
-            Console.WriteLine($"TrackOfCheckpoints benchmark. Append {cps} checkpoints {cycles} times");
+            Console.WriteLine($"TrackOfCheckpoints benchmark. Append {cps} checkpoints {cycles} iterations");
             var incrementalWithCustomSortRunner = new InstanceRunner(() => new TrackOfCheckpoints(new DateTime(1), FinishCriteria.FromForcedFinish()));
             var incrementalRunner = new InstanceRunner(() => new TrackOfCheckpointsIncremental(new DateTime(1), FinishCriteria.FromForcedFinish()));
             var cyclicRunner = new InstanceRunner(() => new TrackOfCheckpointsCyclic(new DateTime(1), FinishCriteria.FromForcedFinish()));
-            var runners = new[] { ("cyclic", cyclicRunner), ("Incremental", incrementalRunner), ("Incremental custom sort", incrementalWithCustomSortRunner)};
+            var runners = new[] {("Incremental custom sort", incrementalWithCustomSortRunner), ("Incremental", incrementalRunner), ("cyclic", cyclicRunner)};
             foreach (var runner in runners)
             {
                 runner.Item2.Work(100);
@@ -38,7 +38,7 @@ namespace Benchmark
                 Console.WriteLine($"100%");
                 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"{runner.Item1}: {sw.ElapsedMilliseconds} ms per 100 iterations");
+                Console.WriteLine($"{runner.Item1}: Total={sw.ElapsedMilliseconds}ms, {sw.ElapsedMilliseconds*1000/cycles}ns per iteration ");
             }
         }
     }
