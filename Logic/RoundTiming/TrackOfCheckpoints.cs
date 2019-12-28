@@ -13,7 +13,6 @@ namespace maxbl4.Race.Logic.RoundTiming
         private readonly IFinishCriteria finishCriteria;
         readonly Dictionary<string, RoundPosition> positions = new Dictionary<string, RoundPosition>();
         readonly List<List<Checkpoint>> track = new List<List<Checkpoint>>();
-        readonly HashSet<string> positionsInRating = new HashSet<string>();
         public DateTime RoundStartTime { get; }
 
         public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
@@ -55,9 +54,15 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         private void UpdateSequence(RoundPosition position)
         {
-            if (positionsInRating.Add(position.RiderId))
-                Sequence.Add(position);
-            Sequence.Sort(RoundPosition.LapsCountFinishedComparer);
+            // if (positionsInRating.TryGetValue(position.RiderId, out var currentIndex))
+            var currentIndex = Sequence.FindIndex(x => x.RiderId == position.RiderId);
+            if (currentIndex >= 0)
+                Sequence.RemoveAt(currentIndex);
+            var newIndex = Sequence.Count - 1;
+            while (newIndex >= 0 && RoundPosition.LapsCountFinishedComparer.Compare(Sequence[newIndex], position) > 0)
+                newIndex--;
+            newIndex++;
+            Sequence.Insert(newIndex, position);
         }
     }
 }
