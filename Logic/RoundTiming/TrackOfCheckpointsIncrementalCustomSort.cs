@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using maxbl4.Infrastructure.Extensions.DictionaryExt;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.Extensions;
 
 namespace maxbl4.Race.Logic.RoundTiming
 {
-    public class TrackOfCheckpoints : ITrackOfCheckpoints
+    public class TrackOfCheckpointsIncrementalCustomSort : ITrackOfCheckpoints
     {
         private bool finishForced;
         private readonly IFinishCriteria finishCriteria;
@@ -15,7 +13,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         readonly List<List<Checkpoint>> track = new List<List<Checkpoint>>();
         public DateTime RoundStartTime { get; }
 
-        public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
+        public TrackOfCheckpointsIncrementalCustomSort(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
         {
             this.finishCriteria = finishCriteria;
             RoundStartTime = roundStartTime ?? default;

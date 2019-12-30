@@ -12,7 +12,7 @@ namespace maxbl4.Race.Logic.Pipeline
     {
         private readonly IFinishCriteria finishCriteria;
         readonly CompositeDisposable disposable;
-        private TrackOfCheckpoints track;
+        private ITrackOfCheckpoints track;
         readonly Subject<List<RoundPosition>> sequence = new Subject<List<RoundPosition>>();
         public IObservable<List<RoundPosition>> Sequence => sequence;
 
@@ -33,7 +33,7 @@ namespace maxbl4.Race.Logic.Pipeline
 
         public void StartRound(DateTime roundStartTime)
         {
-            track = new TrackOfCheckpoints(roundStartTime, finishCriteria);
+            track = TrackOfCheckpointsFactory.Create(roundStartTime, finishCriteria);
         }
 
         public void StopRound()
