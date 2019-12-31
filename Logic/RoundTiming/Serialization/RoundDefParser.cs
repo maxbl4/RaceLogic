@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using maxbl4.Infrastructure.Extensions.DictionaryExt;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.RoundTiming;
 
-namespace maxbl4.Race.Tests.Infrastructure
+namespace maxbl4.Race.Logic.RoundTiming.Serialization
 {
     public static class RoundDefParser
     {
@@ -111,7 +110,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             sb.Append($"{rp.RiderId} L{rp.LapsCount}");
             if (rp.Laps.Count > 0)
             {
-                sb.Append($" [{string.Join(" ", rp.Laps.Select(x => (x.End - rp.Start).ToShortString()))}]");
+                sb.Append($" [{string.Join(" ", rp.Laps.Select<Lap, string>(x => (x.End - rp.Start).ToShortString()))}]");
             }
             return sb.ToString();
         }
@@ -123,7 +122,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             var maxLaps = 0;
             foreach (var cp in rd.Checkpoints)
             {
-                var laps = histogram.UpdateOrAdd(cp.RiderId, x => x + 1);
+                var laps = DictionaryExt.UpdateOrAdd<string, int>(histogram, cp.RiderId, x => x + 1);
                 if (laps > maxLaps)
                 {
                     sb.AppendLine();
@@ -132,7 +131,7 @@ namespace maxbl4.Race.Tests.Infrastructure
                 else
                     sb.Append(' ');
                 
-                sb.Append(cp.ToDefString(rd.RoundStartTime));
+                sb.Append(ToDefString(cp, rd.RoundStartTime));
             }
 
             return sb.ToString();

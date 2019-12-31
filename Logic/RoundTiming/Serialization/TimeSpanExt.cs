@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Globalization;
 
-namespace maxbl4.Race.Tests.Infrastructure
+namespace maxbl4.Race.Logic.RoundTiming.Serialization
 {
     public static class TimeSpanExt
     {

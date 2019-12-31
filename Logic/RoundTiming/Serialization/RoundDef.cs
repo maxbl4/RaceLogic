@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.RoundTiming;
 
-namespace maxbl4.Race.Tests.Infrastructure
+namespace maxbl4.Race.Logic.RoundTiming.Serialization
 {
     public class RoundDef
     {
@@ -28,7 +27,7 @@ namespace maxbl4.Race.Tests.Infrastructure
                 sb.Append(" " + Duration.ToShortString());
             sb.AppendLine(this.FormatCheckpoints());
             sb.AppendLine(RoundDefParser.Rating);
-            sb.Append(string.Join(Environment.NewLine, Rating.Select(x => x.ToDefString())));
+            sb.Append(string.Join(Environment.NewLine, Rating.Select(x => RoundDefParser.ToDefString(x))));
             return sb.ToString();
         }
     }

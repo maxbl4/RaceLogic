@@ -1,4 +1,6 @@
+using FluentAssertions;
 using maxbl4.Race.Logic.RoundTiming;
+using maxbl4.Race.Logic.RoundTiming.Serialization;
 using maxbl4.Race.Tests.Infrastructure;
 using Xunit;
 
@@ -6,6 +8,21 @@ namespace maxbl4.Race.Tests.Logic.Model
 {
     public class TrackOfCheckpointsTests
     {
+//         [Fact]
+//         public void Serialize_track_of_checkpoints()
+//         {
+//             var str = @"Track 30
+// 11[5]  12[10] 13[15]
+// 11[30] 12[32] 13[33]
+// Rating
+// F11 2 [5  30]
+// F12 2 [10 32]
+// F13 2 [15 33]";
+//             var def = RoundDef.Parse(str);
+//             var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
+//             track.ToRoundDefString().Should().Be(str);
+//         }
+        
         [Fact]
         public void Simple_start_and_finish()
         {

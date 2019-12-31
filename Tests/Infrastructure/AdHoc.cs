@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
 using Xunit;

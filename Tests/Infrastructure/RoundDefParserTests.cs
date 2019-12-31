@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using FluentAssertions;
+using maxbl4.Race.Logic.RoundTiming.Serialization;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Infrastructure

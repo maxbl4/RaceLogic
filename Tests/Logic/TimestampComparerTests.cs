@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.RoundTiming.Serialization;
 using maxbl4.Race.Tests.Infrastructure;
 using Xunit;
 
