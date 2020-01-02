@@ -31,15 +31,15 @@ namespace maxbl4.Race.Tests.Logic.Model
         public void Serialize_track_of_checkpoints(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var str = @"Track 30
-11[5]  12[10] 13[15]
+11[5] 12[10] 13[15]
 11[30] 12[32] 13[33]
 Rating
-F11 2 [5  30]
+F11 2 [5 30]
 F12 2 [10 32]
 F13 2 [15 33]";
             var def = RoundDef.Parse(str);
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
-            track.ToRoundDefString().Should().Be(str, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Fact]

@@ -83,14 +83,14 @@ F11 L2 [1 31]
             rd.Rating.Count.Should().Be(3);
             rd.Rating[0].RiderId.Should().Be("11");
             rd.Rating[0].Finished.Should().BeTrue();
-            rd.Rating[0].LapsCount.Should().Be(2);
+            rd.Rating[0].LapCount.Should().Be(2);
             rd.Rating[0].Laps.Count.Should().Be(2);
             rd.Rating[1].RiderId.Should().Be("12");
             rd.Rating[1].Finished.Should().BeFalse();
-            rd.Rating[1].LapsCount.Should().Be(2);
+            rd.Rating[1].LapCount.Should().Be(2);
             rd.Rating[1].Laps.Count.Should().Be(2);
             rd.Rating[2].RiderId.Should().Be("13");
-            rd.Rating[2].LapsCount.Should().Be(2);
+            rd.Rating[2].LapCount.Should().Be(2);
             rd.Rating[2].Laps.Count.Should().Be(2);
         }
         
@@ -115,7 +115,7 @@ F13 L1 [4     ]");
             rd.Checkpoints[3].Timestamp.Should().Be(new DateTime(1, 1, 1, 0, 45, 2));
             rd.Rating.Count.Should().Be(3);
             rd.Rating[0].RiderId.Should().Be("11");
-            rd.Rating[0].LapsCount.Should().Be(2);
+            rd.Rating[0].LapCount.Should().Be(2);
             rd.Rating[0].Laps.Count.Should().Be(2);
             rd.Rating[0].Laps[0].SequentialNumber.Should().Be(1);
             rd.Rating[0].Laps[0].Start.Should().Be(default);
@@ -125,7 +125,7 @@ F13 L1 [4     ]");
             rd.Rating[0].Laps[1].End.Should().Be(new DateTime(1, 1, 1, 0, 45, 2));
             
             rd.Rating[2].RiderId.Should().Be("13");
-            rd.Rating[2].LapsCount.Should().Be(1);
+            rd.Rating[2].LapCount.Should().Be(1);
             rd.Rating[2].Laps.Count.Should().Be(1);
         }
         
@@ -158,7 +158,7 @@ F13 L1 [4     ]");
             pos.Start.Should().Be(DateTime.MinValue);
             pos.Started.Should().BeFalse();
             pos.Finished.Should().BeFalse();
-            pos.LapsCount.Should().Be(0);
+            pos.LapCount.Should().Be(0);
 
             Assert.Throws<FormatException>(() => RoundDefParser.ParseRating("11 3", new DateTime(5000)));
             
@@ -167,7 +167,7 @@ F13 L1 [4     ]");
             pos.Start.Should().Be(new DateTime(5000));
             pos.Started.Should().BeTrue();
             pos.Finished.Should().BeTrue();
-            pos.LapsCount.Should().Be(2);
+            pos.LapCount.Should().Be(2);
             pos.StartSequence.Should().BeGreaterThan(0);
             pos.EndSequence.Should().BeGreaterThan(pos.StartSequence);
         }
@@ -179,9 +179,9 @@ F13 L1 [4     ]");
 11[5] 12[7] 13[12]
 11[40]
 Rating
-F11 L2 [5 40]
-12 L1 [7]
-13 L1 [12]";
+F11 2 [5 40]
+12 1 [7]
+13 1 [12]";
             var rd = RoundDef.Parse(str);
             rd.ToString().Should().Be(str);
         }

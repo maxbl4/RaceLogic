@@ -19,8 +19,8 @@ namespace maxbl4.Race.Tests.Infrastructure
                     $"#{actual.RiderId} should have Started={expected.Started}, but was {actual.Started}");
                 actual.Finished.Should().Be(expected.Finished,
                     $"#{actual.RiderId} should have Finished={expected.Finished}, but was {actual.Finished}");
-                actual.LapsCount.Should().Be(expected.LapsCount,
-                    $"#{actual.RiderId} should have LapsCount={expected.LapsCount}, but was {actual.LapsCount}");
+                actual.LapCount.Should().Be(expected.LapCount,
+                    $"#{actual.RiderId} should have LapsCount={expected.LapCount}, but was {actual.LapCount}");
                 if (verifyTime)
                 {
                     actual.Start.Should().Be(def.RoundStartTime,

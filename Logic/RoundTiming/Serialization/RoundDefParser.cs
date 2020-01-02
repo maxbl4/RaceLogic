@@ -107,7 +107,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             if (rp == null) return "";
             var sb = new StringBuilder();
             if (rp.Finished) sb.Append("F");
-            sb.Append($"{rp.RiderId} L{rp.LapsCount}");
+            sb.Append($"{rp.RiderId} {rp.LapCount}");
             if (rp.Laps.Count > 0)
             {
                 sb.Append($" [{string.Join(" ", rp.Laps.Select(x => (x.End - rp.Start).ToShortString()))}]");

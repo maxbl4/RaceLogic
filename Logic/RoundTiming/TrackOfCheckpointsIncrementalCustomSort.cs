@@ -26,9 +26,9 @@ namespace maxbl4.Race.Logic.RoundTiming
             if (position.Finished)
                 return;
             position.Append(cp);
-            if (Track.Count < position.LapsCount)
+            if (Track.Count < position.LapCount)
                 Track.Add(new List<Checkpoint>());
-            Track[position.LapsCount - 1].Add(cp);
+            Track[position.LapCount - 1].Add(cp);
             UpdateSequence(position);
             if (FinishCriteria?.HasFinished(position, Rating, false) == true)
             {

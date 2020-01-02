@@ -28,9 +28,9 @@ namespace maxbl4.Race.Logic.RoundTiming
             if (position.Finished)
                 return;
             position.Append(cp);
-            if (Track.Count < position.LapsCount)
+            if (Track.Count < position.LapCount)
                 Track.Add(new List<Checkpoint>());
-            Track[position.LapsCount - 1].Add(cp);
+            Track[position.LapCount - 1].Add(cp);
             UpdateSequence(position);
             if (FinishCriteria?.HasFinished(position, Rating, false) == true)
             {
@@ -65,7 +65,7 @@ namespace maxbl4.Race.Logic.RoundTiming
             for (var i = Track.Count - 1; i >= 0 ; i--)
             {
                 var lapIndex = i + 1;
-                var partRating = Track[i].Select(x => positions[x.RiderId]).Where(x => x.LapsCount == lapIndex);
+                var partRating = Track[i].Select(x => positions[x.RiderId]).Where(x => x.LapCount == lapIndex);
                 result = result == null ? partRating : result.Concat(partRating);
             }
             if (result == null)

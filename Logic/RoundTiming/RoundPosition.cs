@@ -17,19 +17,19 @@ namespace maxbl4.Race.Logic.RoundTiming
                 if (ReferenceEquals(null, x)) return -1;
                 var finishedComparison = x.Finished.CompareTo(y.Finished);
                 if (finishedComparison != 0) return finishedComparison * -1;
-                return x.LapsCount.CompareTo(y.LapsCount) * -1;
+                return x.LapCount.CompareTo(y.LapCount) * -1;
             }
         }
 
         public static IComparer<RoundPosition> LapsCountFinishedComparer { get; } = new LapsCountFinishedRelationalComparer();
 
-        public int LapsCount { get; private set; }
+        public int LapCount { get; private set; }
         public ReadOnlyCollection<Lap> Laps { get; private set; }
         public TimeSpan Duration { get; private set; }
         public DateTime Start { get; private set; }
         public DateTime End { get; private set; }
         public bool Finished { get; private set; }
-        public bool Started => LapsCount > 0;
+        public bool Started => LapCount > 0;
         public string RiderId { get; private set; }
         public long StartSequence { get; private set; }
         public long EndSequence { get; private set; }
@@ -43,7 +43,7 @@ namespace maxbl4.Race.Logic.RoundTiming
             RiderId = riderId;
             Start = start ?? default;
             Laps = new ReadOnlyCollection<Lap>(laps?.ToList() ?? new List<Lap>());
-            LapsCount = Laps.Count;
+            LapCount = Laps.Count;
             if (Start == default && Laps.Count > 0 && Laps[0].Start != default)
                 Start = Laps[0].Start;
             End = Laps.LastOrDefault()?.End ?? default;
@@ -80,14 +80,14 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         public void Finish()
         {
-            if (LapsCount == 0)
+            if (LapCount == 0)
                 return;
             UpdateFromLaps(RiderId, Laps, true);
         }
         
         public override string ToString()
         {
-            return $"{(Finished?"F":"")}{RiderId} L:{LapsCount}";
+            return $"{(Finished?"F":"")}{RiderId} L:{LapCount}";
         }
     }
 }

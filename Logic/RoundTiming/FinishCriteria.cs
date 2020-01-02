@@ -50,9 +50,9 @@ namespace maxbl4.Race.Logic.RoundTiming
                 if (TotalLaps.HasValue)
                 {
                     var startingLap = SkipStartingCheckpoint ? 1 : 0;
-                    if (current.LapsCount - startingLap >= TotalLaps)
+                    if (current.LapCount - startingLap >= TotalLaps)
                         return true;
-                    return current.LapsCount > startingLap && current.Duration >= Duration;
+                    return current.LapCount > startingLap && current.Duration >= Duration;
                 }
 
                 var mainDurationComplete = current.Duration >= Duration;
