@@ -6,7 +6,7 @@ namespace maxbl4.Race.Tests.Infrastructure
 {
     public static class RoundDefExt
     {
-        public static void VerifyTrack(this RoundDef def, ITrackOfCheckpoints track, bool verifyTime = true)
+        public static void VerifyTrack(this RoundDef def, ITrackOfCheckpoints track, string name, bool verifyTime = true)
         {
             var rating = track.Rating;
             for (var i = 0; i < def.Rating.Count; i++)
@@ -14,7 +14,7 @@ namespace maxbl4.Race.Tests.Infrastructure
                 var expected = def.Rating[i];
                 var actual = rating[i];
                 actual.RiderId.Should().Be(expected.RiderId, 
-                    $"Place {i + 1} should have #{expected.RiderId}, but was #{actual.RiderId}");
+                    $"Place {i + 1} should have #{expected.RiderId}, but was #{actual.RiderId}" + name);
                 actual.Started.Should().Be(expected.Started,
                     $"#{actual.RiderId} should have Started={expected.Started}, but was {actual.Started}");
                 actual.Finished.Should().Be(expected.Finished,

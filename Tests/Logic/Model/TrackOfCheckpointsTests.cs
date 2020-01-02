@@ -42,8 +42,9 @@ F13 2 [15 33]";
             track.ToRoundDefString().Should().Be(def.ToString());
         }
         
-        [Fact]
-        public void Simple_start_and_finish()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Simple_start_and_finish(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[5]  12[10] 13[15]
@@ -52,12 +53,13 @@ Rating
 F11 2 [5  30]
 F12 2 [10 32]
 F13 2 [15 33]");
-            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
-            def.VerifyTrack(track);
+            var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
+            def.VerifyTrack(track, name);
         }
         
-        [Fact]
-        public void In_lack_of_timestamps_should_set_finish_to_leader()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void In_lack_of_timestamps_should_set_finish_to_leader(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track
 11 12 13
@@ -67,13 +69,14 @@ F12 2 [1 32]
 F11 2 [2 31]
  13 1 [3]");
             var fc = FinishCriteria.FromForcedFinish();
-            var track = def.CreateTrack(fc);
+            var track = def.CreateTrack(factory, fc);
             track.ForceFinish();
-            def.VerifyTrack(track, false);
+            def.VerifyTrack(track, name, false);
         }
         
-        [Fact]
-        public void Force_finish_when_lap_leader_is_down()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Force_finish_when_lap_leader_is_down(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[1] 11[2] 11[3] 12[4]
@@ -82,13 +85,14 @@ Rating
 F12 2 [4 34]
 11 3 [1 2 3]");
             var fc = FinishCriteria.FromDuration(def.Duration);
-            var track = def.CreateTrack(fc);
+            var track = def.CreateTrack(factory, fc);
             track.ForceFinish();
-            def.VerifyTrack(track);
+            def.VerifyTrack(track, name);
         }
         
-        [Fact]
-        public void Dnf_should_be_last_in_the_rating()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Dnf_should_be_last_in_the_rating(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 2018-01-15 30
 11[1]  11[2] 11[3] 12[4] 12[5] 13[6]
@@ -96,8 +100,8 @@ Rating
 11 3 [1 2 3]
 12 2 [4 5]
 13 1 [6]");
-            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
-            def.VerifyTrack(track);
+            var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
+            def.VerifyTrack(track, name);
             def = RoundDef.Parse(@"Track 2018-01-15 30
 11[1] 11[2] 11[3] 12[4] 12[5] 13[6]
 11[31] 13[32]
@@ -105,12 +109,13 @@ Rating
 F11 4 [1 2 3 31]
 F13 2 [6 32]
  12 2 [4 5]");
-            track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
-            def.VerifyTrack(track);
+            track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
+            def.VerifyTrack(track, name);
         }
         
-        [Fact]
-        public void Dnf_should_be_last_in_the_rating_2()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Dnf_should_be_last_in_the_rating_2(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[1] 12[2] 11[3] 12[4] 11[5] 12[6]
@@ -120,12 +125,13 @@ Rating
 F11 4 [1 3 5 31]
 F13 2 [7 32]
  12 3 [2 4 6]");
-            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
-            def.VerifyTrack(track);
+            var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
+            def.VerifyTrack(track, name);
         }
         
-        [Fact]
-        public void Sequence_of_checkpoints_should_prevail_over_timestamps()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Sequence_of_checkpoints_should_prevail_over_timestamps(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[10] 12[8]
@@ -134,12 +140,13 @@ Rating
 F11 2 [10 40]
 F12 2 [8 32]");
             var fc = FinishCriteria.FromDuration(def.Duration);
-            var track = def.CreateTrack(fc);
-            def.VerifyTrack(track);
+            var track = def.CreateTrack(factory, fc);
+            def.VerifyTrack(track, name);
         }
         
-        [Fact]
-        public void Force_finish_should_not_affect_rating_with_normal_finish()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Force_finish_should_not_affect_rating_with_normal_finish(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[5]  12[10] 13[15]
@@ -148,13 +155,14 @@ Rating
 F11 2 [5  30]
 F12 2 [10 32]
  13 1 [15]");
-            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
+            var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ForceFinish();
-            def.VerifyTrack(track);
+            def.VerifyTrack(track, name);
         }
         
-        [Fact]
-        public void Checkpoints_after_finish_should_be_ignored()
+        [Theory]
+        [MemberData(nameof(TrackVersionsObj))]
+        public void Checkpoints_after_finish_should_be_ignored(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[5]  12[10]
@@ -163,9 +171,9 @@ F12 2 [10 32]
 Rating
 F11 2 [5  30]
 F12 2 [10 32]");
-            var track = def.CreateTrack(FinishCriteria.FromDuration(def.Duration));
+            var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ForceFinish();
-            def.VerifyTrack(track);
+            def.VerifyTrack(track, name);
         }
     }
 }
