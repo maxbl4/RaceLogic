@@ -15,7 +15,8 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             var s = new JsonSerializer();
             s.DefaultValueHandling = DefaultValueHandling.Ignore;
-            s.SerializationBinder = new NameMapSerializationBinder(new Dictionary<string, Type>(){
+            s.SerializationBinder = new NameMapSerializationBinder(new Dictionary<string, Type>
+            {
                 {"entity", typeof(Entity)}});
             s.TypeNameHandling = TypeNameHandling.All;
             var sw = new StringWriter();

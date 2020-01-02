@@ -30,7 +30,7 @@ namespace maxbl4.Race.DataService.Controllers
                     new { Query = new { Uri = "GET /store/Riders/single/1"}, Returns = new { Code = 200, Data = new { Id = 1, Name = "Rider Name", OtherRiderAttribute = "123" }}},
                     new { Query = new { Uri = "PUT|POST /store/Riders/single", Body = new { Name = "New Rider Name", Some="More data"}}, 
                         Returns = new { Code = 201, Headers = new { Location = "/store/Riders/single/5"}, Comment = "Location header has id of new entity"}},
-                    new { Query = new { Uri = "PUT|POST /store/Riders/single/1", Comment = "Explicit new id can be specified"}},
+                    new { Query = new { Uri = "PUT|POST /store/Riders/single/1", Comment = "Explicit new id can be specified"}}
                 }
             });
         }
@@ -68,20 +68,20 @@ namespace maxbl4.Race.DataService.Controllers
         }
         
         [HttpGet("{collection}/search")]
-        public IActionResult Search(string collection, string @where = null, string order = null, int limit = 50)
+        public IActionResult Search(string collection, string where = null, string order = null, int limit = 50)
         {
-            if (string.IsNullOrEmpty(@where))
-                @where = "1 = 1";
-            var result = storageService.Search(collection, @where, order, limit);
+            if (string.IsNullOrEmpty(where))
+                where = "1 = 1";
+            var result = storageService.Search(collection, where, order, limit);
             return Content(JsonSerializer.Serialize(new BsonArray(result)), "application/json", Encoding.UTF8);
         }
         
         [HttpGet("{collection}/count")]
-        public IActionResult Count(string collection, string @where)
+        public IActionResult Count(string collection, string where)
         {
-            if (string.IsNullOrEmpty(@where))
-                @where = "1 = 1";
-            return Ok(storageService.Count(collection, @where));
+            if (string.IsNullOrEmpty(where))
+                where = "1 = 1";
+            return Ok(storageService.Count(collection, where));
         }
 
         async Task<BsonDocument> DocumentFromRequest()

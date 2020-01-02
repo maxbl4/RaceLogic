@@ -43,7 +43,7 @@ namespace maxbl4.Race.Tests.Logic
                 G("3",3),
                 G("1",21),
                 G("2",22),
-                G("3",23),
+                G("3",23)
             }.ToList(), TimeSpan.FromTicks(10)).ToList();
             aggRecords.Count.Should().Be(6);
             aggRecords.Should().OnlyContain(x => x.Count == 1);
@@ -67,7 +67,7 @@ namespace maxbl4.Race.Tests.Logic
                 G("3",9),
                 G("1",21),
                 G("2",22),
-                G("3",23),
+                G("3",23)
             }.ToList(), TimeSpan.FromTicks(10)).ToList();
             aggRecords.Count.Should().Be(6);
             aggRecords.Take(3).Should().OnlyContain(x => x.Count == 2);

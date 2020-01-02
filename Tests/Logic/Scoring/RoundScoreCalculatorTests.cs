@@ -89,7 +89,7 @@ namespace maxbl4.Race.Tests.Logic.Scoring
         public void Rate_dnfs_should_be_respected()
         {
             var rating = GetRating(2, 1).ToList();
-            var scores = RoundScoringStrategy.FromFirstPlacePoints(10, rateDnfs: false)
+            var scores = RoundScoringStrategy.FromFirstPlacePoints(10)
                 .Calculate(rating, new []{"21", "22"}).ToList();
             scores.Count.Should().Be(5);
             scores[0].Points.Should().Be(10);

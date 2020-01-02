@@ -48,7 +48,7 @@ namespace maxbl4.Race.Tests.Logic.Pipeline
             var rfidToRider = new ConcurrentDictionary<string, string>
             {
                 ["ABC"] = "Rider_1",
-                ["XXX"] = "Rider_2",
+                ["XXX"] = "Rider_2"
             };
             var rfidResolver = new SimpleMapRiderIdResolver(rfidToRider, x => Task.FromResult($"Rider_{x}"));
             var rfidCps = new List<Checkpoint>{new Checkpoint("ABC"), new Checkpoint("XXX")};

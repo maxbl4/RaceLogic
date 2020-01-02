@@ -8,14 +8,14 @@ namespace maxbl4.Race.Logic.RoundTiming
     public class TrackOfCheckpointsIncrementalCustomSort : ITrackOfCheckpoints
     {
         private bool finishForced;
-        private readonly IFinishCriteria finishCriteria;
+        public IFinishCriteria FinishCriteria { get; }
         readonly Dictionary<string, RoundPosition> positions = new Dictionary<string, RoundPosition>();
-        readonly List<List<Checkpoint>> track = new List<List<Checkpoint>>();
+        public List<List<Checkpoint>> Track { get; } = new List<List<Checkpoint>>();
         public DateTime RoundStartTime { get; }
 
         public TrackOfCheckpointsIncrementalCustomSort(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
         {
-            this.finishCriteria = finishCriteria;
+            this.FinishCriteria = finishCriteria;
             RoundStartTime = roundStartTime ?? default;
         }
         
@@ -26,11 +26,11 @@ namespace maxbl4.Race.Logic.RoundTiming
             if (position.Finished)
                 return;
             position.Append(cp);
-            if (track.Count < position.LapsCount)
-                track.Add(new List<Checkpoint>());
-            track[position.LapsCount - 1].Add(cp);
+            if (Track.Count < position.LapsCount)
+                Track.Add(new List<Checkpoint>());
+            Track[position.LapsCount - 1].Add(cp);
             UpdateSequence(position);
-            if (finishCriteria?.HasFinished(position, Sequence, false) == true)
+            if (FinishCriteria?.HasFinished(position, Rating, false) == true)
             {
                 position.Finish();
                 UpdateSequence(position);
@@ -39,28 +39,28 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         public void ForceFinish()
         {
-            foreach (var position in Sequence)
+            foreach (var position in Rating)
             {
-                if (finishCriteria?.HasFinished(position, Sequence, true) == true)
+                if (FinishCriteria?.HasFinished(position, Rating, true) == true)
                     position.Finish();
             }
-            Sequence.Sort(RoundPosition.LapsCountFinishedComparer);
+            Rating.Sort(RoundPosition.LapsCountFinishedComparer);
             finishForced = true;
         }
 
-        public List<RoundPosition> Sequence { get; } = new List<RoundPosition>();
+        public List<RoundPosition> Rating { get; } = new List<RoundPosition>();
 
         private void UpdateSequence(RoundPosition position)
         {
             // if (positionsInRating.TryGetValue(position.RiderId, out var currentIndex))
-            var currentIndex = Sequence.FindIndex(x => x.RiderId == position.RiderId);
+            var currentIndex = Rating.FindIndex(x => x.RiderId == position.RiderId);
             if (currentIndex >= 0)
-                Sequence.RemoveAt(currentIndex);
-            var newIndex = Sequence.Count - 1;
-            while (newIndex >= 0 && RoundPosition.LapsCountFinishedComparer.Compare(Sequence[newIndex], position) > 0)
+                Rating.RemoveAt(currentIndex);
+            var newIndex = Rating.Count - 1;
+            while (newIndex >= 0 && RoundPosition.LapsCountFinishedComparer.Compare(Rating[newIndex], position) > 0)
                 newIndex--;
             newIndex++;
-            Sequence.Insert(newIndex, position);
+            Rating.Insert(newIndex, position);
         }
     }
 }

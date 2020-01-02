@@ -19,7 +19,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             var d = new Dictionary<Checkpoint, string>(new MyCheckpointComparer()){
                 {new Checkpoint("1"), "111"},
-                {AggCheckpoint.From(new Checkpoint("2")), "222"},
+                {AggCheckpoint.From(new Checkpoint("2")), "222"}
             };
             d[new Checkpoint("1")].Should().Be("111");
             d[AggCheckpoint.From(new Checkpoint("1"))].Should().Be("111");

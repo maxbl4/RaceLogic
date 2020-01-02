@@ -40,7 +40,7 @@ namespace maxbl4.Race.CheckpointService.Services
         {
             logger.Swallow(async () =>
             {
-                logger.Information($"Broadcasting rfid options");
+                logger.Information("Broadcasting rfid options");
                 await checkpointsHub.Clients.All
                     .SendCoreAsync("RfidOptions", new[] {rfidOptions});
             }).Wait(0);
@@ -101,7 +101,7 @@ namespace maxbl4.Race.CheckpointService.Services
             }
         }
 
-        public void StartStream(string contextConnectionId, in DateTime @from)
+        public void StartStream(string contextConnectionId, in DateTime from)
         {
             try
             {

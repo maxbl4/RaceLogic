@@ -32,7 +32,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 hubContext.Clients.Client("con1")
                             .SendCoreAsync("Checkpoint", Arg.Any<object[]>())
                         .Returns(Task.CompletedTask)
-                        .AndDoes((info) => cps.AddRange(info.ArgAt<object[]>(1).OfType<Checkpoint[]>().First()));
+                        .AndDoes(info => cps.AddRange(info.ArgAt<object[]>(1).OfType<Checkpoint[]>().First()));
                 
                 var ds = new DistributionService(hubContext, MessageHub, storageService);
                 ds.StartStream("con1", DateTime.UtcNow);
@@ -58,12 +58,12 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 hubContext.Clients.Client("con1")
                     .SendCoreAsync(Arg.Any<string>(), Arg.Any<object[]>())
                     .ThrowsForAnyArgs(x => new ArgumentOutOfRangeException())
-                    .AndDoes((info) => log.Add("thrown"));
+                    .AndDoes(info => log.Add("thrown"));
 
                 hubContext.Clients.Client("con2")
                     .SendCoreAsync("Checkpoint", Arg.Any<object[]>())
                     .Returns(Task.CompletedTask)
-                    .AndDoes((info) => log.Add(info.ArgAt<object[]>(1)
+                    .AndDoes(info => log.Add(info.ArgAt<object[]>(1)
                         .OfType<Checkpoint[]>().First()[0].RiderId));
                                 
                 var ds = new DistributionService(hubContext, MessageHub, storageService);

@@ -36,7 +36,7 @@ namespace Benchmark
                         Console.Write($"{i * 100 / cycles}% ");
                 }
                 sw.Stop();
-                Console.WriteLine($"100%");
+                Console.WriteLine("100%");
                 
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 if (baseLine == 0)

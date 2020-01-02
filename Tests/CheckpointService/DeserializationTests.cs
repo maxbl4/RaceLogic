@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
+using Newtonsoft.Json;
 using Xunit;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace maxbl4.Race.Tests.CheckpointService
 {
@@ -14,7 +16,7 @@ namespace maxbl4.Race.Tests.CheckpointService
         [Fact]
         public void System_Json_should_fail_to_deserialize_checkpoints_array()
         {
-            var result = System.Text.Json.JsonSerializer.Deserialize<List<Checkpoint>>(str.Replace('\'', '"'));
+            var result = JsonSerializer.Deserialize<List<Checkpoint>>(str.Replace('\'', '"'));
             result.Count.Should().Be(2);
             result[0].RiderId.Should().BeNull();
             // Here are the proper result, you could expect. But actually System.Text.Json.JsonSerializer returns nulls here
@@ -26,7 +28,7 @@ namespace maxbl4.Race.Tests.CheckpointService
         [Fact]
         public void Newtonsoft_Json_should_deserialize_checkpoints_array()
         {
-            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Checkpoint>>(str);
+            var result = JsonConvert.DeserializeObject<List<Checkpoint>>(str);
             result.Count.Should().Be(2);
             result[0].RiderId.Should().Be("stored1");
             result[0].Id.Should().Be(1);

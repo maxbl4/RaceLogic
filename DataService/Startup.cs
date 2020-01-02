@@ -1,14 +1,14 @@
 using System.Reactive.PlatformServices;
 using AutoMapper;
 using Easy.MessageHub;
+using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
+using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
-using maxbl4.Race.DataService.Options;
 
 namespace maxbl4.Race.DataService
 {

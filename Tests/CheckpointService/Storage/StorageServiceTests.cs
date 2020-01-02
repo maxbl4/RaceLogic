@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using FluentAssertions;
 using LiteDB;
 using maxbl4.Infrastructure;
+using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
-using Tag = maxbl4.Race.CheckpointService.Model.Tag;
 
 namespace maxbl4.Race.Tests.CheckpointService.Storage
 {
@@ -180,7 +180,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         [Fact]
         public void Should_rotate_database_in_case_of_validation_failure()
         {
-            var cs = new LiteDB.ConnectionString(storageConnectionString);
+            var cs = new ConnectionString(storageConnectionString);
             var dbFile = new RollingFileInfo(cs.Filename);
             dbFile.BaseExists.Should().BeFalse();
             using (var repo = new LiteRepository(storageConnectionString))

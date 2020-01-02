@@ -7,7 +7,9 @@ namespace maxbl4.Race.Logic.RoundTiming
     public interface ITrackOfCheckpoints
     {
         DateTime RoundStartTime { get; }
-        List<RoundPosition> Sequence { get; }
+        List<RoundPosition> Rating { get; }
+        IFinishCriteria FinishCriteria { get; }
+        List<List<Checkpoint>> Track { get; }
         void Append(Checkpoint cp);
         void ForceFinish();
     }

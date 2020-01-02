@@ -50,7 +50,7 @@ namespace maxbl4.Race.Logic.EventModel
                 RiderRegistrationId = RiderRegistrationId,
                 RiderRegistration = RiderRegistration,
                 ScheduleId = ScheduleId,
-                Schedule = Schedule,
+                Schedule = Schedule
             };
         }
     }

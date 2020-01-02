@@ -74,10 +74,10 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             using (var repo = new LiteRepository(dbFile))
             {
-                repo.Insert(new EntityInt {Id = 5,});
-                repo.Insert(new EntityInt {Id = 4,});
-                repo.Insert(new EntityInt {Id = 7,});
-                repo.Insert(new EntityInt {Id = 3,});
+                repo.Insert(new EntityInt {Id = 5});
+                repo.Insert(new EntityInt {Id = 4});
+                repo.Insert(new EntityInt {Id = 7});
+                repo.Insert(new EntityInt {Id = 3});
             }
             
             using (var repo = new LiteRepository(dbFile))

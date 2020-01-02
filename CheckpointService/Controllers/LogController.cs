@@ -29,7 +29,7 @@ namespace maxbl4.Race.CheckpointService.Controllers
             if (lines < 0)
                 lines = Int32.MaxValue;
             var logText = new StreamReader(new FileStream(logfile.CurrentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
-            return Content(string.Join("\r\n", logText.Split(new char[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
+            return Content(string.Join("\r\n", logText.Split(new[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Contains(filter))
                 .TakeLast(lines.Value)), "text/plain");
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace maxbl4.Race.Logic.EventModel
 {
@@ -26,7 +27,7 @@ namespace maxbl4.Race.Logic.EventModel
 
     public class EventPrice : ITimestamp
     {
-        [System.ComponentModel.DataAnnotations.Key]
+        [Key]
         public Guid EventId { get; set; }
         public decimal BasePrice { get; set; }
         public decimal PaymentMultiplier { get; set; }

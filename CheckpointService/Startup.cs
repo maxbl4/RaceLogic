@@ -74,7 +74,7 @@ namespace maxbl4.Race.CheckpointService
             app.UseDirectoryBrowser(new DirectoryBrowserOptions(shared));
             app.UseStaticFiles(new StaticFileOptions(shared)
             {
-                ServeUnknownFileTypes = true,
+                ServeUnknownFileTypes = true
             });
 
             app.UseAuthorization();

@@ -27,7 +27,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                 sb.Append(" " + Duration.ToShortString());
             sb.AppendLine(this.FormatCheckpoints());
             sb.AppendLine(RoundDefParser.Rating);
-            sb.Append(string.Join(Environment.NewLine, Rating.Select(x => RoundDefParser.ToDefString(x))));
+            sb.Append(string.Join(Environment.NewLine, Rating.Select(x => x.ToDefString())));
             return sb.ToString();
         }
     }

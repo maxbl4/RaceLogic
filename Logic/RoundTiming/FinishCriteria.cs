@@ -6,19 +6,19 @@ namespace maxbl4.Race.Logic.RoundTiming
 {
     public class FinishCriteria : IFinishCriteria
     {
-        private readonly TimeSpan duration;
-        private readonly int? totalLaps;
-        private readonly int lapsAfterDuration;
-        private readonly bool skipStartingCheckpoint;
-        private readonly bool forceFinishOnly;
+        public TimeSpan Duration { get; }
+        public int? TotalLaps { get; }
+        public int LapsAfterDuration { get; }
+        public bool SkipStartingCheckpoint { get; }
+        public bool ForceFinishOnly { get; }
 
         private FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint, bool forceFinishOnly = false)
         {
-            this.duration = duration;
-            this.totalLaps = totalLaps;
-            this.lapsAfterDuration = lapsAfterDuration;
-            this.skipStartingCheckpoint = skipStartingCheckpoint;
-            this.forceFinishOnly = forceFinishOnly;
+            Duration = duration;
+            TotalLaps = totalLaps;
+            LapsAfterDuration = lapsAfterDuration;
+            SkipStartingCheckpoint = skipStartingCheckpoint;
+            ForceFinishOnly = forceFinishOnly;
         }
 
         public static FinishCriteria FromDuration(TimeSpan duration, int lapsAfterDuration = 0)
@@ -42,24 +42,22 @@ namespace maxbl4.Race.Logic.RoundTiming
         
         public bool HasFinished(RoundPosition current, IEnumerable<RoundPosition> sequence, bool finishForced)
         {
-            if (forceFinishOnly && !finishForced) return false;
+            if (ForceFinishOnly && !finishForced) return false;
             if (current.Finished) return true;
             var leader = GetLeader(sequence, finishForced);
             if (current.RiderId == leader.RiderId)
             {
-                if (totalLaps.HasValue)
+                if (TotalLaps.HasValue)
                 {
-                    var startingLap = skipStartingCheckpoint ? 1 : 0;
-                    if (current.LapsCount - startingLap >= totalLaps)
+                    var startingLap = SkipStartingCheckpoint ? 1 : 0;
+                    if (current.LapsCount - startingLap >= TotalLaps)
                         return true;
-                    return current.LapsCount > startingLap && current.Duration >= duration;
+                    return current.LapsCount > startingLap && current.Duration >= Duration;
                 }
-                else
-                {
-                    var mainDurationComplete = current.Duration >= duration;
-                    var additionalLapsComplete = lapsAfterDuration == 0 || current.Laps.Count(x => x.AggDuration >= duration) > lapsAfterDuration;
-                    return mainDurationComplete && additionalLapsComplete;
-                }
+
+                var mainDurationComplete = current.Duration >= Duration;
+                var additionalLapsComplete = LapsAfterDuration == 0 || current.Laps.Count(x => x.AggDuration >= Duration) > LapsAfterDuration;
+                return mainDurationComplete && additionalLapsComplete;
             }
             if (!leader.Finished) return false;
             return current.EndSequence > leader.EndSequence;
@@ -78,7 +76,7 @@ namespace maxbl4.Race.Logic.RoundTiming
                 // the first rider who have completed main time and chose him as leader
                 if (first == null)
                     first = position;
-                if (position.Duration >= duration)
+                if (position.Duration >= Duration)
                     return position;
             }
             return first;

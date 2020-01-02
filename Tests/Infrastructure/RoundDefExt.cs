@@ -1,4 +1,3 @@
-using System.Linq;
 using FluentAssertions;
 using maxbl4.Race.Logic.RoundTiming;
 using maxbl4.Race.Logic.RoundTiming.Serialization;
@@ -9,7 +8,7 @@ namespace maxbl4.Race.Tests.Infrastructure
     {
         public static void VerifyTrack(this RoundDef def, ITrackOfCheckpoints track, bool verifyTime = true)
         {
-            var rating = track.Sequence;
+            var rating = track.Rating;
             for (var i = 0; i < def.Rating.Count; i++)
             {
                 var expected = def.Rating[i];

@@ -89,7 +89,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
 
         public static Checkpoint ParseCheckpoint(string stringCp, DateTime roundStartTime)
         {
-            var parts = stringCp.Split(new[] {'[', ']'});
+            var parts = stringCp.Split('[', ']');
             if (parts.Length > 1)
                 return new Checkpoint(parts[0], roundStartTime + TimeSpanExt.Parse(parts[1]));
             return new Checkpoint(parts[0]);
@@ -98,7 +98,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
         public static string ToDefString(this Checkpoint cp, DateTime roundStartTime)
         {
             if (cp == null) return "";
-            if (cp.Timestamp == default) return cp.RiderId.ToString();
+            if (cp.Timestamp == default) return cp.RiderId;
             return $"{cp.RiderId}[{(cp.Timestamp - roundStartTime).ToShortString()}]";
         }
         
@@ -110,7 +110,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             sb.Append($"{rp.RiderId} L{rp.LapsCount}");
             if (rp.Laps.Count > 0)
             {
-                sb.Append($" [{string.Join(" ", rp.Laps.Select<Lap, string>(x => (x.End - rp.Start).ToShortString()))}]");
+                sb.Append($" [{string.Join(" ", rp.Laps.Select(x => (x.End - rp.Start).ToShortString()))}]");
             }
             return sb.ToString();
         }
@@ -122,7 +122,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             var maxLaps = 0;
             foreach (var cp in rd.Checkpoints)
             {
-                var laps = DictionaryExt.UpdateOrAdd<string, int>(histogram, cp.RiderId, x => x + 1);
+                var laps = histogram.UpdateOrAdd(cp.RiderId, x => x + 1);
                 if (laps > maxLaps)
                 {
                     sb.AppendLine();

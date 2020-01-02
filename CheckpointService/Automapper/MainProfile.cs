@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using maxbl4.Race.CheckpointService.Model;
+using maxbl4.RfidDotNet;
 
 namespace maxbl4.Race.CheckpointService.Automapper
 {
@@ -7,7 +7,7 @@ namespace maxbl4.Race.CheckpointService.Automapper
     {
         public MainProfile()
         {
-            CreateMap<RfidDotNet.Tag, Tag>();
+            CreateMap<Tag, Model.Tag>();
         }
     }
 }

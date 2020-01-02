@@ -6,7 +6,7 @@ namespace maxbl4.Race.Logic.LogManagement.IO
 {
     public class LogWriter
     {
-        private readonly TextWriter textWriter = null;
+        private readonly TextWriter textWriter;
         private readonly string filename;
         private readonly JsonSerializer serializer = new SerializerFactory().Create();
 

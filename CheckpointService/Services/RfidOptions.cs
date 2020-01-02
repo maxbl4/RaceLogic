@@ -10,7 +10,7 @@ namespace maxbl4.Race.CheckpointService.Services
         public static RfidOptions Default => new RfidOptions
         {
             ConnectionString = DefaultConnectionString,
-            CheckpointAggregationWindowMs = 200,
+            CheckpointAggregationWindowMs = 200
         };
 
         public int Id => 1;

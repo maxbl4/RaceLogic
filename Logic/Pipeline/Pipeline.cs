@@ -24,7 +24,7 @@ namespace maxbl4.Race.Logic.Pipeline
             disposable = new CompositeDisposable(checkpointProviders.Select(x =>
             {
                 if (checkpointAggregator == null)
-                    return ObservableExtensions.Subscribe<Checkpoint>(x, OnCheckpoint);
+                    return x.Subscribe(OnCheckpoint);
                 return x.Subscribe(checkpointAggregator);
             }));
             if (checkpointAggregator != null)
@@ -46,7 +46,7 @@ namespace maxbl4.Race.Logic.Pipeline
             if (track == null)
                 StartRound(cp.Timestamp);
             track.Append(cp);
-            sequence.OnNext(track.Sequence);
+            sequence.OnNext(track.Rating);
         }
 
         public void Dispose()

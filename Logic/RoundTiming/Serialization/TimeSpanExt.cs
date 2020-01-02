@@ -12,7 +12,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             {
                 @"%h\:%m\:%s",
                 @"%m\:%s",
-                @"%s",
+                @"%s"
             }, CultureInfo.InvariantCulture);
         }
 

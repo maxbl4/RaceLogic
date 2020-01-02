@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
+using maxbl4.Race.CheckpointService.Model;
 using Xunit;
 using Xunit.Abstractions;
-using Tag = maxbl4.Race.CheckpointService.Model.Tag;
 
 namespace maxbl4.Race.Tests.CheckpointService.Controllers
 {

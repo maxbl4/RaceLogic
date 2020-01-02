@@ -34,10 +34,10 @@ namespace maxbl4.Race.DataService.Services
             return repo.Database.GetCollection<T>(collectionName).Delete(key);
         }
         
-        public IEnumerable<BsonDocument> Search(string collectionName, string @where, string order, int limit)
+        public IEnumerable<BsonDocument> Search(string collectionName, string where, string order, int limit)
         {
             var query = repo.Query<BsonDocument>(collectionName)
-                .Where(@where);
+                .Where(where);
             if (TryParseOrder(order, out var ord))
             {
                 if (ord.desc)

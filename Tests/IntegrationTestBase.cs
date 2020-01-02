@@ -36,7 +36,7 @@ namespace maxbl4.Race.Tests
             {
                 ServiceRunner<Startup>.SetupLogger("testsettings");
             }
-            Logger = Log.ForContext(this.GetType());
+            Logger = Log.ForContext(GetType());
             
             var fileName = GetNameForDbFile(outputHelper);
             Logger.Debug("Storage {@fileName}", fileName);
@@ -54,10 +54,10 @@ namespace maxbl4.Race.Tests
             storageServiceInitializer(storageService);
         }
         
-        public void WithDataStorageService(Action<maxbl4.Race.DataService.Services.StorageService> storageServiceInitializer)
+        public void WithDataStorageService(Action<Race.DataService.Services.StorageService> storageServiceInitializer)
         {
             Logger.Debug("Creating DataStorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new maxbl4.Race.DataService.Services.StorageService(Options.Create(new maxbl4.Race.DataService.Options.ServiceOptions{StorageConnectionString = storageConnectionString}), 
+            using var storageService = new Race.DataService.Services.StorageService(Options.Create(new Race.DataService.Options.ServiceOptions{StorageConnectionString = storageConnectionString}), 
                 MessageHub, SystemClock);
             storageServiceInitializer(storageService);
         }
@@ -93,10 +93,10 @@ namespace maxbl4.Race.Tests
             return svc;
         }
         
-        public ServiceRunner<maxbl4.Race.DataService.Startup> CreateDataService(int pauseStartupMs = 0)
+        public ServiceRunner<Race.DataService.Startup> CreateDataService(int pauseStartupMs = 0)
         {
             Logger.Debug("Creating CheckpointService with {@storageConnectionString}", storageConnectionString);
-            var svc = new ServiceRunner<maxbl4.Race.DataService.Startup>();
+            var svc = new ServiceRunner<Race.DataService.Startup>();
             svc.Start(new []
             {
                 $"--ServiceOptions:StorageConnectionString={storageConnectionString}", 

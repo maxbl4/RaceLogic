@@ -14,7 +14,7 @@ namespace maxbl4.Race.Logic.LogManagement
             foreach (var pair in nameToTypeMap)
             {
                 this.nameToTypeMap[pair.Key] = pair.Value;
-                this.typeToNameMap[pair.Value] = pair.Key;
+                typeToNameMap[pair.Value] = pair.Key;
             }
         }
 
@@ -37,7 +37,7 @@ namespace maxbl4.Race.Logic.LogManagement
                 {"manual", typeof(ManualCheckpoint)},
                 {"rfid", typeof(RfidCheckpoint)},
                 {"start", typeof(SessionStart)},
-                {"comment", typeof(Comment)},
+                {"comment", typeof(Comment)}
             });
         }
     }

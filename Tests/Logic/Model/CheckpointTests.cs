@@ -74,7 +74,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             {
                 new Checkpoint("11", ts),
                 new Checkpoint("11", ts.AddSeconds(1)),
-                new Checkpoint("11", ts.AddSeconds(2)),
+                new Checkpoint("11", ts.AddSeconds(2))
             });
             agg.Timestamp.Should().Be(ts);
             agg.LastSeen.Should().Be(ts.AddSeconds(2));
@@ -93,7 +93,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             {
                 new Checkpoint("11", ts),
                 new Checkpoint("11", ts),
-                new Checkpoint("11", ts),
+                new Checkpoint("11", ts)
             });
             agg.Timestamp.Should().Be(ts);
             agg.LastSeen.Should().Be(ts);
@@ -107,7 +107,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             Assert.Throws<ArgumentException>(() => AggCheckpoint.From(new[]
             {
                 new Checkpoint("11"),
-                new Checkpoint("12"),
+                new Checkpoint("12")
             }));
             
             var agg = AggCheckpoint.From(new []
@@ -116,7 +116,7 @@ namespace maxbl4.Race.Tests.Logic.Model
                 new Checkpoint("11", new DateTime(1001)),
                 new Checkpoint("11", new DateTime(1002)),
                 new Checkpoint("11", new DateTime(1001)), 
-                new Checkpoint("11", new DateTime(1003)),
+                new Checkpoint("11", new DateTime(1003))
             });
             agg.Count.Should().Be(5);
             agg.Timestamp.Should().Be(new DateTime(1000));
