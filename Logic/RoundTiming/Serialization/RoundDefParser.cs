@@ -117,10 +117,15 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
 
         public static string FormatCheckpoints(this RoundDef rd)
         {
+            return FormatCheckpoints(rd.Checkpoints, rd.RoundStartTime);
+        }
+        
+        public static string FormatCheckpoints(IEnumerable<Checkpoint> checkpoints, DateTime roundStartTime)
+        {
             var sb = new StringBuilder();
             var histogram = new Dictionary<string, int>();
             var maxLaps = 0;
-            foreach (var cp in rd.Checkpoints)
+            foreach (var cp in checkpoints)
             {
                 var laps = histogram.UpdateOrAdd(cp.RiderId, x => x + 1);
                 if (laps > maxLaps)
@@ -131,7 +136,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                 else
                     sb.Append(' ');
                 
-                sb.Append(ToDefString(cp, rd.RoundStartTime));
+                sb.Append(ToDefString(cp, roundStartTime));
             }
 
             return sb.ToString();

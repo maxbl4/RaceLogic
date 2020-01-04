@@ -31,15 +31,15 @@ namespace maxbl4.Race.Tests.Logic.Model
         public void Serialize_track_of_checkpoints(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var str = @"Track 30
-11[5] 12[10] 13[15]
+11[5]  12[10] 13[15]
 11[30] 12[32] 13[33]
 Rating
-F11 2 [5 30]
+F11 2 [5  30]
 F12 2 [10 32]
 F13 2 [15 33]";
             var def = RoundDef.Parse(str);
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
-            track.ToRoundDefString().Should().Be(def.ToString());
+            track.ToRoundDefString().Should().Be(def.ToString(), name);
         }
         
         [Theory]
@@ -55,6 +55,7 @@ F12 2 [10 32]
 F13 2 [15 33]");
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]
@@ -65,13 +66,14 @@ F13 2 [15 33]");
 11 12 13
 12 11
 Rating
-F12 2 [1 32]
-F11 2 [2 31]
- 13 1 [3]");
+F12 2 [0 0]
+F11 2 [0 0]
+ 13 1 [0]");
             var fc = FinishCriteria.FromForcedFinish();
             var track = def.CreateTrack(factory, fc);
             track.ForceFinish();
             def.VerifyTrack(track, name, false);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]
@@ -88,6 +90,7 @@ F12 2 [4 34]
             var track = def.CreateTrack(factory, fc);
             track.ForceFinish();
             def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]
@@ -111,6 +114,7 @@ F13 2 [6 32]
  12 2 [4 5]");
             track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]
@@ -127,6 +131,7 @@ F13 2 [7 32]
  12 3 [2 4 6]");
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]
@@ -142,6 +147,7 @@ F12 2 [8 32]");
             var fc = FinishCriteria.FromDuration(def.Duration);
             var track = def.CreateTrack(factory, fc);
             def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]
@@ -158,6 +164,7 @@ F12 2 [10 32]
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ForceFinish();
             def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString());
         }
         
         [Theory]

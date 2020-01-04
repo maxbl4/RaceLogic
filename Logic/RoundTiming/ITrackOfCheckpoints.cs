@@ -10,6 +10,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         List<RoundPosition> Rating { get; }
         IFinishCriteria FinishCriteria { get; }
         List<List<Checkpoint>> Track { get; }
+        List<Checkpoint> Checkpoints { get; }
         void Append(Checkpoint cp);
         void ForceFinish();
     }

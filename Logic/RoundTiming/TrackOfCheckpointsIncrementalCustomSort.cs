@@ -11,6 +11,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         public IFinishCriteria FinishCriteria { get; }
         readonly Dictionary<string, RoundPosition> positions = new Dictionary<string, RoundPosition>();
         public List<List<Checkpoint>> Track { get; } = new List<List<Checkpoint>>();
+        public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
         public DateTime RoundStartTime { get; }
 
         public TrackOfCheckpointsIncrementalCustomSort(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
@@ -21,6 +22,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         
         public void Append(Checkpoint cp)
         {
+            Checkpoints.Add(cp);
             if (finishForced) return;
             var position = positions.GetOrAdd(cp.RiderId, x => RoundPosition.FromStartTime(x, RoundStartTime));
             if (position.Finished)
