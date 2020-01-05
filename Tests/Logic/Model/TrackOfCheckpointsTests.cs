@@ -13,8 +13,7 @@ namespace maxbl4.Race.Tests.Logic.Model
     public class TrackOfCheckpointsTests
     {
         private const string KnownDefsDirectory = @"Logic\Model\KnownRoundDefs";
-        private const string CompareImplsLogs = "CompareImplsLogs";
-
+        
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
         public void Serialize_track_of_checkpoints(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
@@ -189,8 +188,8 @@ F12 2 [10 32]");
                 x.name, x.factory
             });
         }
-        
-        public static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
+
+        private static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
         {
             yield return ("Cyclic", (d, f) => new TrackOfCheckpointsCyclic(d, f));
             yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpointsIncrementalCustomSort(d, f));
@@ -204,7 +203,7 @@ F12 2 [10 32]");
             });
         }
 
-        public static IEnumerable<(string implName, string roundDef, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> KnownTracks()
+        private static IEnumerable<(string implName, string roundDef, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> KnownTracks()
         {
             foreach (var def in Directory.GetFiles(KnownDefsDirectory))
             {
