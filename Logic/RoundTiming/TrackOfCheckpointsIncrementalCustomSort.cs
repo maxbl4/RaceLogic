@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using maxbl4.Infrastructure.Extensions.DictionaryExt;
 using maxbl4.Race.Logic.Checkpoints;
 
@@ -41,12 +42,14 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         public void ForceFinish()
         {
-            foreach (var position in Rating)
+            foreach (var position in Rating.Where(x => !x.Finished).ToList())
             {
                 if (FinishCriteria?.HasFinished(position, Rating, true) == true)
+                {
                     position.Finish();
+                    UpdateSequence(position);
+                }
             }
-            Rating.Sort(RoundPosition.LapsCountFinishedComparer);
             finishForced = true;
         }
 

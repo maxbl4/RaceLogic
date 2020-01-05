@@ -13,6 +13,7 @@ namespace maxbl4.Race.Tests.Logic.Model
     public class TrackOfCheckpointsTests
     {
         private const string KnownDefsDirectory = @"Logic\Model\KnownRoundDefs";
+        private const string CompareImplsLogs = "CompareImplsLogs";
 
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
@@ -178,7 +179,7 @@ F12 2 [10 32]");
             var def = RoundDef.Parse(File.ReadAllText(Path.Combine(KnownDefsDirectory, defFile)));
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ForceFinish();
-            def.VerifyTrack(track, name);
+            track.ToRoundDefString().Should().Be(def.ToString(), name);
         }
         
         public static IEnumerable<object[]> TrackVersionsObj()
@@ -192,7 +193,6 @@ F12 2 [10 32]");
         public static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
         {
             yield return ("Cyclic", (d, f) => new TrackOfCheckpointsCyclic(d, f));
-            yield return ("Incremental", (d, f) => new TrackOfCheckpointsIncremental(d, f));
             yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpointsIncrementalCustomSort(d, f));
         }
         
