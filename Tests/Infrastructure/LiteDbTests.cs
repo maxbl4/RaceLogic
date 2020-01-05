@@ -106,14 +106,15 @@ namespace maxbl4.Race.Tests.Infrastructure
             }
         }
         
-        [Fact(Skip = "Long running")]
-        public void Should_insert_many_documents()
+        [Theory]
+        [InlineData(1000)]
+        public void Should_insert_many_documents(int count)
         {
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
             var token = cts.Token;
             using (var repo = new LiteRepository(dbFile))
             {
-                for (var i = 0; i < 10000000; i++)
+                for (var i = 0; i < count; i++)
                 {
                     repo.Insert(new Entity {Data = i.ToString()});
                     if (token.IsCancellationRequested)

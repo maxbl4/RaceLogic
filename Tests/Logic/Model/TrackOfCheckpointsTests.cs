@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
 using maxbl4.Race.Logic.RoundTiming;
@@ -11,21 +12,8 @@ namespace maxbl4.Race.Tests.Logic.Model
 {
     public class TrackOfCheckpointsTests
     {
-        public static IEnumerable<object[]> TrackVersionsObj()
-        {
-            return TrackVersions().Select(x => new object[]
-            {
-                x.name, x.factory
-            });
-        }
-        
-        public static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
-        {
-            yield return ("Cyclic", (d, f) => new TrackOfCheckpointsCyclic(d, f));
-            yield return ("Incremental", (d, f) => new TrackOfCheckpointsIncremental(d, f));
-            yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpointsIncrementalCustomSort(d, f));
-        }
-        
+        private const string KnownDefsDirectory = @"Logic\Model\KnownRoundDefs";
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
         public void Serialize_track_of_checkpoints(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
@@ -181,6 +169,50 @@ F12 2 [10 32]");
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ForceFinish();
             def.VerifyTrack(track, name);
+        }
+        
+        [Theory]
+        [MemberData(nameof(KnownTracksObj))]
+        public void Known_results(string name, string defFile, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        {
+            var def = RoundDef.Parse(File.ReadAllText(Path.Combine(KnownDefsDirectory, defFile)));
+            var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
+            track.ForceFinish();
+            def.VerifyTrack(track, name);
+        }
+        
+        public static IEnumerable<object[]> TrackVersionsObj()
+        {
+            return TrackVersions().Select(x => new object[]
+            {
+                x.name, x.factory
+            });
+        }
+        
+        public static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
+        {
+            yield return ("Cyclic", (d, f) => new TrackOfCheckpointsCyclic(d, f));
+            yield return ("Incremental", (d, f) => new TrackOfCheckpointsIncremental(d, f));
+            yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpointsIncrementalCustomSort(d, f));
+        }
+        
+        public static IEnumerable<object[]> KnownTracksObj()
+        {
+            return KnownTracks().Select(x => new object[]
+            {
+                x.implName, x.roundDef, x.factory
+            });
+        }
+
+        public static IEnumerable<(string implName, string roundDef, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> KnownTracks()
+        {
+            foreach (var def in Directory.GetFiles(KnownDefsDirectory))
+            {
+                foreach (var trackVersion in TrackVersions())
+                {
+                    yield return (trackVersion.name, Path.GetFileName(def), trackVersion.factory);
+                }
+            }
         }
     }
 }

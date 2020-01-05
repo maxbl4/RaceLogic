@@ -26,5 +26,8 @@
     <ProjectReference Include="..\CheckpointService\CheckpointService.csproj" />
     <ProjectReference Include="..\DataService\DataService.csproj" />
     <ProjectReference Include="..\Logic\Logic.csproj" />
+  </ItemGroup>  
+  <ItemGroup>
+    <None Include="Logic\Model\KnownRoundDefs\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
