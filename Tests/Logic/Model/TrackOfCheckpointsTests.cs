@@ -12,7 +12,7 @@ namespace maxbl4.Race.Tests.Logic.Model
 {
     public class TrackOfCheckpointsTests
     {
-        private const string KnownDefsDirectory = @"Logic\Model\KnownRoundDefs";
+        private const string KnownDefsDirectory = @"Logic/Model/KnownRoundDefs";
         
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
