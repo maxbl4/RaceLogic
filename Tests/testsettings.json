@@ -5,7 +5,8 @@
       "Default": "Debug",
       "Override": {
         "Microsoft": "Information",
-        "maxbl4.RfidDotNet": "Fatal"
+        "maxbl4.RfidDotNet": "Fatal",
+        "maxbl4.Race.CheckpointService.Services.RfidService": "Warning"
       }
     },
     "WriteTo": [

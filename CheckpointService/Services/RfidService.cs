@@ -106,7 +106,7 @@ namespace maxbl4.Race.CheckpointService.Services
 
         public void AppendRiderId(string riderId)
         {
-            logger.Information($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
+            logger.Debug($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
             checkpoints.OnNext(new Checkpoint(riderId, systemClock.UtcNow.UtcDateTime));
         }
 
