@@ -30,7 +30,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
                 }));
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
-            var opts = await client.GetAsync<RfidOptions>($"{CheckpointsUri}/options");
+            var opts = await client.GetAsync<RfidOptions>($"{svc.ListenUri}/options");
             opts.Enabled.Should().Be(true);
             opts.ConnectionString.Should().Be("some");
             opts.RpsThreshold.Should().Be(123);
@@ -49,10 +49,10 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             };
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
-            (await client.PutAsync($"{CheckpointsUri}/options",
+            (await client.PutAsync($"{svc.ListenUri}/options",
                 new StringContent(JsonConvert.SerializeObject(opts), Encoding.UTF8, "application/json")))
                 .EnsureSuccessStatusCode();
-            var opts2 = await client.GetAsync<RfidOptions>($"{CheckpointsUri}/options");
+            var opts2 = await client.GetAsync<RfidOptions>($"{svc.ListenUri}/options");
             opts2.Enabled.Should().Be(true);
             opts2.ConnectionString.Should().Be("bbb");
             opts2.RpsThreshold.Should().Be(666);
@@ -74,13 +74,13 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             
             var client = new HttpClient();
-            (await client.GetAsync<bool>($"{CheckpointsUri}/options/{nameof(RfidOptions.Enabled)}"))
+            (await client.GetAsync<bool>($"{svc.ListenUri}/options/{nameof(RfidOptions.Enabled)}"))
                 .Should().Be(true);
-            (await client.GetAsync<string>($"{CheckpointsUri}/options/{nameof(RfidOptions.ConnectionString)}"))
+            (await client.GetAsync<string>($"{svc.ListenUri}/options/{nameof(RfidOptions.ConnectionString)}"))
                 .Should().Be("some");
-            (await client.GetAsync<int>($"{CheckpointsUri}/options/{nameof(RfidOptions.RpsThreshold)}"))
+            (await client.GetAsync<int>($"{svc.ListenUri}/options/{nameof(RfidOptions.RpsThreshold)}"))
                 .Should().Be(123);
-            (await client.GetAsync<int>($"{CheckpointsUri}/options/{nameof(RfidOptions.CheckpointAggregationWindowMs)}"))
+            (await client.GetAsync<int>($"{svc.ListenUri}/options/{nameof(RfidOptions.CheckpointAggregationWindowMs)}"))
                 .Should().Be(234);
         }
         
@@ -97,22 +97,22 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
                 }));
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
-            var opts = await client.GetAsync<RfidOptions>($"{CheckpointsUri}/options");
+            var opts = await client.GetAsync<RfidOptions>($"{svc.ListenUri}/options");
             opts.Enabled.Should().BeFalse();
 
-            (await client.PutAsync($"{CheckpointsUri}/options/{nameof(RfidOptions.RpsThreshold)}",
+            (await client.PutAsync($"{svc.ListenUri}/options/{nameof(RfidOptions.RpsThreshold)}",
                 new StringContent("555", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
-            (await client.GetAsync<int>($"{CheckpointsUri}/options/{nameof(RfidOptions.RpsThreshold)}"))
+            (await client.GetAsync<int>($"{svc.ListenUri}/options/{nameof(RfidOptions.RpsThreshold)}"))
                 .Should().Be(555);
             
-            (await client.PutAsync($"{CheckpointsUri}/options/{nameof(RfidOptions.Enabled)}",
+            (await client.PutAsync($"{svc.ListenUri}/options/{nameof(RfidOptions.Enabled)}",
                 new StringContent("true", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
-            (await client.GetAsync<bool>($"{CheckpointsUri}/options/{nameof(RfidOptions.Enabled)}"))
+            (await client.GetAsync<bool>($"{svc.ListenUri}/options/{nameof(RfidOptions.Enabled)}"))
                 .Should().Be(true);
             
-            (await client.PutAsync($"{CheckpointsUri}/options/{nameof(RfidOptions.ConnectionString)}",
+            (await client.PutAsync($"{svc.ListenUri}/options/{nameof(RfidOptions.ConnectionString)}",
                 new StringContent("\"true\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
-            (await client.GetAsync<string>($"{CheckpointsUri}/options/{nameof(RfidOptions.ConnectionString)}"))
+            (await client.GetAsync<string>($"{svc.ListenUri}/options/{nameof(RfidOptions.ConnectionString)}"))
                 .Should().Be("true");
         }
     }

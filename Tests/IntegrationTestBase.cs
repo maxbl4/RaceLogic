@@ -18,12 +18,8 @@ namespace maxbl4.Race.Tests
 {
     public class IntegrationTestBase
     {
-        private const int CheckpointsPort = 5050;
-        private const int DataPort = 5060;
         static object sync = new object();
         private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new MessageHub());
-        protected string CheckpointsUri => $"http://localhost:{CheckpointsPort}";
-        protected string DataUri => $"http://localhost:{DataPort}";
         protected IMessageHub MessageHub => messageHub.Value;
         protected readonly string storageConnectionString;
         protected readonly FakeSystemClock SystemClock = new FakeSystemClock();
@@ -88,7 +84,7 @@ namespace maxbl4.Race.Tests
                 $"--ServiceOptions:StorageConnectionString={storageConnectionString}", 
                 $"--ServiceOptions:PauseInStartupMs={pauseStartupMs}",
                 $"--Environment={Environments.Development}",
-                $"--Urls={CheckpointsUri}"
+                $"--Urls=http://127.0.0.1:0"
             }).Wait(0);
             return svc;
         }
@@ -102,7 +98,7 @@ namespace maxbl4.Race.Tests
                 $"--ServiceOptions:StorageConnectionString={storageConnectionString}", 
                 $"--ServiceOptions:PauseInStartupMs={pauseStartupMs}",
                 $"--Environment={Environments.Development}",
-                $"--Urls={DataUri}"
+                $"--Urls=http://127.0.0.1:0"
             }).Wait(0);
             return svc;
         }

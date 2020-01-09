@@ -1,10 +1,15 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
@@ -16,6 +21,18 @@ namespace ServiceBase
         private IHost hostBuilder;
 
         public IServiceProvider ServiceProvider => hostBuilder.Services;
+
+        public string ListenUri
+        {
+            get
+            {
+                var app = hostBuilder.Services.GetService<IServer>();
+                return app.Features
+                    .Get<IServerAddressesFeature>()
+                    .Addresses
+                    .First();
+            }
+        }
 
         public async Task<int> Start(string[] args = null)
         {

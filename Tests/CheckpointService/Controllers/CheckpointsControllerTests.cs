@@ -32,7 +32,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService(5000);
             var client = new HttpClient();
             // Get data from service should succeed, but take 5000+ ms
-            var response = await client.GetAsync($"{CheckpointsUri}/cp");
+            var response = await client.GetAsync($"{svc.ListenUri}/cp");
             (await response.Content.ReadAsStringAsync()).Should().Be("[]");
             sw.Stop();
             sw.ElapsedMilliseconds.Should().BeGreaterThan(5000);
@@ -50,7 +50,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
-            var checkpoints = await client.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
+            var checkpoints = await client.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
             checkpoints.Should().NotBeNull();
             checkpoints.Count.Should().Be(2);
             checkpoints.Should().Contain(x => x.RiderId == "stored1");
@@ -67,7 +67,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             tagListHandler.ReturnOnce(new Tag{TagId = "1"});
             tagListHandler.ReturnOnce(new Tag{TagId = "2"});
             var wsConnection = new HubConnectionBuilder()
-                .WithUrl($"{CheckpointsUri}/ws/cp")
+                .WithUrl($"{svc.ListenUri}/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();
             await wsConnection.StartAsync();
@@ -92,7 +92,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var wsConnection = new HubConnectionBuilder()
-                .WithUrl($"{CheckpointsUri}/ws/cp")
+                .WithUrl($"{svc.ListenUri}/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();
             await wsConnection.StartAsync();
@@ -102,7 +102,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
             await new Timing().ExpectAsync(() => wsConnected);
             var cli = new HttpClient();
-            (await cli.PutAsync($"{CheckpointsUri}/cp", 
+            (await cli.PutAsync($"{svc.ListenUri}/cp", 
                 new StringContent("\"555\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
             await new Timing()
                 .Logger(Logger)
@@ -119,7 +119,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var wsConnection = new HubConnectionBuilder()
-                .WithUrl($"{CheckpointsUri}/ws/cp")
+                .WithUrl($"{svc.ListenUri}/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();
             await wsConnection.StartAsync();
@@ -129,7 +129,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
             await new Timing().ExpectAsync(() => wsConnected);
             var cli = new HttpClient();
-            (await cli.PutAsync($"{CheckpointsUri}/cp", 
+            (await cli.PutAsync($"{svc.ListenUri}/cp", 
                 new StringContent("\"\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
             (await new Timing()
                 .Timeout(5000)
@@ -154,24 +154,24 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var cli = new HttpClient();
             
-            var response = await cli.DeleteAsync($"{CheckpointsUri}/cp/1");
+            var response = await cli.DeleteAsync($"{svc.ListenUri}/cp/1");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(1);
-            var cps = await cli.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
+            var cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
             cps.Count.Should().Be(4);
             cps.Should().NotContain(x => x.Id == 1);
             
-            response = await cli.DeleteAsync($"{CheckpointsUri}/cp?start={now.AddMinutes(1.5):u}&end={now.AddMinutes(3.5):u}");
+            response = await cli.DeleteAsync($"{svc.ListenUri}/cp?start={now.AddMinutes(1.5):u}&end={now.AddMinutes(3.5):u}");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(2);
-            cps = await cli.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
+            cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
             cps.Count.Should().Be(2);
             cps.Should().NotContain(x => x.Id == 3 || x.Id == 4);
             
-            response = await cli.DeleteAsync($"{CheckpointsUri}/cp");
+            response = await cli.DeleteAsync($"{svc.ListenUri}/cp");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(2);
-            cps = await cli.GetAsync<List<Checkpoint>>($"{CheckpointsUri}/cp");
+            cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
             cps.Count.Should().Be(0);
         }
     }

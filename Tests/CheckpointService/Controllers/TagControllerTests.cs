@@ -33,14 +33,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var client = new HttpClient();
-            var tags = await client.GetAsync<List<Tag>>($"{CheckpointsUri}/tag");
+            var tags = await client.GetAsync<List<Tag>>($"{svc.ListenUri}/tag");
             
             tags.Should().NotBeNull();
             tags.Count.Should().Be(100);
             tags[99].TagId.Should().Be("stored1");
             tags[98].TagId.Should().Be("stored2");
             
-            tags = await client.GetAsync<List<Tag>>($"{CheckpointsUri}/tag?count=2&start={ts.AddSeconds(50):u}&end={ts.AddSeconds(106):u}");
+            tags = await client.GetAsync<List<Tag>>($"{svc.ListenUri}/tag?count=2&start={ts.AddSeconds(50):u}&end={ts.AddSeconds(106):u}");
             tags.Count.Should().Be(2);
             tags[1].TagId.Should().Be("stored2");
             tags[0].TagId.Should().Be("tag");
@@ -58,14 +58,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var cli = new HttpClient();
             
-            var response = await cli.DeleteAsync($"{CheckpointsUri}/tag");
+            var response = await cli.DeleteAsync($"{svc.ListenUri}/tag");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(1);
             
-            response = await cli.DeleteAsync($"{CheckpointsUri}/tag");
+            response = await cli.DeleteAsync($"{svc.ListenUri}/tag");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(0);
-            var tags = await cli.GetAsync<List<Tag>>($"{CheckpointsUri}/tag");
+            var tags = await cli.GetAsync<List<Tag>>($"{svc.ListenUri}/tag");
             tags.Count.Should().Be(0);
         }
         
@@ -75,7 +75,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             var cli = new HttpClient();
             
-            var response = await cli.GetStringAsync($"{CheckpointsUri}/version");
+            var response = await cli.GetStringAsync($"{svc.ListenUri}/version");
             response.Should().Be("1.0.0.0");
         }
     }
