@@ -12,7 +12,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         public bool SkipStartingCheckpoint { get; }
         public bool ForceFinishOnly { get; }
 
-        private FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint, bool forceFinishOnly = false)
+        public FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint, bool forceFinishOnly = false)
         {
             Duration = duration;
             TotalLaps = totalLaps;

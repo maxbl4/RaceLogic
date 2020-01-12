@@ -17,7 +17,7 @@ namespace Benchmark
             var cps = int.Parse(args[0]);
             var cycles = int.Parse(args[1]);
             Console.WriteLine($"TrackOfCheckpoints benchmark. Append {cps} checkpoints {cycles} iterations");
-            var incrementalWithCustomSortRunner = new InstanceRunner(() => new TrackOfCheckpointsIncrementalCustomSort(new DateTime(1), FinishCriteria.FromForcedFinish()));
+            var incrementalWithCustomSortRunner = new InstanceRunner(() => new TrackOfCheckpoints(new DateTime(1), FinishCriteria.FromForcedFinish()));
             var cyclicRunner = new InstanceRunner(() => new TrackOfCheckpointsCyclic(new DateTime(1), FinishCriteria.FromForcedFinish()));
             var runners = new[] {("Incremental custom sort", incrementalWithCustomSortRunner), ("cyclic", cyclicRunner)};
             long baseLine = 0;

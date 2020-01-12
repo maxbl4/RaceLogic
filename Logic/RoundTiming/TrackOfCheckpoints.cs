@@ -6,7 +6,7 @@ using maxbl4.Race.Logic.Checkpoints;
 
 namespace maxbl4.Race.Logic.RoundTiming
 {
-    public class TrackOfCheckpointsIncrementalCustomSort : ITrackOfCheckpoints
+    public class TrackOfCheckpoints : ITrackOfCheckpoints
     {
         private bool finishForced;
         public IFinishCriteria FinishCriteria { get; }
@@ -15,7 +15,7 @@ namespace maxbl4.Race.Logic.RoundTiming
         public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
         public DateTime RoundStartTime { get; }
 
-        public TrackOfCheckpointsIncrementalCustomSort(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
+        public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
         {
             this.FinishCriteria = finishCriteria;
             RoundStartTime = roundStartTime ?? default;

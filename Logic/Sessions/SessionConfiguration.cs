@@ -28,6 +28,6 @@ namespace maxbl4.Race.Logic.Sessions
     public enum SessionStartTypes
     {
         MassStart,
-        IndividualStart
+        IndividualStart //TODO: support individual start in track of checkpoints
     }
 }

@@ -35,8 +35,8 @@ namespace maxbl4.Race.Logic.Checkpoints
         public static AggCheckpoint From(IEnumerable<Checkpoint> checkpoints)
         {
             var riderId = default(string);
-            var timestamp = default(DateTime);
-            var lastSeen = default(DateTime);
+            var timestamp = Constants.DefaultUtcDate;
+            var lastSeen = Constants.DefaultUtcDate;
             var count = 0;
             var manual = false;
             foreach (var cp in checkpoints)

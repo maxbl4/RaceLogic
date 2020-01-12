@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using maxbl4.Race.Logic.LogManagement.IO;
 using Xunit;
@@ -12,8 +13,8 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
     {
         private readonly string simpleLog1 =
             @"{'$type':'start','Duration':'00:45:00','Timestamp':'0001-01-01T00:00:00.1','Id':1}
-{'$type':'rfid','RiderId':'xxxx','Timestamp':'0001-01-01T00:00:00.11','Id':2}
-{'$type':'manual','RiderId':'123','Timestamp':'0001-01-01T00:00:00.12','Id':3}
+{'$type':'cp','Timestamp':'0001-01-01T00:00:00.11','RiderId':'xxxx','Id':2,'Count':1}
+{'$type':'drop','Timestamp':'0001-01-01T00:00:00.12','Id':3}
 ".Replace('\'', '"');
         
         [Fact]
@@ -27,14 +28,13 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
                 Duration = TimeSpan.FromMinutes(45),
                 Id = 1
             });
-            logWriter.Append(new RfidCheckpoint{
+            logWriter.Append(new Checkpoint{
                 Timestamp = new DateTime(1100000),
                 RiderId = "xxxx",
                 Id = 2
             });
-            logWriter.Append(new ManualCheckpoint{
+            logWriter.Append(new DropCheckpoint{
                 Timestamp = new DateTime(1200000),
-                RiderId = "123",
                 Id = 3
             });
 
@@ -50,8 +50,8 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
             
             entries.Count.Should().Be(3);
             entries[0].Should().BeOfType<SessionStart>();
-            entries[1].Should().BeOfType<RfidCheckpoint>();
-            entries[2].Should().BeOfType<ManualCheckpoint>();
+            entries[1].Should().BeOfType<Checkpoint>();
+            entries[2].Should().BeOfType<DropCheckpoint>();
             
             entries[0].Timestamp.Should().Be(new DateTime(1000000));
             entries[0].Id.Should().Be(1);

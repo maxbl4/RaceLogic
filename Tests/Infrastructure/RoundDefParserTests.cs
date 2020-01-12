@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using FluentAssertions;
+using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.RoundTiming.Serialization;
 using Xunit;
 
@@ -32,7 +33,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             var cp = RoundDefParser.ParseCheckpoint("11[04:50]", default);
             cp.RiderId.Should().Be("11");
-            cp.Timestamp.Should().Be(default(DateTime) + new TimeSpan(0, 4, 50));
+            cp.Timestamp.Should().Be(Constants.DefaultUtcDate + new TimeSpan(0, 4, 50));
         }
         
         [Fact]

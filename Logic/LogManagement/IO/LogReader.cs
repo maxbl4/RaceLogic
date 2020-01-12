@@ -9,19 +9,19 @@ namespace maxbl4.Race.Logic.LogManagement.IO
     {
         private readonly JsonSerializer serializer = new SerializerFactory().Create();
 
-        public IEnumerable<Entry> Read(string filename)
+        public IEnumerable<IEntry> Read(string filename)
         {
             using (var sr = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 return Read(sr);
         }
         
-        public IEnumerable<Entry> Read(TextReader tr)
+        public IEnumerable<IEntry> Read(TextReader tr)
         {
             string s;
             while ((s = tr.ReadLine()) != null)
             {
                 var o = serializer.Deserialize(new JsonTextReader(new StringReader(s)));
-                if (o is Entry entry)
+                if (o is IEntry entry)
                     yield return entry;
             }
         }

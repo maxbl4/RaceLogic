@@ -192,7 +192,7 @@ F12 2 [10 32]");
         private static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
         {
             yield return ("Cyclic", (d, f) => new TrackOfCheckpointsCyclic(d, f));
-            yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpointsIncrementalCustomSort(d, f));
+            yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpoints(d, f));
         }
         
         public static IEnumerable<object[]> KnownTracksObj()

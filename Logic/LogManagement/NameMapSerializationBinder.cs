@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using Newtonsoft.Json.Serialization;
 
@@ -34,8 +35,8 @@ namespace maxbl4.Race.Logic.LogManagement
         public static NameMapSerializationBinder CreateDefault()
         {
             return new NameMapSerializationBinder(new Dictionary<string, Type>{
-                {"manual", typeof(ManualCheckpoint)},
-                {"rfid", typeof(RfidCheckpoint)},
+                {"cp", typeof(Checkpoint)},
+                {"drop", typeof(DropCheckpoint)},
                 {"start", typeof(SessionStart)},
                 {"comment", typeof(Comment)}
             });
