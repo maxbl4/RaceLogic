@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using FluentAssertions;
 using LiteDB;
 using maxbl4.Race.Logic;
@@ -53,6 +54,19 @@ namespace maxbl4.Race.Tests.Infrastructure
             repo.Insert(new Rider{ Name = "Rider1" });
             repo.Insert(new Rider{ Name = "Rider2" });
             repo.Query<Rider>().Count().Should().Be(2);
+        }
+        
+        [Fact]
+        public void Should_use_custom_id_serializer()
+        {
+            BsonMapper.Global.RegisterType(x => x.Value.ToString("N"), x => new Id<Rider>(Guid.Parse(x)));
+            using var repo = new LiteRepository(dbFileName);
+            repo.Insert(new Rider{ Name = "Rider1" });
+            repo.Insert(new Rider{ Name = "Rider2" });
+            repo.Query<Rider>().Count().Should().Be(2);
+            var rider = repo.Database.GetCollection("Rider").FindAll().First();
+            rider["_id"].Type.Should().Be(BsonType.String);
+            Guid.Parse(rider["_id"]).Should().NotBeEmpty();
         }
         
         class Rider

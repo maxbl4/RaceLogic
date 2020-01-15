@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Bogus;
 using LiteDB;
 using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.RoundTiming;
@@ -40,33 +39,25 @@ namespace Benchmark
             }
 
             var count = int.Parse(args[0]);
-            Faker.DefaultStrictMode = true;
-            var idFaker = new Faker<LiteEntityId>()
-                .RuleFor(x => x.Id, x => Id<LiteEntityId>.NewId())
-                .RuleFor(x => x.Address, x => x.Address.FullAddress())
-                .RuleFor(x => x.Amount, x => x.Random.Number())
-                .RuleFor(x => x.PersonName, x => x.Person.FullName);
-            var guidFaker = new Faker<LiteEntityGuid>()
-                .RuleFor(x => x.Id, x => Guid.NewGuid())
-                .RuleFor(x => x.Address, x => x.Address.FullAddress())
-                .RuleFor(x => x.Amount, x => x.Random.Number())
-                .RuleFor(x => x.PersonName, x => x.Person.FullName);
             var longId = 1L;
-            var longFaker = new Faker<LiteEntityLong>()
-                .RuleFor(x => x.Id, x => longId++)
-                .RuleFor(x => x.Address, x => x.Address.FullAddress())
-                .RuleFor(x => x.Amount, x => x.Random.Number())
-                .RuleFor(x => x.PersonName, x => x.Person.FullName);
-            Randomizer.Seed = new Random(1234);
+            var random = new Random(1234);
             
+            
+            DoBenchmark("Fast", () => new LiteEntityLong{ Id = longId++, Address = "some address long", Amount = random.Next(), PersonName = "some person name"});
+            DoBenchmark("Fast", () => new LiteEntityGuid{ Id = Guid.NewGuid(), Address = "some address long", Amount = random.Next(), PersonName = "some person name"});
+            DoBenchmark("Fast", () => new LiteEntityId{ Id = Id<LiteEntityId>.NewId(), Address = "some address long", Amount = random.Next(), PersonName = "some person name"});
+            // DoBenchmark("Bogus", () => longFaker.Generate());
+            // DoBenchmark("Bogus", () => guidFaker.Generate());
+            // DoBenchmark("Bogus", () => idFaker.Generate());
+            BsonMapper.Global.RegisterType(x => x.Value.ToString("N"), x => new Id<LiteEntityId>(Guid.Parse(x)));
+            DoBenchmark("String Id Fast", () => new LiteEntityId{ Id = Id<LiteEntityId>.NewId(), Address = "some address long", Amount = random.Next(), PersonName = "some person name"});
+            //DoBenchmark("String Id Bogus", () => idFaker.Generate());
+            BsonMapper.Global.RegisterType(x => x.Value, x => new Id<LiteEntityId>(x));
+            DoBenchmark("Guid Id Fast", () => new LiteEntityId{ Id = Id<LiteEntityId>.NewId(), Address = "some address long", Amount = random.Next(), PersonName = "some person name"});
+            //DoBenchmark("Guid Id Bogus", () => idFaker.Generate());
             
 
-            DoBenchmark(idFaker);
-            DoBenchmark(guidFaker);
-            DoBenchmark(longFaker);
-            
-
-            void DoBenchmark<T>(Faker<T> faker) where T : class
+            void DoBenchmark<T>(string name, Func<T> faker) where T : class
             {
                 var storageFile = faker.GetType().GenericTypeArguments[0].Name + ".litedb";
                 if (File.Exists(storageFile))
@@ -75,17 +66,17 @@ namespace Benchmark
                 var sw = Stopwatch.StartNew();
                 for (int i = 0; i < 100; i++)
                 {
-                    repo.Insert(faker.Generate());
+                    repo.Insert(faker());
                 }
                 
                 sw.Restart();
                 for (int i = 0; i < count; i++)
                 {
-                    repo.Insert(faker.Generate());
+                    repo.Insert(faker());
                 }
 
                 sw.Stop();
-                Console.WriteLine($"{typeof(T).Name}: {sw.ElapsedMilliseconds}, {count * 1000 / sw.ElapsedMilliseconds} OPS");
+                Console.WriteLine($"{name} {typeof(T).Name}: {sw.ElapsedMilliseconds}, {count * 1000 / sw.ElapsedMilliseconds} OPS");
             }
         }
         
