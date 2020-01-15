@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace maxbl4.Race.Logic.EventModel
+namespace maxbl4.Race.Logic.EventModel.Traits
 {
-    public interface ITimestamp
+    public interface IHasTimestamp
     {
         DateTime Created { get; set; }
         DateTime Updated { get; set; }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
-    public class EventConfirmation: ITimestamp
+    public class EventConfirmation: IHasTimestamp
     {
         [Key]
         public Guid EventConfirmationId { get; set; }

@@ -1,8 +1,9 @@
 using System;
+using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
-    public class EmailNotification : ITimestamp
+    public class EmailNotification : IHasTimestamp
     {
         public Guid EmailNotificationId { get; set; }
         

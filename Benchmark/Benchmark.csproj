@@ -5,7 +5,9 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
-    <ItemGroup>      
+    <ItemGroup>
+      <PackageReference Include="Bogus" Version="28.4.4" />
+      <PackageReference Include="LiteDB" Version="5.0.0-beta" />
     </ItemGroup>
 
     <ItemGroup>

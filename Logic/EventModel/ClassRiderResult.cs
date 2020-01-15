@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
     // Result for rider in class in single race 
-    public class ClassRiderResult: ITimestamp
+    public class ClassRiderResult: IHasTimestamp
     {
         public Guid ClassRiderResultId { get; set; }
         public Guid ClassId { get; set; }
-        public Class Class { get; set; }
+        public ClassDef Class { get; set; }
         public Guid EventId { get; set; }
         public Event Event { get; set; }
         [Required]

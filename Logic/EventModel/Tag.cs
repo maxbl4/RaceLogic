@@ -1,8 +1,9 @@
 ﻿using System;
+using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
-    public class Tag: ITimestamp
+    public class Tag: IHasTimestamp
     {
         public Guid RiderRegistrationId { get; set; }
         public RiderRegistration RiderRegistration { get; set; }

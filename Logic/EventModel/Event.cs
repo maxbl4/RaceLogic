@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
-    public class Event: ITimestamp
+    public class Event: IHasTimestamp
     {
         public Guid EventId { get; set; }
         public string Name { get; set; }
@@ -13,7 +14,7 @@ namespace maxbl4.Race.Logic.EventModel
         public string Reglament { get; set; }
         public string ResultsTemplate { get; set; }
         public Guid? ChampionshipId { get; set; }
-        public Championship Championship { get; set; }
+        public ChampionshipDef Championship { get; set; }
         public bool Published { get; set; }
         public bool IsSeed { get; set; }
         public List<Schedule> Schedules { get; set; }
@@ -25,7 +26,7 @@ namespace maxbl4.Race.Logic.EventModel
         public Track Track { get; set; }
     }
 
-    public class EventPrice : ITimestamp
+    public class EventPrice : IHasTimestamp
     {
         [Key]
         public Guid EventId { get; set; }
@@ -35,7 +36,7 @@ namespace maxbl4.Race.Logic.EventModel
         public DateTime Updated { get; set; }
     }
 
-    public class Track : ITimestamp
+    public class Track : IHasTimestamp
     {
         public Guid TrackId { get; set; }
         public string Name { get; set; }

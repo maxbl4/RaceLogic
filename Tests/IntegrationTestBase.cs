@@ -8,6 +8,7 @@ using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.TestOutputHelperExt;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Tests.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -33,11 +34,8 @@ namespace maxbl4.Race.Tests
                 ServiceRunner<Startup>.SetupLogger("testsettings");
             }
             Logger = Log.ForContext(GetType());
-            
-            var fileName = GetNameForDbFile(outputHelper);
-            Logger.Debug("Storage {@fileName}", fileName);
-            new RollingFileInfo(fileName).Delete();
-            storageConnectionString = $"Filename={fileName};UtcDate=true";
+            storageConnectionString = outputHelper.GetEmptyLiteDbForTest();
+            Logger.Debug("Storage {@connectionString}", storageConnectionString);
             Mapper = new MapperConfiguration(x => x.AddMaps(typeof(Startup)))
                 .CreateMapper();
         }
@@ -101,13 +99,6 @@ namespace maxbl4.Race.Tests
                 $"--Urls=http://127.0.0.1:0"
             }).Wait(0);
             return svc;
-        }
-
-        string GetNameForDbFile(ITestOutputHelper outputHelper)
-        {
-            Directory.CreateDirectory("var/data");
-            var parts = outputHelper.GetTest().DisplayName.Split(".");
-            return "var/data/" + "_" + string.Join("-", parts.Skip(Math.Max(parts.Length - 2, 0))) + ".litedb";
         }
     }
 }
