@@ -35,6 +35,14 @@ namespace Benchmark
         public int Amount { get; set; }
     }
     
+    public class LiteEntityInt
+    {
+        public int Id { get; set; }
+        public string PersonName { get; set; }
+        public string Address { get; set; }
+        public int Amount { get; set; }
+    }
+    
     public class LiteEntityLong
     {
         public long Id { get; set; }
@@ -42,5 +50,4 @@ namespace Benchmark
         public string Address { get; set; }
         public int Amount { get; set; }
     }
-    
 }
