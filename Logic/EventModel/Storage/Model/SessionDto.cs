@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using maxbl4.Race.Logic.EventModel.Traits;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
-namespace maxbl4.Race.Logic.EventModel
+namespace maxbl4.Race.Logic.EventStorage.Storage.Model
 {
     public class SessionDto : IHasId<SessionDto>, IHasName, IHasTimestamp, IHasSeed, IHasPublished
     {

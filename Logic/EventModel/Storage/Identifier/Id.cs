@@ -1,13 +1,8 @@
 ﻿using System;
 
-namespace maxbl4.Race.Logic
+namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
 {
-    public interface IHasIdValue
-    {
-        public Guid Value { get; }
-    }
-    
-    public struct Id<T> : IEquatable<Id<T>>, IHasIdValue
+    public struct Id<T> : IEquatable<Id<T>>, IGuidValue
     {
         #region Equality
 
@@ -40,7 +35,7 @@ namespace maxbl4.Race.Logic
 
         public static Id<T> NewId()
         {
-            return new Id<T>(Guid.NewGuid());
+            return new Id<T>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid());
         }
             
         public Id(Guid value)

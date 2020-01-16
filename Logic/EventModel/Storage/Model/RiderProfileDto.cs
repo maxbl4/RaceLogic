@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using maxbl4.Race.Logic.EventModel.Traits;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
-namespace maxbl4.Race.Logic.EventModel
+namespace maxbl4.Race.Logic.EventStorage.Storage.Model
 {
     // Rider profile is not a user, it can be created in the system, without a user to manage it (admins can manage it)
     // Rider profile created by user are managed by him

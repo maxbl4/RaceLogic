@@ -1,7 +1,8 @@
 using System;
-using maxbl4.Race.Logic.EventModel.Traits;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
-namespace maxbl4.Race.Logic.EventModel
+namespace maxbl4.Race.Logic.EventStorage.Storage.Model
 {
     public class NumberGroupDto: IHasId<NumberGroupDto>, IHasName, IHasTimestamp, IHasSeed
     {

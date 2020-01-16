@@ -6,12 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="LiteDB" Version="5.0.0-beta" />
-      <PackageReference Include="SequentialGuid" Version="2.4.0" />
+      <ProjectReference Include="..\Logic\Logic.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Logic\Logic.csproj" />
+      <PackageReference Include="Ulid" Version="0.1.8" />
     </ItemGroup>
 
 </Project>
