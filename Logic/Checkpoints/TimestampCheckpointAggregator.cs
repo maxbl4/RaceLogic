@@ -8,19 +8,19 @@ namespace maxbl4.Race.Logic.Checkpoints
 {
     public interface ICheckpointAggregator : IObserver<Checkpoint>, IObservable<Checkpoint>
     {
-        IObservable<AggCheckpoint> AggregatedCheckpoints { get; }
+        IObservable<Checkpoint> AggregatedCheckpoints { get; }
     }
 
     public class TimestampCheckpointAggregator : ICheckpointAggregator
     {
         private readonly TimeSpan window;
-        readonly Subject<AggCheckpoint> aggregatedCheckpoints = new Subject<AggCheckpoint>();
-        public IObservable<AggCheckpoint> AggregatedCheckpoints => aggregatedCheckpoints;
+        readonly Subject<Checkpoint> aggregatedCheckpoints = new Subject<Checkpoint>();
+        public IObservable<Checkpoint> AggregatedCheckpoints => aggregatedCheckpoints;
 
         readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
         public IObservable<Checkpoint> Checkpoints => checkpoints;
 
-        readonly Dictionary<string, AggCheckpoint> aggregationCache = new Dictionary<string, AggCheckpoint>();
+        readonly Dictionary<string, Checkpoint> aggregationCache = new Dictionary<string, Checkpoint>();
 
         public TimestampCheckpointAggregator(TimeSpan window)
         {
@@ -47,8 +47,8 @@ namespace maxbl4.Race.Logic.Checkpoints
         {
             foreach (var c in ApplyWindow(cp, window, aggregationCache))
             {
-                if (c is AggCheckpoint agg)
-                    aggregatedCheckpoints.OnNext(agg);
+                if (c.Aggregated)
+                    aggregatedCheckpoints.OnNext(c);
                 else
                     checkpoints.OnNext(c);
             }
@@ -63,21 +63,21 @@ namespace maxbl4.Race.Logic.Checkpoints
         /// <param name="window"></param>
         /// <typeparam name="string"></typeparam>
         /// <returns></returns>
-        public static List<AggCheckpoint> AggregateOnce(List<Checkpoint> checkpoints, TimeSpan window)
+        public static List<Checkpoint> AggregateOnce(List<Checkpoint> checkpoints, TimeSpan window)
         {
             checkpoints.Sort(Checkpoint.TimestampComparer);
-            var result = new List<AggCheckpoint>();
-            var aggregationCache = new Dictionary<string, AggCheckpoint>();
+            var result = new List<Checkpoint>();
+            var aggregationCache = new Dictionary<string, Checkpoint>();
             foreach (var cp in checkpoints)
             {
-                result.AddRange(ApplyWindow(cp, window, aggregationCache).OfType<AggCheckpoint>());
+                result.AddRange(ApplyWindow(cp, window, aggregationCache).Where(x => x.Aggregated));
             }
             result.AddRange(aggregationCache.Values);
             result.Sort(Checkpoint.TimestampComparer);
             return result;
         }
 
-        static IEnumerable<Checkpoint> ApplyWindow(Checkpoint cp, TimeSpan window, Dictionary<string, AggCheckpoint> aggregationCache)
+        static IEnumerable<Checkpoint> ApplyWindow(Checkpoint cp, TimeSpan window, Dictionary<string, Checkpoint> aggregationCache)
         {
             var agg = aggregationCache.Get(cp.RiderId);
             if (agg == null || cp.Timestamp - agg.Timestamp > window)
@@ -85,11 +85,11 @@ namespace maxbl4.Race.Logic.Checkpoints
                 yield return cp;
                 if (agg != null)
                     yield return agg;
-                aggregationCache[cp.RiderId] = AggCheckpoint.From(cp);
+                aggregationCache[cp.RiderId] = cp.ToAggregated();
             }
             else
             {
-                aggregationCache[cp.RiderId] = agg.Add(cp);
+                agg.AddToAggregated(cp);
             }
         }
 

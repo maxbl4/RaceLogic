@@ -9,9 +9,9 @@ namespace maxbl4.Race.Tests.Logic
 {
     public class TimestampCheckpointAggregatorTests
     {
-        List<Checkpoint> checkpoints = new List<Checkpoint>(); 
-        List<AggCheckpoint> aggCheckpoints = new List<AggCheckpoint>(); 
-        TimestampCheckpointAggregator aggregator = new TimestampCheckpointAggregator(TimeSpan.FromTicks(10));
+        readonly List<Checkpoint> checkpoints = new List<Checkpoint>();
+        readonly List<Checkpoint> aggCheckpoints = new List<Checkpoint>();
+        readonly TimestampCheckpointAggregator aggregator = new TimestampCheckpointAggregator(TimeSpan.FromTicks(10));
         
         public TimestampCheckpointAggregatorTests()
         {

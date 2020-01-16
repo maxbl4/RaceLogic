@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using maxbl4.Infrastructure.Extensions.DateTimeExt;
 
 namespace maxbl4.Race.Logic.Checkpoints
 {
@@ -21,11 +22,15 @@ namespace maxbl4.Race.Logic.Checkpoints
         {
         }
 
-        public Checkpoint(string riderId, DateTime? timestamp = null)
+        public Checkpoint(string riderId, int count = 1) : this(riderId, Constants.DefaultUtcDate, count) { }
+        
+        public Checkpoint(string riderId, DateTime timestamp, int count = 1)
         {
             Id = Interlocked.Increment(ref nextSequence);
             RiderId = riderId;
-            LastSeen = Timestamp = timestamp ?? Constants.DefaultUtcDate;
+            LastSeen = Timestamp = timestamp;
+            Count = count;
+            UpdateRps();
         }
 
         public override string ToString()
@@ -46,6 +51,48 @@ namespace maxbl4.Race.Logic.Checkpoints
                 IsManual = IsManual,
                 LastSeen = LastSeen
             };
+        }
+
+        public Checkpoint ToAggregated()
+        {
+            return new Checkpoint
+            {
+                RiderId = RiderId,
+                Aggregated = true,
+                Count = Count,
+                Id = Id,
+                Rps = Rps,
+                Timestamp = Timestamp,
+                IsManual = IsManual,
+                LastSeen = LastSeen
+            };
+        }
+        
+        public Checkpoint AddToAggregated(Checkpoint cp)
+        {
+            if (!Aggregated)
+                throw new InvalidOperationException("This checkpoint is not aggregated");
+            if (RiderId != cp.RiderId)
+                throw new ArgumentException($"Found checkpoints with different RiderIds {RiderId} {cp.RiderId}", nameof(cp));
+            Timestamp = Timestamp.TakeSmaller(cp.Timestamp);
+            LastSeen = LastSeen.TakeLarger(cp.Timestamp);
+            Count += cp.Count;
+            IsManual |= cp.IsManual;
+            UpdateRps();
+            return this;
+        }
+
+        public int UpdateRps()
+        {
+            var interval = (LastSeen - Timestamp).TotalMilliseconds;
+            if (interval < 1)
+                Rps = Count;
+            else
+            {
+                Rps = (int)Math.Ceiling(Count * 1000 / interval);
+            }
+
+            return Rps;
         }
         
         private sealed class TimestampRelationalComparer : IComparer<Checkpoint>

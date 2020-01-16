@@ -29,5 +29,8 @@
   </ItemGroup>  
   <ItemGroup>
     <None Include="Logic\Model\KnownRoundDefs\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>  
+  <ItemGroup>
+    <Folder Include="Logic\Pipeline" />
   </ItemGroup>
 </Project>

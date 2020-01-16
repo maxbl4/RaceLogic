@@ -6,6 +6,7 @@ using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.Checkpoints;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
@@ -38,7 +39,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 ds.StartStream("con1", DateTime.UtcNow);
 
                 
-                MessageHub.Publish(new Checkpoint("r1"));
+                MessageHub.Publish(new Checkpoint("r1", Constants.DefaultUtcDate));
                 
                 
                 new Timing().Logger(Logger).Expect(() => cps.Count >= 1);
@@ -71,7 +72,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 ds.StartStream("con2", DateTime.UtcNow);
 
                 
-                MessageHub.Publish(new Checkpoint("r1"));
+                MessageHub.Publish(new Checkpoint("r1", Constants.DefaultUtcDate));
                 
                 
                 new Timing().Logger(Logger).Expect(() => log.Count >= 2);

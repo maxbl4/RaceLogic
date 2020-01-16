@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.RoundTiming;
 using maxbl4.Race.Logic.Scoring;
@@ -112,11 +113,11 @@ namespace maxbl4.Race.Tests.Logic.Scoring
         {
             for (var i = 0; i < finishers; i++)
                 yield return RoundPosition.FromLaps($"{11 + i}", new List<Lap>{
-                    new Lap(new Checkpoint($"{11 + i}"), DateTime.UtcNow)
+                    new Lap(new Checkpoint($"{11 + i}", Constants.DefaultUtcDate), DateTime.UtcNow)
                 }, true);
             for (var i = 0; i < starters; i++)
                 yield return RoundPosition.FromLaps($"{11 + i}", new List<Lap>{
-                    new Lap(new Checkpoint($"{11 + i}"), DateTime.UtcNow)
+                    new Lap(new Checkpoint($"{11 + i}", Constants.DefaultUtcDate), DateTime.UtcNow)
                 }, false);
         }
     }

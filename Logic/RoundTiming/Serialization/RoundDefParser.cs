@@ -92,7 +92,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             var parts = stringCp.Split('[', ']');
             if (parts.Length > 1)
                 return new Checkpoint(parts[0], roundStartTime + TimeSpanExt.Parse(parts[1]));
-            return new Checkpoint(parts[0]);
+            return new Checkpoint(parts[0], Constants.DefaultUtcDate);
         }
 
         public static string ToDefString(this Checkpoint cp, DateTime roundStartTime)
