@@ -7,7 +7,7 @@ namespace maxbl4.Race.Logic.EventModel.Traits
         public static T ApplyTraits<T>(this T obj)
             where T: IHasTraits
         {
-            if (obj is IHasIdentifiers<T> hasIdentifiers)
+            if (obj is IHasId<T> hasIdentifiers)
             {
                 if (hasIdentifiers.Id.IsEmpty)
                     hasIdentifiers.Id = Id<T>.NewId();

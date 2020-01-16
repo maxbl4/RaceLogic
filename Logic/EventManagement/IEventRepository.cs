@@ -7,6 +7,6 @@ namespace maxbl4.Race.Logic.EventManagement
 {
     public interface IEventRepository
     {
-        IEnumerable<SeriesDef> GetSeries(Expression<Func<SeriesDef, bool>> predicate);
+        IEnumerable<SeriesDto> GetSeries(Expression<Func<SeriesDto, bool>> predicate);
     }
 }

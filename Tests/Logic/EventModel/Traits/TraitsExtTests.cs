@@ -12,7 +12,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Traits
         [Fact]
         public async Task Should_apply_traits()
         {
-            var series = new SeriesDef();
+            var series = new SeriesDto();
             series.Id.IsEmpty.Should().BeTrue();
             series.Created.Should().Be(default);
             series.Updated.Should().Be(default);
