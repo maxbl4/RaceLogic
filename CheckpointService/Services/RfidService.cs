@@ -28,7 +28,7 @@ namespace maxbl4.Race.CheckpointService.Services
         private readonly UniversalTagStreamFactory factory;
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
-        private TimestampCheckpointAggregator aggregator;
+        private TimestampAggregator<Checkpoint> aggregator;
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
         public RfidService(StorageService storageService, IMessageHub messageHub,
@@ -93,7 +93,7 @@ namespace maxbl4.Race.CheckpointService.Services
                     AppendRiderId(x.TagId);
                 }));
             aggregator =
-                new TimestampCheckpointAggregator(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+                TimestampAggregatorConfigurations.ForCheckpoint(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
             disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
                     (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
                 .Subscribe(OnReaderStatus)

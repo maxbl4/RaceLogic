@@ -11,7 +11,7 @@ namespace maxbl4.Race.Tests.Logic
     {
         readonly List<Checkpoint> checkpoints = new List<Checkpoint>();
         readonly List<Checkpoint> aggCheckpoints = new List<Checkpoint>();
-        readonly TimestampCheckpointAggregator aggregator = new TimestampCheckpointAggregator(TimeSpan.FromTicks(10));
+        readonly TimestampAggregator<Checkpoint> aggregator = TimestampAggregatorConfigurations.ForCheckpoint(TimeSpan.FromTicks(10));
         
         public TimestampCheckpointAggregatorTests()
         {
@@ -22,11 +22,11 @@ namespace maxbl4.Race.Tests.Logic
         [Fact]
         public void Aggregate_primitive_example()
         {
-            var aggRecords = TimestampCheckpointAggregator.AggregateOnce(new[] {
+            var aggRecords = aggregator.AggregateOnce(new[] {
                 G("1",1),
                 G("2",2),
                 G("3",3)
-            }.ToList(), TimeSpan.FromTicks(10));
+            }.ToList(), TimeSpan.FromTicks(10), Checkpoint.TimestampComparer);
             aggRecords.Count.Should().Be(3);
             aggRecords.Should().OnlyContain(x => x.Count == 1);
             aggRecords[0].RiderId.Should().Be("1");
@@ -37,14 +37,14 @@ namespace maxbl4.Race.Tests.Logic
         [Fact]
         public void Aggregate_two_laps_no_overlap()
         {
-            var aggRecords = TimestampCheckpointAggregator.AggregateOnce(new[] {
+            var aggRecords = aggregator.AggregateOnce(new[] {
                 G("1",1),
                 G("2",2),
                 G("3",3),
                 G("1",21),
                 G("2",22),
                 G("3",23)
-            }.ToList(), TimeSpan.FromTicks(10)).ToList();
+            }.ToList(), TimeSpan.FromTicks(10), Checkpoint.TimestampComparer).ToList();
             aggRecords.Count.Should().Be(6);
             aggRecords.Should().OnlyContain(x => x.Count == 1);
             aggRecords[0].RiderId.Should().Be("1");
@@ -58,7 +58,7 @@ namespace maxbl4.Race.Tests.Logic
         [Fact]
         public void Aggregate_two_laps_with_one_overlap()
         {
-            var aggRecords = TimestampCheckpointAggregator.AggregateOnce(new[] {
+            var aggRecords = aggregator.AggregateOnce(new[] {
                 G("1",1),
                 G("2",2),
                 G("3",3),
@@ -68,7 +68,7 @@ namespace maxbl4.Race.Tests.Logic
                 G("1",21),
                 G("2",22),
                 G("3",23)
-            }.ToList(), TimeSpan.FromTicks(10)).ToList();
+            }.ToList(), TimeSpan.FromTicks(10), Checkpoint.TimestampComparer).ToList();
             aggRecords.Count.Should().Be(6);
             aggRecords.Take(3).Should().OnlyContain(x => x.Count == 2);
             aggRecords.Skip(3).Should().OnlyContain(x => x.Count == 1);
