@@ -44,15 +44,11 @@ namespace Benchmark
             
             
             DoBenchmark("Base", () => new LiteEntityLong{ Id = longId++, Address = "some address long", Amount = 123, PersonName = "some person name"});
-            DoBenchmark("Base", () => new LiteEntityGuid{ Id = Guid.NewGuid(), Address = "some address long", Amount = 123, PersonName = "some person name"});
-            DoBenchmark("Base", () => new LiteEntityUlid{ Id = Ulid.NewUlid(), Address = "some address long", Amount = 123, PersonName = "some person name"});
-            DoBenchmark("NewGuid", () => new LiteEntityId{ Id = Id<LiteEntityId>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
             DoBenchmark("SequentialGuid", () => new LiteEntityId{ Id = new Id<LiteEntityId>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid()), Address = "some address long", Amount = 123, PersonName = "some person name"});
-            DoBenchmark("Ulid", () => new LiteEntityLid{ Id = Lid<LiteEntityLid>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
-            BsonMapper.Global.RegisterType(x => x.Value.ToString("N"), x => new Id<LiteEntityId>(Guid.Parse(x)));
-            DoBenchmark("String Id Fast", () => new LiteEntityId{ Id = Id<LiteEntityId>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
-            BsonMapper.Global.RegisterType(x => x.Value, x => new Id<LiteEntityId>(x));
-            DoBenchmark("Guid Id Fast", () => new LiteEntityId{ Id = Id<LiteEntityId>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
+            BsonMapper.Global.RegisterType(x => x.ToString(), x => Ulid.Parse(x));
+            BsonMapper.Global.RegisterType(x => x.ToString("N"), x => new Guid((string)x));
+            DoBenchmark("String Ulid", () => new LiteEntityLid{ Id = Lid<LiteEntityLid>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
+            DoBenchmark("String SGuid", () => new LiteEntityId{ Id = new Id<LiteEntityId>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid()), Address = "some address long", Amount = 123, PersonName = "some person name"});
 
 
             void DoBenchmark<T>(string name, Func<T> faker) where T : class

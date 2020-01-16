@@ -63,7 +63,12 @@ namespace maxbl4.Race.Logic
         }
     }
     
-    public struct Lid<T> : IEquatable<Lid<T>>
+    public interface IHasUlidValue
+    {
+        public Ulid Value { get; }
+    }
+    
+    public struct Lid<T> : IEquatable<Lid<T>>, IHasUlidValue
     {
         #region Equality
 
