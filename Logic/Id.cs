@@ -2,7 +2,12 @@
 
 namespace maxbl4.Race.Logic
 {
-    public struct Id<T> : IEquatable<Id<T>>
+    public interface IHasIdValue
+    {
+        public Guid Value { get; }
+    }
+    
+    public struct Id<T> : IEquatable<Id<T>>, IHasIdValue
     {
         #region Equality
 
@@ -44,6 +49,8 @@ namespace maxbl4.Race.Logic
         }
             
         public Guid Value { get; }
+
+        public bool IsEmpty => Value == Guid.Empty;
             
         public static implicit operator Guid(Id<T> id)
         {

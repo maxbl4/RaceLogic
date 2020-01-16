@@ -4,9 +4,9 @@ using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
-    public class SessionDef : IHasIdentifiers, IHasTimestamp, IHasSeed
+    public class SessionDef : IHasIdentifiers<SessionDef>, IHasTimestamp, IHasSeed
     {
-        public Guid Id { get; set; }
+        public Id<SessionDef> Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime Created { get; set; }

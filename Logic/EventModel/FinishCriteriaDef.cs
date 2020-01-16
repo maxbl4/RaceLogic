@@ -3,9 +3,9 @@ using maxbl4.Race.Logic.EventModel.Traits;
 
 namespace maxbl4.Race.Logic.EventModel
 {
-    public class FinishCriteriaDef: IHasIdentifiers, IHasTimestamp, IHasSeed
+    public class FinishCriteriaDef: IHasIdentifiers<FinishCriteriaDef>, IHasTimestamp, IHasSeed
     {
-        public Guid Id { get; set; }
+        public Id<FinishCriteriaDef> Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime Created { get; set; }
