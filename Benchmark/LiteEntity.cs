@@ -11,9 +11,25 @@ namespace Benchmark
         public int Amount { get; set; }
     }
     
+    public class LiteEntityLid
+    {
+        public Lid<LiteEntityLid> Id { get; set; }
+        public string PersonName { get; set; }
+        public string Address { get; set; }
+        public int Amount { get; set; }
+    }
+    
     public class LiteEntityGuid
     {
         public Guid Id { get; set; }
+        public string PersonName { get; set; }
+        public string Address { get; set; }
+        public int Amount { get; set; }
+    }
+    
+    public class LiteEntityUlid
+    {
+        public Ulid Id { get; set; }
         public string PersonName { get; set; }
         public string Address { get; set; }
         public int Amount { get; set; }

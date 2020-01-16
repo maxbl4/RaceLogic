@@ -7,5 +7,6 @@
     <PackageReference Include="maxbl4.Infrastructure" Version="1.0.37" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Reactive.Linq" Version="4.3.1" />
+    <PackageReference Include="Ulid" Version="0.1.8" />
   </ItemGroup>
 </Project>
