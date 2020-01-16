@@ -19,7 +19,6 @@ namespace maxbl4.Race.DataService.Controllers
         }
 
         [HttpGet("")]
-        [HttpGet("{collection}")]
         public IActionResult ShowHelp()
         {
             return Ok(new

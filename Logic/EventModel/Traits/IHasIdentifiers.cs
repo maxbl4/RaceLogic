@@ -2,7 +2,7 @@
 
 namespace maxbl4.Race.Logic.EventModel.Traits
 {
-    public interface IHasIdentifiers<T>
+    public interface IHasIdentifiers<T> : IHasTraits
     {
         Id<T> Id { get; set; }
         string Name { get; set; }

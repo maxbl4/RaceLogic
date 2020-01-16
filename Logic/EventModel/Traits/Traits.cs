@@ -2,9 +2,10 @@
 
 namespace maxbl4.Race.Logic.EventModel.Traits
 {
-    public class Traits
+    public static class TraitsExt
     {
-        public static void Apply<T>(T obj)
+        public static T ApplyTraits<T>(this T obj)
+            where T: IHasTraits
         {
             if (obj is IHasIdentifiers<T> hasIdentifiers)
             {
@@ -18,6 +19,8 @@ namespace maxbl4.Race.Logic.EventModel.Traits
                     timestamp.Created = DateTime.UtcNow;
                 timestamp.Updated = DateTime.UtcNow;
             }
+
+            return obj;
         }
     }
 }
