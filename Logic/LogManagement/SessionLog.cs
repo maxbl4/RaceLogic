@@ -33,13 +33,13 @@ namespace maxbl4.Race.Logic.LogManagement
 
         public void Checkpoint(Checkpoint checkpoint)
         {
-            LogEntries.Add(checkpoint);
+            //LogEntries.Add(checkpoint);
             TrackOfCheckpoints.Append(checkpoint);
         }
         
         public void InsertCheckpoint(InsertCheckpoint insert)
         {
-            LogEntries.Add(insert);
+            //LogEntries.Add(insert);
             TrackOfCheckpoints = ReloadTrack(StartTime, FinishCriteria);
         }
         

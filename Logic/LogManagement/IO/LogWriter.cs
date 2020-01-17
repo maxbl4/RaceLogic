@@ -20,7 +20,7 @@ namespace maxbl4.Race.Logic.LogManagement.IO
             this.filename = filename;
         }
 
-        public void Append(IEntry entry)
+        public void Append<T>(T entry)
         {
             if (textWriter != null)
                 AppendImpl(textWriter, entry);
@@ -33,7 +33,7 @@ namespace maxbl4.Race.Logic.LogManagement.IO
             }
         }
 
-        void AppendImpl(TextWriter tw, IEntry entry)
+        void AppendImpl<T>(TextWriter tw, T entry)
         {
             serializer.Serialize(tw, entry);
             tw.WriteLine();

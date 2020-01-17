@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using LiteDB;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage
 {
@@ -27,6 +29,12 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
                 return result.ToList();
             }
             return query.ToList();
+        }
+
+        public Id<T> Save<T>(T recordingSession) where T : IHasId<T>
+        {
+            repo.Upsert(recordingSession.ApplyTraits());
+            return recordingSession.Id;
         }
     }
 }

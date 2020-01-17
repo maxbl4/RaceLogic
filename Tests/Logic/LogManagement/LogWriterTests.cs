@@ -49,12 +49,12 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
             var entries = logReader.Read(sr).ToList();
             
             entries.Count.Should().Be(3);
-            entries[0].Should().BeOfType<SessionStart>();
+            var sessionsStart = entries[0].Should().BeOfType<SessionStart>().Subject;
             entries[1].Should().BeOfType<Checkpoint>();
             entries[2].Should().BeOfType<DropCheckpoint>();
             
-            entries[0].Timestamp.Should().Be(new DateTime(1000000));
-            entries[0].Id.Should().Be(1);
+            sessionsStart.Timestamp.Should().Be(new DateTime(1000000));
+            sessionsStart.Id.Should().Be(1);
             ((SessionStart)entries[0]).Duration.Should().Be(TimeSpan.FromMinutes(45));
         }
     }
