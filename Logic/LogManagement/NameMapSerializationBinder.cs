@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using Newtonsoft.Json.Serialization;
 
@@ -28,6 +29,15 @@ namespace maxbl4.Race.Logic.LogManagement
         public void BindToName(Type serializedType, out string assemblyName, out string typeName)
         {
             assemblyName = null;
+            if (serializedType.IsGenericType)
+            {
+                var gen = serializedType.GetGenericTypeDefinition();
+                if (gen == typeof(Id<>))
+                {
+                    typeName = "id";
+                    return;
+                }
+            }
             if (typeToNameMap.TryGetValue(serializedType, out typeName)) return;
             throw new NotSupportedException($"No mapping defined for type {serializedType}");
         }

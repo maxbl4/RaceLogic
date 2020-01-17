@@ -36,7 +36,7 @@ namespace maxbl4.Race.CheckpointService.Controllers
         }
         
         [HttpDelete("{id}")]
-        public int Delete(long id)
+        public int Delete(Guid id)
         {
             return storageService.DeleteCheckpoint(id);
         }

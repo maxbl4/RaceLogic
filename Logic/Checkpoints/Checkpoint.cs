@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using maxbl4.Infrastructure.Extensions.DateTimeExt;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 
 namespace maxbl4.Race.Logic.Checkpoints
 {
@@ -10,7 +11,7 @@ namespace maxbl4.Race.Logic.Checkpoints
         private static long nextSequence;
         public DateTime Timestamp { get; set; } = Constants.DefaultUtcDate;
         public string RiderId { get; set; }
-        public long Id { get; set; }
+        public Id<Checkpoint> Id { get; set; } = Id<Checkpoint>.NewId();
         
         public DateTime LastSeen { get; set; } = Constants.DefaultUtcDate;
         public int Count { get; set; } = 1;
@@ -26,7 +27,6 @@ namespace maxbl4.Race.Logic.Checkpoints
         
         public Checkpoint(string riderId, DateTime timestamp, int count = 1)
         {
-            Id = Interlocked.Increment(ref nextSequence);
             RiderId = riderId;
             LastSeen = Timestamp = timestamp;
             Count = count;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using maxbl4.Race.Logic.RoundTiming;
 
@@ -74,7 +75,7 @@ namespace maxbl4.Race.Logic.LogManagement
 
         public static IEnumerable<Checkpoint> FlattenCheckpointLog(IEnumerable<IEntry> logEntries)
         {
-            var drops = new HashSet<long>(logEntries.OfType<DropCheckpoint>().Select(x => x.Id));
+            var drops = new HashSet<Id<Checkpoint>>(logEntries.OfType<DropCheckpoint>().Select(x => x.TargetId));
             var inserts = logEntries.OfType<InsertCheckpoint>().Where(x => !drops.Contains(x.Id))
                 .OrderBy(x => x.Timestamp)
                 .ToList();

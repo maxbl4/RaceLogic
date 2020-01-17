@@ -6,6 +6,8 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LiteDB;
+using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Tests.Extensions;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,6 +41,29 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
             (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
         }
+        
+        [Fact]
+        public async Task Should_store_entity_with_value_id()
+        {
+            using var svc = CreateDataService();
+            var http = new HttpClient();
+            var id = new Guid("D390C953-3F55-4558-8C0B-77FBAE798C9D");
+            var e = new EntityWithId{Id = id, Some = "abc", Int = 123};
+            
+            var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", e);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dv"));
+            (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
+
+            e.Some = "eee";
+            response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", e);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dv"));
+            (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
+        }
+        
         
         [Fact]
         public async Task Should_store_entity_without_id()
@@ -252,6 +277,33 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             }
 
             public Guid Id { get; set; }
+            public string Some { get; set; }
+            public string Some2 { get; set; }
+            public string Some3 { get; set; }
+            public int Int { get; set; }
+        }
+        
+        class EntityWithId
+        {
+            protected bool Equals(EntityWithId other)
+            {
+                return Id.Equals(other.Id) && Some == other.Some && Int == other.Int;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != GetType()) return false;
+                return Equals((EntityWithId) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Id, Some, Int);
+            }
+
+            public Id<EntityWithId> Id { get; set; } = Id<EntityWithId>.NewId();
             public string Some { get; set; }
             public string Some2 { get; set; }
             public string Some3 { get; set; }

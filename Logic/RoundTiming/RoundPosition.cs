@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 
 namespace maxbl4.Race.Logic.RoundTiming
 {
@@ -31,8 +32,8 @@ namespace maxbl4.Race.Logic.RoundTiming
         public bool Finished { get; private set; }
         public bool Started => LapCount > 0;
         public string RiderId { get; private set; }
-        public long StartSequence { get; private set; }
-        public long EndSequence { get; private set; }
+        public Id<Checkpoint> StartSequence { get; private set; }
+        public Id<Checkpoint> EndSequence { get; private set; }
 
         private RoundPosition()
         {
@@ -49,8 +50,8 @@ namespace maxbl4.Race.Logic.RoundTiming
             End = Laps.LastOrDefault()?.End ?? default;
             Duration = End - Start;
             Finished = finished;
-            StartSequence = Laps.FirstOrDefault()?.Checkpoint.Id ?? 0;
-            EndSequence = Laps.LastOrDefault()?.Checkpoint.Id ?? 0;
+            StartSequence = Laps.FirstOrDefault()?.Checkpoint.Id ?? Guid.Empty;
+            EndSequence = Laps.LastOrDefault()?.Checkpoint.Id ?? Guid.Empty;
             return this;
         }
         

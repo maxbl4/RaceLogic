@@ -5,6 +5,7 @@ using LiteDB;
 using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,8 +27,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             var rider = new Rider {Id = guid1, ClassId = guid1};
             Guid guid2 = rider.Id;
             guid1.Should().Be(guid2);
-            rider.Id.Should().Be((Id<Rider>)guid1);
-            rider.Id.Should().NotBe(rider.ClassId);
+            rider.Id.Should().Be(guid1);
             var @class = new Class {Id = Id<Class>.NewId()};
             @class.Id.Value.Should().NotBe(Guid.Empty);
         }
@@ -71,14 +71,39 @@ namespace maxbl4.Race.Tests.Infrastructure
             Guid.Parse(rider["_id"]).Should().NotBeEmpty();
         }
         
-        class Rider
+        [Fact]
+        public void Should_use_dynamically_registered_id_mappings()
+        {
+            BsonMapper.Global.RegisterIdBsonMappers(GetType().Assembly);
+            using var repo = new LiteRepository(dbFileName);
+            repo.Insert(new Rider{ Name = "Rider1" });
+            repo.Insert(new Rider{ Name = "Rider2" });
+            repo.Query<Rider>().Count().Should().Be(2);
+            var rider = repo.Database.GetCollection("Rider").FindAll().First();
+            rider["_id"].Type.Should().Be(BsonType.String);
+            Guid.Parse(rider["_id"]).Should().NotBeEmpty();
+        }
+        
+        [Fact]
+        public void New_ids_should_be_sequential()
+        {
+            var id = Id<Rider>.Empty;
+            for (var i = 0; i < 100; i++)
+            {
+                var next = Id<Rider>.NewId();
+                next.Should().BeGreaterThan(id);
+                id = next;
+            }
+        }
+        
+        class Rider: IHasId<Rider>
         {
             public Id<Rider> Id { get; set; } = Id<Rider>.NewId();
             public string Name { get; set; }
             public Id<Class> ClassId { get; set; }
         }
         
-        class Class
+        class Class: IHasId<Class>
         {
             public Id<Class> Id { get; set; }
             public string Name { get; set; }

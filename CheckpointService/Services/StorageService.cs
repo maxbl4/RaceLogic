@@ -5,6 +5,7 @@ using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using Microsoft.Extensions.Options;
 using ServiceBase;
 
@@ -46,7 +47,7 @@ namespace maxbl4.Race.CheckpointService.Services
                 .ToList();
         }
 
-        public int DeleteCheckpoint(long id)
+        public int DeleteCheckpoint(Id<Checkpoint> id)
         {
             return repo.Delete<Checkpoint>(id) ? 1 : 0;
         }

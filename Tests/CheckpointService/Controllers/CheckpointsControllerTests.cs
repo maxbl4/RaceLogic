@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
@@ -136,37 +137,45 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
                 .Logger(Logger)
                 .WaitAsync(() => checkpoints.Count > 0)).Should().BeFalse();
         }
-        
+
         [Fact]
         public async Task Should_remove_checkpoints()
         {
             var now = DateTime.UtcNow;
+            var original = new[]
+            {
+                new Checkpoint {RiderId = "111", Timestamp = now},
+                new Checkpoint {RiderId = "222", Timestamp = now.AddMinutes(1)},
+                new Checkpoint {RiderId = "333", Timestamp = now.AddMinutes(2)},
+                new Checkpoint {RiderId = "444", Timestamp = now.AddMinutes(3)},
+                new Checkpoint {RiderId = "555", Timestamp = now.AddMinutes(4)}
+            };
+
             var tagListHandler = WithCheckpointStorageService(storageService =>
                 {
-                    storageService.AppendCheckpoint(new Checkpoint{Id = 1, RiderId = "111", Timestamp = now});
-                    storageService.AppendCheckpoint(new Checkpoint{Id = 2, RiderId = "222", Timestamp = now.AddMinutes(1)});
-                    storageService.AppendCheckpoint(new Checkpoint{Id = 3, RiderId = "333", Timestamp = now.AddMinutes(2)});
-                    storageService.AppendCheckpoint(new Checkpoint{Id = 4, RiderId = "444", Timestamp = now.AddMinutes(3)});
-                    storageService.AppendCheckpoint(new Checkpoint{Id = 5, RiderId = "555", Timestamp = now.AddMinutes(4)});
+                    foreach (var cp in original)
+                    {
+                        storageService.AppendCheckpoint(cp);    
+                    }
                     return new SimulatorBuilder(storageService).Build();
                 });
             
             using var svc = CreateCheckpointService();
             var cli = new HttpClient();
             
-            var response = await cli.DeleteAsync($"{svc.ListenUri}/cp/1");
+            var response = await cli.DeleteAsync($"{svc.ListenUri}/cp/{original[0].Id}");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(1);
             var cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
             cps.Count.Should().Be(4);
-            cps.Should().NotContain(x => x.Id == 1);
+            cps.Should().NotContain(x => x.Id == original[0].Id);
             
             response = await cli.DeleteAsync($"{svc.ListenUri}/cp?start={now.AddMinutes(1.5):u}&end={now.AddMinutes(3.5):u}");
             response.EnsureSuccessStatusCode();
             (await response.Content.ReadAs<int>()).Should().Be(2);
             cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
             cps.Count.Should().Be(2);
-            cps.Should().NotContain(x => x.Id == 3 || x.Id == 4);
+            cps.Should().NotContain(x => x.Id == original[2].Id || x.Id == original[3].Id);
             
             response = await cli.DeleteAsync($"{svc.ListenUri}/cp");
             response.EnsureSuccessStatusCode();
