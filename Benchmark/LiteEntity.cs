@@ -1,11 +1,10 @@
 ﻿using System;
-using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace Benchmark
 {
-    public class LiteEntityId
+    public class LiteEntityId: IHasId<LiteEntityId>
     {
         public Id<LiteEntityId> Id { get; set; }
         public string PersonName { get; set; }

@@ -6,6 +6,7 @@ using LiteDB;
 using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.RoundTiming;
 
 namespace Benchmark
@@ -49,6 +50,8 @@ namespace Benchmark
             DoBenchmark("SequentialGuid", () => new LiteEntityId{ Id = new Id<LiteEntityId>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid()), Address = "some address long", Amount = 123, PersonName = "some person name"});
             BsonMapper.Global.RegisterType(x => x.ToString(), x => Ulid.Parse(x));
             DoBenchmark("String Ulid", () => new LiteEntityLid{ Id = Lid<LiteEntityLid>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
+            BsonMapper.Global.RegisterIdBsonMappers(typeof(Program).Assembly);
+            DoBenchmark("String SGuid", () => new LiteEntityId{ Id = new Id<LiteEntityId>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid()), Address = "some address long", Amount = 123, PersonName = "some person name"});
 
 
             void DoBenchmark<T>(string name, Func<T> faker) where T : class
