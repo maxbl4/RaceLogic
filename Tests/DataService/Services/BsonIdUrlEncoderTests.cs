@@ -9,14 +9,12 @@ namespace maxbl4.Race.Tests.DataService.Services
     public class BsonIdUrlEncoderTests
     {
         [Fact]
-        public void Should_support_int()
+        public void Should_support_string()
         {
             var id = BsonIdUrlEncoder.Decode("123");
-            id.Type.Should().Be(BsonType.Int32);
-            id.AsInt32.Should().Be(123);
+            id.Type.Should().Be(BsonType.String);
             BsonIdUrlEncoder.Encode(id).Should().Be("123");
-
-            Assert.Throws<ArgumentException>(() => BsonIdUrlEncoder.Decode("123e"));
+            BsonIdUrlEncoder.Decode("123e").Type.Should().Be(BsonType.String);
         }
         
         [Fact]

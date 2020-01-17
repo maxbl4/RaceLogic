@@ -1,14 +1,10 @@
 ﻿using System;
-using LiteDB;
+using Newtonsoft.Json;
 
 namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
 {
-    public interface IId
-    {
-        Guid Value { get; }
-    }
-    
-    public struct Id<T> : IEquatable<Id<T>>, IGuidValue, IComparable<Id<T>>, IComparable, IFormattable, IId
+    [JsonConverter(typeof(IdJsonConverter))]
+    public struct Id<T> : IEquatable<Id<T>>, IGuidValue, IComparable<Id<T>>, IComparable, IFormattable
     {
         #region Equality && Relational
 
@@ -70,7 +66,6 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
 
         #endregion
        
-
         public static Id<T> NewId()
         {
             return new Id<T>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid());
@@ -90,9 +85,9 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
             return id.Value;
         }
         
-        public static implicit operator BsonValue(Id<T> id)
+        public static implicit operator LiteDB.BsonValue(Id<T> id)
         {
-            return id.Value;
+            return id.ToString();
         }
             
         public static implicit operator Id<T>(Guid id)
@@ -102,12 +97,33 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
 
         public override string ToString()
         {
-            return Value.ToString();
+            return Value.ToString("N");
         }
 
         public string ToString(string? format, IFormatProvider? provider)
         {
             return Value.ToString(format, provider);
+        }
+    }
+    
+    public class IdJsonConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var iGuidValue = (IGuidValue)value;
+            writer.WriteValue(iGuidValue.Value.ToString("N"));
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Guid.TryParse(reader.Value as string, out var g))
+                return Activator.CreateInstance(objectType, g);
+            return Activator.CreateInstance(objectType);
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Id<>);
         }
     }
 }

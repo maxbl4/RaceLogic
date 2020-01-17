@@ -7,6 +7,7 @@ using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -76,12 +77,23 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             BsonMapper.Global.RegisterIdBsonMappers(GetType().Assembly);
             using var repo = new LiteRepository(dbFileName);
-            repo.Insert(new Rider{ Name = "Rider1" });
+            var r1 = new Rider {Name = "Rider1"};
+            repo.Insert(r1);
             repo.Insert(new Rider{ Name = "Rider2" });
             repo.Query<Rider>().Count().Should().Be(2);
             var rider = repo.Database.GetCollection("Rider").FindAll().First();
             rider["_id"].Type.Should().Be(BsonType.String);
             Guid.Parse(rider["_id"]).Should().NotBeEmpty();
+            repo.Query<Rider>().Where(x => x.Id == r1.Id).First().Should().NotBeNull();
+            repo.Delete<Rider>(r1.Id).Should().BeTrue();
+        }
+        
+        [Fact]
+        public void Should_convert_to_json()
+        {
+            var id = new Guid("cbc9da11e6214d6196a7fb6ba9ddcba4");
+            var rider = new Rider {Id = id, Name = "Rider1"};
+            JsonConvert.SerializeObject(rider).Should().Be(@"{'Id':'cbc9da11e6214d6196a7fb6ba9ddcba4','Name':'Rider1','ClassId':'00000000000000000000000000000000'}".Replace('\'', '"'));
         }
         
         [Fact]

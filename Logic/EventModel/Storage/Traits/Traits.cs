@@ -40,7 +40,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
             foreach (var type in types)
             {
                 var idClosed = idType.MakeGenericType(type.type);
-                mapper.RegisterType(idClosed, obj => ((IId)obj).Value.ToString("N"), value => Activator.CreateInstance(idClosed, new Guid(value.AsString)));
+                mapper.RegisterType(idClosed, obj => ((IGuidValue)obj).Value.ToString("N"), value => Activator.CreateInstance(idClosed, new Guid(value.AsString)));
             }
         }
 

@@ -8,7 +8,9 @@ using FluentAssertions;
 using LiteDB;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,7 +27,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
-            var id = new Guid("D390C953-3F55-4558-8C0B-77FBAE798C9D");
+            var id = new Guid("d390c9533f5545588c0b77fbae798c9d");
             var e = new Entity{Id = id, Some = "abc", Int = 123};
             
             var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", e);
@@ -47,21 +49,21 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
-            var id = new Guid("D390C953-3F55-4558-8C0B-77FBAE798C9D");
+            var id = new Guid("d390c9533f5545588c0b77fbae798c9d");
             var e = new EntityWithId{Id = id, Some = "abc", Int = 123};
             
             var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", e);
             
             response.StatusCode.Should().Be(HttpStatusCode.Created);
-            response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dv"));
-            (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
+            response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9d"));
+            (await http.GetBsonAsync<EntityWithId>(response.Headers.Location)).Should().Be(e);
 
             e.Some = "eee";
             response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", e);
             
             response.StatusCode.Should().Be(HttpStatusCode.Created);
-            response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dv"));
-            (await http.GetBsonAsync<Entity>(response.Headers.Location)).Should().Be(e);
+            response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9d"));
+            (await http.GetBsonAsync<EntityWithId>(response.Headers.Location)).Should().Be(e);
         }
         
         
@@ -85,10 +87,10 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
-            var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single/5", new EntityInt{ Id = 2, Some = "2"});
+            var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single/5", new EntityString{ Id = "2", Some = "2"});
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Entity/single/5"));
-            var e = await http.GetBsonAsync<EntityInt>(response.Headers.Location);
+            var e = await http.GetBsonAsync<EntityString>(response.Headers.Location);
             e.Some.Should().Be("2");
         }
         
@@ -122,14 +124,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
         {
             using var svc = CreateDataService();
             var http = new HttpClient();
-            var eInt = new EntityInt{Some = "int"};
-            var responseInt = await http.PostBsonAsync($"{svc.ListenUri}/store/Some1/single", eInt);
-            responseInt.StatusCode.Should().Be(HttpStatusCode.Created);
-            responseInt.Headers.Location.Should().Be(new Uri($"{svc.ListenUri}/store/Some1/single/1"));
-            var respInt = await http.GetBsonAsync<EntityInt>(responseInt.Headers.Location);
-            respInt.Id.Should().Be(1);
-            respInt.Some.Should().Be("int");
-            
+
             var eLong = new EntityLong{Some = "long"};
             var responseLong = await http.PostBsonAsync($"{svc.ListenUri}/store/Some2/single", eLong);
             responseLong.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -146,14 +141,14 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             var http = new HttpClient();
             for (var i = 0; i < 3; i++)
             {
-                var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", new EntityInt{Some = i.ToString()});
+                var response = await http.PostBsonAsync($"{svc.ListenUri}/store/Entity/single", new EntityLong{Some = i.ToString()});
                 response.EnsureSuccessStatusCode();
             }
 
-            (await http.DeleteAsync($"{svc.ListenUri}/store/Entity/single/1")).EnsureSuccessStatusCode();
-            (await http.DeleteAsync($"{svc.ListenUri}/store/Entity/single/2")).EnsureSuccessStatusCode();
+            (await http.DeleteAsync($"{svc.ListenUri}/store/Entity/single/1L")).EnsureSuccessStatusCode();
+            (await http.DeleteAsync($"{svc.ListenUri}/store/Entity/single/2L")).EnsureSuccessStatusCode();
             
-            var e = await http.GetBsonAsync<List<EntityInt>>($"{svc.ListenUri}/store/Entity/search");
+            var e = await http.GetBsonAsync<List<EntityLong>>($"{svc.ListenUri}/store/Entity/search");
             e.Count.Should().Be(1);
             e.Should().Contain(x => x.Some == "2");
         }
@@ -283,7 +278,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             public int Int { get; set; }
         }
         
-        class EntityWithId
+        class EntityWithId: IHasId<EntityWithId>
         {
             protected bool Equals(EntityWithId other)
             {
@@ -310,9 +305,9 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             public int Int { get; set; }
         }
 
-        class EntityInt
+        class EntityString
         {
-            public int Id { get; set; }
+            public string Id { get; set; }
             public string Some { get; set; }
         }
         

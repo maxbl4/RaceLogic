@@ -1,9 +1,11 @@
 using System.Reactive.PlatformServices;
 using AutoMapper;
 using Easy.MessageHub;
+using LiteDB;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +26,7 @@ namespace maxbl4.Race.DataService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            BsonMapper.Global.RegisterIdBsonMappers();
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();

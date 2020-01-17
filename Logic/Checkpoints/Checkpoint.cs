@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using maxbl4.Infrastructure.Extensions.DateTimeExt;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.Checkpoints
 {
-    public class Checkpoint : ICheckpoint
+    public class Checkpoint : ICheckpoint, IHasId<Checkpoint>
     {
         private static long nextSequence;
         public DateTime Timestamp { get; set; } = Constants.DefaultUtcDate;

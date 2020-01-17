@@ -15,18 +15,15 @@ namespace maxbl4.Race.DataService.Services
                 return new BsonValue(g);
             if (urlEncodedId.EndsWith("o", StringComparison.OrdinalIgnoreCase))
                 return new ObjectId(Strip(urlEncodedId));
-            if (int.TryParse(urlEncodedId, out var i))
-                return i;
-            
-            throw new ArgumentException("Failed to recognize id. Valid examples: int => 1, long => 88888888999L, guid => 079FC22F-ED55-4D7A-8DB7-70EB5FCF0D1Ag, objectId => 1234567890abcdef12345678o");
+            return urlEncodedId;
         }
 
         public static string Encode(BsonValue id)
         {
             switch (id.Type)
             {
-                case BsonType.Int32:
-                    return id.AsInt32.ToString();
+                case BsonType.String:
+                    return id.AsString;
                 case BsonType.Int64:
                     return id.AsInt64 + "L";
                 case BsonType.ObjectId:

@@ -4,10 +4,13 @@ using System.Linq;
 using System.Threading;
 using AutoMapper;
 using Easy.MessageHub;
+using FluentAssertions;
+using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.TestOutputHelperExt;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -34,6 +37,8 @@ namespace maxbl4.Race.Tests
                 ServiceRunner<Startup>.SetupLogger("testsettings");
             }
             Logger = Log.ForContext(GetType());
+            BsonMapper.Global.RegisterIdBsonMappers();
+            BsonMapper.Global.RegisterIdBsonMappers(GetType().Assembly);
             storageConnectionString = outputHelper.GetEmptyLiteDbForTest();
             Logger.Debug("Storage {@connectionString}", storageConnectionString);
             Mapper = new MapperConfiguration(x => x.AddMaps(typeof(Startup)))
