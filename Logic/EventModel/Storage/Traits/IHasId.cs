@@ -6,10 +6,4 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
     {
         Id<T> Id { get; set; }
     }
-
-    public interface IHasName : IHasTraits
-    {
-        string Name { get; set; }
-        string Description { get; set; }
-    }
 }

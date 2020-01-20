@@ -9,11 +9,9 @@ namespace maxbl4.Race.Logic.Checkpoints
 {
     public class Checkpoint : ICheckpoint, IHasId<Checkpoint>
     {
-        private static long nextSequence;
+        public Id<Checkpoint> Id { get; set; } = Id<Checkpoint>.NewId();
         public DateTime Timestamp { get; set; } = Constants.DefaultUtcDate;
         public string RiderId { get; set; }
-        public Id<Checkpoint> Id { get; set; } = Id<Checkpoint>.NewId();
-        
         public DateTime LastSeen { get; set; } = Constants.DefaultUtcDate;
         public int Count { get; set; } = 1;
         public bool Aggregated { get; set; }

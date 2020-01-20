@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
+using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using maxbl4.Race.Logic.RoundTiming;
 
@@ -10,12 +14,18 @@ namespace maxbl4.Race.Logic.LogManagement
 {
     public class SessionLog
     {
-        public List<IEntry> LogEntries { get; } = new List<IEntry>();
+        private readonly IAutoMapperProvider autoMapperProvider;
+        public List<object> LogEntries { get; } = new List<object>();
         public ITrackOfCheckpoints TrackOfCheckpoints { get; private set; } = new TrackOfCheckpoints();
         public IFinishCriteria FinishCriteria { get; private set; } = null;
         public DateTime StartTime = Constants.DefaultUtcDate;
 
-        public void BatchLoad(IEnumerable<IEntry> logEntries)
+        public SessionLog(IAutoMapperProvider autoMapperProvider)
+        {
+            this.autoMapperProvider = autoMapperProvider;
+        }
+
+        public void BatchLoad(IEnumerable<object> logEntries)
         {
             LogEntries.Clear();
             LogEntries.AddRange(logEntries);
@@ -32,19 +42,19 @@ namespace maxbl4.Race.Logic.LogManagement
             ApplyStart(start);
         }
 
-        public void Checkpoint(Checkpoint checkpoint)
+        public void Checkpoint(CheckpointDto checkpoint)
         {
-            //LogEntries.Add(checkpoint);
-            TrackOfCheckpoints.Append(checkpoint);
+            LogEntries.Add(checkpoint);
+            //TrackOfCheckpoints.Append(checkpoint);
         }
         
-        public void InsertCheckpoint(InsertCheckpoint insert)
+        public void InsertCheckpoint(InsertCheckpointDto insert)
         {
-            //LogEntries.Add(insert);
+            LogEntries.Add(insert);
             TrackOfCheckpoints = ReloadTrack(StartTime, FinishCriteria);
         }
         
-        public void DropCheckpoint(DropCheckpoint drop)
+        public void DropCheckpoint(DropCheckpointDto drop)
         {
             LogEntries.Add(drop);
             TrackOfCheckpoints = ReloadTrack(StartTime, FinishCriteria);
@@ -66,20 +76,21 @@ namespace maxbl4.Race.Logic.LogManagement
         ITrackOfCheckpoints ReloadTrack(DateTime startTime, IFinishCriteria finishCriteria)
         {
             var track = new TrackOfCheckpoints(startTime, finishCriteria);
-            foreach (var checkpoint in FlattenCheckpointLog(LogEntries))
-            {
-                track.Append(checkpoint);
-            }
+            // foreach (var checkpoint in FlattenCheckpointLog(LogEntries).Select(x => autoMapperProvider.Mapper.Map<Checkpoint>(x)))
+            // {
+            //     track.Append(checkpoint);
+            // }
             return track;
         }
 
-        public static IEnumerable<Checkpoint> FlattenCheckpointLog(IEnumerable<IEntry> logEntries)
+        public static IEnumerable<CheckpointDto> FlattenCheckpointLog<T>(IEnumerable<T> logEntries)
+            where T: IHasId<T>
         {
-            var drops = new HashSet<Id<Checkpoint>>(logEntries.OfType<DropCheckpoint>().Select(x => x.TargetId));
-            var inserts = logEntries.OfType<InsertCheckpoint>().Where(x => !drops.Contains(x.Id))
+            var drops = new HashSet<Id<CheckpointDto>>(logEntries.OfType<DropCheckpointDto>().Select(x => x.TargetId));
+            var inserts = logEntries.OfType<InsertCheckpointDto>().Where(x => !drops.Contains(x.Id))
                 .OrderBy(x => x.Timestamp)
                 .ToList();
-            foreach (var checkpoint in logEntries.OfType<Checkpoint>().Where(x => !drops.Contains(x.Id)))
+            foreach (var checkpoint in logEntries.OfType<CheckpointDto>().Where(x => !drops.Contains(x.Id)))
             {
                 while (inserts.Count > 0 && inserts[0].Timestamp < checkpoint.Timestamp)
                 {

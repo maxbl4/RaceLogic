@@ -2,7 +2,7 @@ using System;
 
 namespace maxbl4.Race.Logic.LogManagement.EntryTypes
 {
-    public class Comment: IEntry
+    public class Comment
     {
         public string Text { get; set; }
         public DateTime Timestamp { get; set; }

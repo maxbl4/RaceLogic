@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using maxbl4.Race.Logic.EventStorage.Storage.Model;
 
 namespace maxbl4.Race.Logic.RoundTiming
 {
@@ -12,6 +13,10 @@ namespace maxbl4.Race.Logic.RoundTiming
         public bool SkipStartingCheckpoint { get; }
         public bool ForceFinishOnly { get; }
 
+        public FinishCriteria(FinishCriteriaDto dto): 
+            this(dto.Duration, dto.TotalLaps, dto.LapsAfterDuration, dto.SkipStartingCheckpoint, dto.ForceFinishOnly)
+        { }
+        
         public FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint, bool forceFinishOnly = false)
         {
             Duration = duration;

@@ -16,7 +16,20 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             this.repo = repo;
         }
         
+        public T GetRawDtoById<T>(Id<T> id)
+            where T: IHasId<T>
+        {
+            return repo.FirstOrDefault<T>(x => x.Id == id);
+        }
+
+        public List<T> GetRawDto<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
+            where T: IHasId<T>
+        {
+            return GetRawDto<T, object>(predicate, null, skip, limit);
+        }
+        
         public List<T> GetRawDto<T,K>(Expression<Func<T, bool>> predicate = null, Expression<Func<T,K>> orderBy = null, int? skip = null, int? limit = null)
+            where T: IHasId<T>
         {
             var query = repo.Query<T>();
             if (predicate != null) query = query.Where(predicate);

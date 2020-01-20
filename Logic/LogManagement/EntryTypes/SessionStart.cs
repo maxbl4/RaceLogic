@@ -3,7 +3,7 @@ using maxbl4.Race.Logic.Sessions;
 
 namespace maxbl4.Race.Logic.LogManagement.EntryTypes
 {
-    public class SessionStart: IEntry, ISessionConfiguration
+    public class SessionStart: ISessionConfiguration
     {
         public SessionStartTypes StartType { get; set; }
         public TimeSpan Duration { get; set; }

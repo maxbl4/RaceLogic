@@ -12,5 +12,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
         public DateTime Updated { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        
+        public Id<SessionDto> SessionDtoId { get; set; }
     }
 }

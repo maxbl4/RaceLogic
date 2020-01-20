@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using Newtonsoft.Json.Serialization;
 
@@ -46,7 +47,7 @@ namespace maxbl4.Race.Logic.LogManagement
         {
             return new NameMapSerializationBinder(new Dictionary<string, Type>{
                 {"cp", typeof(Checkpoint)},
-                {"drop", typeof(DropCheckpoint)},
+                {"drop", typeof(DropCheckpointDto)},
                 {"start", typeof(SessionStart)},
                 {"comment", typeof(Comment)}
             });
