@@ -15,6 +15,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     {
         private readonly IEventRepository eventRepository;
         private readonly IAutoMapperProvider autoMapperProvider;
+        public RecordingSessionDto ActiveRecordingSession { get; private set; }
+        public TimingSession ActiveTimingSession { get; private set; }
 
         public TimingSessionService(IEventRepository eventRepository, IAutoMapperProvider autoMapperProvider)
         {
@@ -25,25 +27,34 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public TimingSession StartSession(Id<SessionDto> sessionDtoId, string name)
         {
             var staticData = LoadTimingSessionStaticData(sessionDtoId);
-            var recordingSessionDto = new RecordingSessionDto {Name = name, SessionDtoId = sessionDtoId};
+            var recordingSessionDto = ActiveRecordingSession = new RecordingSessionDto {Name = name, SessionDtoId = sessionDtoId};
             eventRepository.Save(recordingSessionDto);
-            var timingSession = autoMapperProvider.Map<TimingSession>(recordingSessionDto);
+            var timingSession = ActiveTimingSession = autoMapperProvider.Map<TimingSession>(recordingSessionDto);
+            timingSession.StartTime = recordingSessionDto.Created;
             timingSession.MinLap = staticData.MinLap;
             timingSession.FinishCriteria = staticData.FinishCriteria;
+            timingSession.Initialize(new Checkpoint[0]);
             return timingSession;
         }
 
         public TimingSession ResumeSession(Id<RecordingSessionDto> recordingSessionId)
         {
-            return default;
+            var recordingSessionDto = ActiveRecordingSession = eventRepository.GetRawDtoById(recordingSessionId);
+            var staticData = LoadTimingSessionStaticData(recordingSessionDto.SessionDtoId);
+            var timingSession = ActiveTimingSession = autoMapperProvider.Map<TimingSession>(recordingSessionDto);
+            timingSession.StartTime = recordingSessionDto.Created;
+            timingSession.MinLap = staticData.MinLap;
+            timingSession.FinishCriteria = staticData.FinishCriteria;
+            timingSession.Initialize(autoMapperProvider.Map<List<Checkpoint>>(eventRepository.GetRawDtos<CheckpointDto>(x => x.RecordingSessionId == recordingSessionId)));
+            return timingSession;
         }
 
-        public void RecordCheckpoint(TimingSession timingSession, Checkpoint checkpoint)
+        public void RecordCheckpoint(Checkpoint checkpoint)
         {
             var checkpointDto = autoMapperProvider.Map<CheckpointDto>(checkpoint);
+            checkpointDto.RecordingSessionId = ActiveRecordingSession.Id;
             eventRepository.Save(checkpointDto);
-            checkpointDto.RecordingSessionId = timingSession.RecordingSessionId;
-            timingSession.AppendCheckpoint(checkpoint);
+            ActiveTimingSession.AppendCheckpoint(checkpoint);
         }
 
         private TimingSessionStaticData LoadTimingSessionStaticData(Id<SessionDto> sessionId)

@@ -52,6 +52,21 @@ namespace maxbl4.Race.Logic.Checkpoints
             };
         }
         
+        public Checkpoint WithRiderId(string riderId)
+        {
+            return new Checkpoint
+            {
+                RiderId = riderId,
+                Aggregated = Aggregated,
+                Count = Count,
+                Id = Id,
+                Rps = Rps,
+                Timestamp = Timestamp,
+                IsManual = IsManual,
+                LastSeen = LastSeen
+            };
+        }
+        
         public Checkpoint AddToAggregated(Checkpoint cp)
         {
             if (!Aggregated)
