@@ -15,8 +15,9 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
         public bool IsSeed { get; set; }
         public bool Published { get; set; }
 
+        public Id<EventDto> EventId {get;set;}
         public TimeSpan MinLap { get; set; } = TimeSpan.FromSeconds(15);
         public Id<FinishCriteriaDto> FinishCriteriaId { get; set; }
-        public List<Id<ClassDto>> ClassIds { get; set; }
+        public List<Id<ClassDto>> ClassIds { get; set; } = new List<Id<ClassDto>>();
     }
 }

@@ -22,7 +22,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public TimeSpan MinLap { get; set; } = TimeSpan.FromSeconds(15);
         public List<Checkpoint> Checkpoints { get; set; } = new List<Checkpoint>();
         public IFinishCriteria FinishCriteria { get; set; }
-        public ITrackOfCheckpoints TrackOfCheckpoints { get; set; }
+        public ITrackOfCheckpoints Track { get; private set; }
 
+        public void Initialize()
+        {
+            Track = new TrackOfCheckpoints(StartTime, FinishCriteria);
+        }
+
+        public void AppendCheckpoint(Checkpoint checkpoint)
+        {
+        }
     }
 }

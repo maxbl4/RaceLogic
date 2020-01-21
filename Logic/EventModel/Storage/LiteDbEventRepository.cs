@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using LiteDB;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage
@@ -22,13 +24,13 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return repo.FirstOrDefault<T>(x => x.Id == id);
         }
 
-        public List<T> GetRawDto<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
+        public List<T> GetRawDtos<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
             where T: IHasId<T>
         {
-            return GetRawDto<T, object>(predicate, null, skip, limit);
+            return GetRawDtos<T, object>(predicate, null, skip, limit);
         }
         
-        public List<T> GetRawDto<T,K>(Expression<Func<T, bool>> predicate = null, Expression<Func<T,K>> orderBy = null, int? skip = null, int? limit = null)
+        public List<T> GetRawDtos<T,K>(Expression<Func<T, bool>> predicate = null, Expression<Func<T,K>> orderBy = null, int? skip = null, int? limit = null)
             where T: IHasId<T>
         {
             var query = repo.Query<T>();
@@ -48,6 +50,32 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         {
             repo.Upsert(recordingSession.ApplyTraits());
             return recordingSession.Id;
+        }
+
+        public IEnumerable<RegistrationDto> GetRegistrations(Id<ClassDto> classId, Id<EventDto> eventId)
+        {
+            return repo.Query<RegistrationDto>().Where(x => x.ClassId == classId && x.EventId == eventId).ToEnumerable();
+        }
+        
+        public List<RegistrationDto> GetRegistrations(Id<SessionDto> sessionId)
+        {
+            var session = GetRawDtoById(sessionId);
+            if (session == null) return new List<RegistrationDto>();
+            return session.ClassIds.Select(classId =>
+                GetRegistrations(classId, session.EventId))
+                .SelectMany(x => x)
+                .ToList();
+        }
+
+        public IEnumerable<RiderIdentifierDto> GetRiderIdentifiers(Id<RiderProfileDto> riderProfileId)
+        {
+            return repo.Query<RiderIdentifierDto>().Where(x => x.RiderProfileId == riderProfileId).ToEnumerable();
+        }
+        
+        public List<RiderIdentifierDto> GetRiderIdentifiers(Id<SessionDto> sessionId)
+        {
+            return GetRegistrations(sessionId).Select(x => GetRiderIdentifiers(x.RiderProfileId))
+                .SelectMany(x => x).ToList();
         }
     }
 }

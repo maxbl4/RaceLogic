@@ -100,7 +100,7 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
             return Value.ToString("N");
         }
 
-        public string ToString(string? format, IFormatProvider? provider)
+        public string ToString(string format, IFormatProvider provider)
         {
             return Value.ToString(format, provider);
         }
