@@ -13,7 +13,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
         public string Name { get; set; }
         public string Description { get; set; }
         
-        public Id<SessionDto> SessionDtoId { get; set; }
+        public Id<SessionDto> SessionId { get; set; }
     }
 
     public class RatingSessionDto : IHasId<RatingSessionDto>, IHasSeed, IHasTimestamp, IHasName

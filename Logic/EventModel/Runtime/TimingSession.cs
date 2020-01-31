@@ -14,14 +14,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 {
     public class TimingSession: IHasName, IHasTimestamp, IHasSeed
     {
-        private SemaphoreSlim sync = new SemaphoreSlim(1);
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsSeed { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
      
-        public Id<SessionDto> SessionDtoId { get; set; }
+        public Id<SessionDto> SessionId { get; set; }
         public Id<RecordingSessionDto> RecordingSessionId { get; set; }
         public DateTime StartTime { get; set; }
         public TimeSpan MinLap { get; set; } = TimeSpan.FromSeconds(15);
@@ -34,7 +33,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         
         public void Initialize(IEnumerable<Checkpoint> initialCheckpoints = null)
         {
-            using var s = sync.UseOnce();
             Track = new TrackOfCheckpoints(StartTime, FinishCriteria);
             RawCheckpoints.Clear();
             AggCheckpoints.Clear();
@@ -49,7 +47,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void AppendCheckpoint(Checkpoint checkpoint)
         {
-            using var s = sync.UseOnce();
             RawCheckpoints.Add(checkpoint);
             checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
         }
