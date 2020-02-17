@@ -6,6 +6,7 @@ using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Tests.Extensions;
 using Newtonsoft.Json;
 using Xunit;
@@ -36,7 +37,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         [Fact]
         public void Should_serialize_and_deserialize_to_litedb()
         {
-            using var repo = new LiteRepository(dbFileName);
+            using var repo = new LiteRepository(dbFileName).WithUtcDate();
             var cls = new Class{ Id = Id<Class>.NewId(), Name = "Class1" }; 
             var rider = new Rider{ Id = Id<Rider>.NewId(), Name = "Rider1", ClassId = cls.Id };
             repo.Insert(cls);
@@ -53,7 +54,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         [Fact]
         public void Should_generate_default_value_for_id()
         {
-            using var repo = new LiteRepository(dbFileName);
+            using var repo = new LiteRepository(dbFileName).WithUtcDate();
             repo.Insert(new Rider{ Name = "Rider1" });
             repo.Insert(new Rider{ Name = "Rider2" });
             repo.Query<Rider>().Count().Should().Be(2);
@@ -63,7 +64,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         public void Should_use_custom_id_serializer()
         {
             BsonMapper.Global.RegisterType(x => x.Value.ToString("N"), x => new Id<Rider>(Guid.Parse(x)));
-            using var repo = new LiteRepository(dbFileName);
+            using var repo = new LiteRepository(dbFileName).WithUtcDate();
             repo.Insert(new Rider{ Name = "Rider1" });
             repo.Insert(new Rider{ Name = "Rider2" });
             repo.Query<Rider>().Count().Should().Be(2);
@@ -76,7 +77,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         public void Should_use_dynamically_registered_id_mappings()
         {
             BsonMapper.Global.RegisterIdBsonMappers(GetType().Assembly);
-            using var repo = new LiteRepository(dbFileName);
+            using var repo = new LiteRepository(dbFileName).WithUtcDate();
             var r1 = new Rider {Name = "Rider1"};
             repo.Insert(r1);
             repo.Insert(new Rider{ Name = "Rider2" });

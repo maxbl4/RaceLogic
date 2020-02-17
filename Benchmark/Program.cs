@@ -7,6 +7,7 @@ using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.RoundTiming;
 
 namespace Benchmark
@@ -59,7 +60,7 @@ namespace Benchmark
                 var storageFile = name + faker.GetType().GenericTypeArguments[0].Name + ".litedb";
                 if (File.Exists(storageFile))
                     File.Delete(storageFile);
-                using var repo = new LiteRepository(storageFile);
+                using var repo = LiteRepo.WithUtcDate(storageFile);
                 var sw = Stopwatch.StartNew();
                 for (int i = 0; i < 100; i++)
                 {

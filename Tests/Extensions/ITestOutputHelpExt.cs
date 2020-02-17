@@ -20,7 +20,7 @@ namespace maxbl4.Race.Tests.Extensions
         {
             var fileName = GetNameForDbFile(outputHelper);
             new RollingFileInfo(fileName).Delete();
-            return $"Filename={fileName};UtcDate=true";
+            return $"Filename={fileName}";
         }
     }
 }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using FluentAssertions;
 using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -183,7 +185,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             var cs = new ConnectionString(storageConnectionString);
             var dbFile = new RollingFileInfo(cs.Filename);
             dbFile.BaseExists.Should().BeFalse();
-            using (var repo = new LiteRepository(storageConnectionString))
+            File.Exists(cs.Filename).Should().BeFalse();
+            using (var repo = new LiteRepository(cs).WithUtcDate())
             {
                 repo.Insert(new BadCheckpoint{Count = 1.1m}, nameof(Checkpoint));
             }

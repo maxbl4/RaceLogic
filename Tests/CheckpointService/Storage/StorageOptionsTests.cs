@@ -11,11 +11,11 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         public void ShouldSerializeAndDeserialize()
         {
             var options = new ServiceOptions
-                {StorageConnectionString = "Filename=storage.litedb;InitialSize=123;UtcDate=true"};
+                {StorageConnectionString = "Filename=storage.litedb;InitialSize=123"};
             var s = JsonConvert.SerializeObject(options);
             var deserialized = JsonConvert.DeserializeObject<ServiceOptions>(s);
             deserialized.Should().NotBeSameAs(options);
-            deserialized.StorageConnectionString.Should().Be("Filename=storage.litedb;InitialSize=123;UtcDate=true");
+            deserialized.StorageConnectionString.Should().Be("Filename=storage.litedb;InitialSize=123");
         }
     }
 }

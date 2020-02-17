@@ -5,6 +5,7 @@ using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
+using maxbl4.Race.Logic.Extensions;
 using Serilog;
 
 namespace ServiceBase
@@ -23,7 +24,7 @@ namespace ServiceBase
             this.connectionString = connectionString;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
-            var cs = new ConnectionString(connectionString){UtcDate = true};
+            var cs = new ConnectionString(connectionString);
             logger.SwallowError(() => Initialize(cs), ex =>
             {
                 cs = TryRotateDatabase(cs);
@@ -35,7 +36,7 @@ namespace ServiceBase
         {
             connectionString.Filename = new RollingFileInfo(connectionString.Filename).CurrentFile;
             logger.Information($"Using storage file {connectionString.Filename}");
-            repo = new LiteRepository(connectionString);
+            repo = LiteRepo.WithUtcDate(connectionString);
             SetupIndexes();
             ValidateDatabase();
         }
