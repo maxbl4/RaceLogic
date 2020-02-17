@@ -27,6 +27,7 @@ namespace ServiceBase
             var cs = new ConnectionString(connectionString);
             logger.SwallowError(() => Initialize(cs), ex =>
             {
+                repo?.Dispose();
                 cs = TryRotateDatabase(cs);
                 Initialize(cs);
             });
