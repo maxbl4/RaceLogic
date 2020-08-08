@@ -1,8 +1,8 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-material-design/dist/css/bootstrap-material-design.css";
-@import "~@ag-grid-community/all-modules/dist/styles/ag-grid.css";
-@import "~@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css";
+@import "~ag-grid-community/dist/styles/ag-grid.css";
+@import "~ag-grid-community/dist/styles/ag-theme-balham.css";
 html, body, app-root { height: 100%; }
 body { padding-top: 67px; }
 @media (max-width: 599px) {

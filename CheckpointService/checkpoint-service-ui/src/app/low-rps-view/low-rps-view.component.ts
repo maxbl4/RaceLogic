@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import * as moment from "moment";
-import {AllCommunityModules, GridOptions, GridApi, ColumnApi, RowDataTransaction} from '@ag-grid-community/all-modules';
+import {GridOptions, GridApi, ColumnApi, RowDataTransaction} from 'ag-grid-community';
 import {LowRpsCheckpointAggregatorService} from "../service/low-rps-checkpoint-aggregator.service";
 import {Subscription} from "rxjs";
 
@@ -10,8 +10,7 @@ import {Subscription} from "rxjs";
       <div class="row flex-grow-1 flex-column">
           <ag-grid-angular
                   class="ag-theme-balham h-100"
-                  [gridOptions]="gridOptions"
-                  [modules]="modules">
+                  [gridOptions]="gridOptions">
           </ag-grid-angular>
       </div>
   `,
@@ -21,7 +20,6 @@ import {Subscription} from "rxjs";
 export class LowRpsViewComponent implements OnInit, OnDestroy {
   private api: GridApi;
   private columnApi: ColumnApi;
-  modules = AllCommunityModules;
 
   gridOptions: GridOptions = {
     columnDefs: [

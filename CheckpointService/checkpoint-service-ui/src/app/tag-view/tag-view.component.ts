@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import * as moment from "moment";
-import { AllCommunityModules, GridOptions } from '@ag-grid-community/all-modules';
+import { GridOptions } from 'ag-grid-community';
 import {HttpClient} from "@angular/common/http";
 import {WebSocketConnectionService} from "../service/web-socket-connection-service";
 import {Observable} from "rxjs";
@@ -29,7 +28,7 @@ import {formatDate} from "../util/formatters";
           <ag-grid-angular
                   class="ag-theme-balham h-100"
                   [gridOptions]="gridOptions"
-                  [modules]="modules" [rowData]="rowData|async">
+                  [rowData]="rowData|async">
           </ag-grid-angular>
       </div>
   `,
@@ -53,7 +52,6 @@ export class TagViewComponent implements OnInit {
     onGridSizeChanged: params => params.api.sizeColumnsToFit()
   };
 
-  modules = AllCommunityModules;
   startTime: string;
   count: number = 100;
   rowData: Observable<Tag[]>;

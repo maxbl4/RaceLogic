@@ -1,6 +1,6 @@
 ﻿import {OptionsService} from "./options.service";
 import {BehaviorSubject, Observable, ReplaySubject, Subscription} from "rxjs";
-import { RowDataTransaction } from '@ag-grid-community/all-modules';
+import { RowDataTransaction } from 'ag-grid-community';
 import {LowRpsCheckpoint} from "../model/low-rps-checkpoint";
 import {CheckpointService} from "./checkpoint.service";
 import {Checkpoint} from "../model/checkpoint";

@@ -15,7 +15,7 @@ import {WebSocketConnectionService} from "./service/web-socket-connection-servic
 import {CheckpointService} from "./service/checkpoint.service";
 import {ReaderStatusService} from "./service/reader-status.service";
 import {OptionsService} from "./service/options.service";
-import {AgGridModule} from "@ag-grid-community/angular";
+import {AgGridModule} from "ag-grid-angular";
 import {LowRpsCheckpointAggregatorService} from "./service/low-rps-checkpoint-aggregator.service";
 import { DashboardViewComponent } from './dashboard-view/dashboard-view.component';
 import { TagViewComponent } from './tag-view/tag-view.component';

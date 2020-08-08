@@ -1,9 +1,8 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import * as moment from "moment";
-import {AllCommunityModules, GridOptions, GridApi, ColumnApi} from '@ag-grid-community/all-modules';
-import {CheckpointService} from "../service/checkpoint.service";
-import {Observable, Subscription} from "rxjs";
-import {Checkpoint} from "../model/checkpoint";
+import {GridOptions, GridApi, ColumnApi} from 'ag-grid-community';
+import {CheckpointService} from '../service/checkpoint.service';
+import {Observable, Subscription} from 'rxjs';
+import {Checkpoint} from '../model/checkpoint';
 import { formatDate } from '../util/formatters';
 
 @Component({
@@ -12,7 +11,7 @@ import { formatDate } from '../util/formatters';
       <div class="row align-items-center">
           <div class="col-auto">
               <mat-radio-group [(ngModel)]="display">
-                  <mat-radio-button [value]="displayType.regular">Regular</mat-radio-button>                  
+                  <mat-radio-button [value]="displayType.regular">Regular</mat-radio-button>
                   <mat-radio-button class="ml-1" [value]="displayType.aggregated">Aggregated</mat-radio-button>
                   <mat-radio-button class="ml-1" [value]="displayType.lowRps">Low RPS</mat-radio-button>
                   <mat-radio-button class="ml-1" [value]="displayType.all">All</mat-radio-button>
@@ -23,17 +22,16 @@ import { formatDate } from '../util/formatters';
                   <input matInput placeholder="Filter" #tagFilter>
               </mat-form-field>
           </div>
-      </div>      
+      </div>
       <div class="row flex-grow-1 flex-column">
           <ag-grid-angular
                   class="ag-theme-balham h-100"
                   [gridOptions]="gridOptions"
-                  [modules]="modules"
                   [quickFilterText]="tagFilter.value">
-          </ag-grid-angular>  
+          </ag-grid-angular>
       </div>
   `,
-  host: {'class': 'flex-container'},
+  host: {class: 'flex-container'},
   styles: []
 })
 export class MonitorViewComponent implements OnInit, OnDestroy {
@@ -59,7 +57,6 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
     }
   };
 
-  modules = AllCommunityModules;
 
   constructor(private checkpointService: CheckpointService) {}
 
@@ -76,21 +73,21 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
     let $checkpoints: Observable<Checkpoint[]>;
     switch (value) {
       case DisplayType.all:
-        this.columnApi.setColumnsVisible(["count", "rps", "aggregated"], true);
+        this.columnApi.setColumnsVisible(['count', 'rps', 'aggregated'], true);
         $checkpoints = this.checkpointService.$checkpoints;
         break;
       case DisplayType.regular:
-        this.columnApi.setColumnsVisible(["count", "rps", "aggregated"], false);
+        this.columnApi.setColumnsVisible(['count', 'rps', 'aggregated'], false);
         $checkpoints = this.checkpointService.$regularCheckpoints;
         break;
       case DisplayType.aggregated:
-        this.columnApi.setColumnsVisible(["aggregated"], false);
-        this.columnApi.setColumnsVisible(["count", "rps"], true);
+        this.columnApi.setColumnsVisible(['aggregated'], false);
+        this.columnApi.setColumnsVisible(['count', 'rps'], true);
         $checkpoints = this.checkpointService.$aggregatedCheckpoints;
         break;
       case DisplayType.lowRps:
-        this.columnApi.setColumnsVisible(["count", "rps"], true);
-        this.columnApi.setColumnsVisible(["aggregated"], false);
+        this.columnApi.setColumnsVisible(['count', 'rps'], true);
+        this.columnApi.setColumnsVisible(['aggregated'], false);
         $checkpoints = this.checkpointService.$lowRpscheckpoints;
         break;
     }
@@ -98,10 +95,10 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
   }
 
   subscribeToData($data: Observable<Checkpoint[]>) {
-    if (this.subscription) this.subscription.unsubscribe();
+    if (this.subscription) { this.subscription.unsubscribe(); }
     this.api.setRowData(null);
     this.subscription = $data.subscribe(cps => {
-      if (cps.length > 0) this.api.batchUpdateRowData({add: cps}, () => this.autoSizeColumns());
+      if (cps.length > 0) { this.api.batchUpdateRowData({add: cps}, () => this.autoSizeColumns()); }
     });
   }
 
@@ -113,8 +110,9 @@ export class MonitorViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.subscription)
+    if (this.subscription) {
       this.subscription.unsubscribe();
+    }
   }
 }
 
