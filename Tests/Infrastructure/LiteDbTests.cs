@@ -45,8 +45,10 @@ namespace maxbl4.Race.Tests.Infrastructure
         public void Should_generate_long_id_for_bson_document()
         {
             using var repo = new LiteRepository(dbFile).WithUtcDate();
-            var doc = new BsonDocument {["Some"] = "123", ["_id"] = 0};
-            var col = repo.Database.GetCollection("some", StorageService.GetAutoId(doc));
+            var doc = new BsonDocument {["Some"] = "123", ["_id"] = 0L};
+            var col = repo.Database.GetCollection("some", StorageService.GetAutoId(doc, out var isDefault));
+            if (isDefault)
+                doc.Remove("_id");
             col.Upsert(doc);
             var id = doc["_id"].AsInt64;
             id.Should().NotBe(0);

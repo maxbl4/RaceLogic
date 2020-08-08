@@ -14,7 +14,7 @@
       <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.6" />
       <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
       <PackageReference Include="System.Reactive.Linq" Version="4.4.1" />
-      <PackageReference Include="LiteDB" Version="5.0.2" />
+      <PackageReference Include="LiteDB" Version="5.0.9" />
       <PackageReference Include="maxbl4.Infrastructure" Version="1.0.38" />
       <PackageReference Include="maxbl4.RfidDotNet" Version="1.0.61" />
       <PackageReference Include="maxbl4.RfidDotNet.AlienTech" Version="1.0.61" />

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reactive.PlatformServices;
 using Easy.MessageHub;
 using LiteDB;
@@ -55,19 +56,36 @@ namespace maxbl4.Race.DataService.Services
         
         public bool Upsert(string collectionName, BsonDocument document)
         {
-            return repo.Database.GetCollection(collectionName, GetAutoId(document)).Upsert(document);
+            var col = repo.Database.GetCollection(collectionName, GetAutoId(document, out var isDefault));
+            if (isDefault)
+                document.Remove("_id");
+            return col.Upsert(document);
         }
 
-        public static BsonAutoId GetAutoId(BsonDocument document)
+        public static BsonAutoId GetAutoId(BsonDocument document, out bool isDefault)
         {
-            if (!document.TryGetValue("_id", out var id)) return BsonAutoId.Guid;
-            return id.Type switch
+            if (!document.TryGetValue("_id", out var id))
             {
-                BsonType.Int32 => BsonAutoId.Int32,
-                BsonType.Int64 => BsonAutoId.Int64,
-                BsonType.ObjectId => BsonAutoId.ObjectId,
-                BsonType.Guid => BsonAutoId.Guid,
-                _ => 0
+                isDefault = true;
+                return BsonAutoId.Guid;
+            }
+            switch (id.Type)
+            {
+                case BsonType.Int32:
+                    isDefault = id.AsInt32 == 0;
+                    return BsonAutoId.Int32;
+                case BsonType.Int64:
+                    isDefault = id.AsInt64 == 0L;
+                    return BsonAutoId.Int64;
+                case BsonType.ObjectId:
+                    isDefault = id.AsObjectId == ObjectId.Empty;
+                    return BsonAutoId.ObjectId;
+                case BsonType.Guid:
+                    isDefault = id.AsGuid == Guid.Empty;
+                    return BsonAutoId.Guid;
+                default:
+                    isDefault = false;
+                    return 0;
             };
         }
 
