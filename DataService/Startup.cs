@@ -33,7 +33,7 @@ namespace maxbl4.Race.DataService
             services.AddAutoMapper(typeof(Startup));
             services.RegisterHostedService<CheckpointServiceClient>();
             services.AddControllers().AddNewtonsoftJson();
-            services.AddSignalR();
+            services.AddSignalR().AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
         }
 

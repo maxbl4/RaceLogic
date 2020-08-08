@@ -13,6 +13,7 @@ using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Tests.CheckpointService.RfidSimulator;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 using Tag = maxbl4.RfidDotNet.Tag;
@@ -68,6 +69,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             tagListHandler.ReturnOnce(new Tag{TagId = "1"});
             tagListHandler.ReturnOnce(new Tag{TagId = "2"});
             var wsConnection = new HubConnectionBuilder()
+                .AddNewtonsoftJsonProtocol()
                 .WithUrl($"{svc.ListenUri}/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();
@@ -93,6 +95,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var wsConnection = new HubConnectionBuilder()
+                .AddNewtonsoftJsonProtocol()
                 .WithUrl($"{svc.ListenUri}/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();
@@ -120,6 +123,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             
             using var svc = CreateCheckpointService();
             var wsConnection = new HubConnectionBuilder()
+                .AddNewtonsoftJsonProtocol()
                 .WithUrl($"{svc.ListenUri}/ws/cp")
                 .Build();
             var checkpoints = new List<Checkpoint>();

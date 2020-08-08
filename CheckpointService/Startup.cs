@@ -40,7 +40,7 @@ namespace maxbl4.Race.CheckpointService
             services.RegisterHostedService<IRfidService, RfidService>();
             services.RegisterHostedService<DistributionService>();
             services.AddControllers().AddNewtonsoftJson();
-            services.AddSignalR();
+            services.AddSignalR().AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
             var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();
             if (options?.PauseInStartupMs > 0)
