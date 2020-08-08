@@ -30,6 +30,17 @@ namespace maxbl4.Race.Tests.Infrastructure
         }
         
         [Fact]
+        public void Should_generate_long_id()
+        {
+            using var repo = new LiteRepository(dbFile).WithUtcDate();
+            var entity = new EntityLong {Data = "123"};
+            repo.Upsert(entity);
+            var e = repo.Query<EntityLong>().Where(x => x.Id == entity.Id).First();
+            e.Data.Should().Be("123");
+            e.Id.Should().NotBe(0);
+        }
+        
+        [Fact]
         public void Should_query_by_literal_guid()
         {
             var g = new Guid("CFF4EF1C-A0DB-4F0C-B1DE-FCFEC7028CFF");
