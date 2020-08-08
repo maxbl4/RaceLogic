@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using FluentAssertions;
 using LiteDB;
+using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.Extensions;
 using Xunit;
 
@@ -38,6 +39,19 @@ namespace maxbl4.Race.Tests.Infrastructure
             var e = repo.Query<EntityLong>().Where(x => x.Id == entity.Id).First();
             e.Data.Should().Be("123");
             e.Id.Should().NotBe(0);
+        }
+        
+        [Fact]
+        public void Should_generate_long_id_for_bson_document()
+        {
+            using var repo = new LiteRepository(dbFile).WithUtcDate();
+            var doc = new BsonDocument {["Some"] = "123", ["_id"] = 0};
+            var col = repo.Database.GetCollection("some", StorageService.GetAutoId(doc));
+            col.Upsert(doc);
+            var id = doc["_id"].AsInt64;
+            id.Should().NotBe(0);
+            var e = col.FindById(id);
+            e["Some"].Should().Be("123");
         }
         
         [Fact]
