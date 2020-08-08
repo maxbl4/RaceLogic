@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using maxbl4.Infrastructure.Extensions.DateTimeExt;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
@@ -18,9 +19,7 @@ namespace maxbl4.Race.Logic.Checkpoints
         public bool IsManual { get; set; }
         public int Rps { get; set; }
 
-        public Checkpoint()
-        {
-        }
+        public Checkpoint() {}
 
         public Checkpoint(string riderId, int count = 1) : this(riderId, Constants.DefaultUtcDate, count) { }
         
@@ -44,7 +43,6 @@ namespace maxbl4.Race.Logic.Checkpoints
                 RiderId = RiderId,
                 Aggregated = true,
                 Count = Count,
-                Id = Id,
                 Rps = Rps,
                 Timestamp = Timestamp,
                 IsManual = IsManual,

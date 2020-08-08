@@ -20,7 +20,15 @@ namespace maxbl4.Race.Tests.Logic.Model
             cp.RiderId.Should().Be("456");
             cp.Timestamp.Should().Be(default);
         }
-        
+
+        [Fact]
+        public void AggCheckpoint_gets_new_id()
+        {
+            var cp = new Checkpoint("11");
+            var agg = cp.ToAggregated();
+            agg.Id.Should().NotBe(cp.Id);
+        }
+
         [Fact]
         public void AggCheckpoint_add_should_work()
         {
