@@ -1,0 +1,19 @@
+===== CheckpointService =====
+CheckpointService
+  - Listens to RFID tags
+  - Works on device at the gate
+  - When enabled stores tags with minor deduplication (500ms window)
+  - Returns tags for period
+  - Allows manual input of rider numbers
+
+===== DataService =====
+ConfigurationService
+  - Persists configuration
+RecordingService
+  - Reads 1+ configured TagService connection strings
+  - When enabled starts recording on TagServices and stream tags
+  - Stores tags in RecordingSession
+EventRepository
+  - Stores information about events, riding sessions, riders
+TimingService
+  - Given riding session, creates TimingSession. Optionally can reuse existing RecordingSession or start new one

@@ -116,6 +116,34 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
         }
         
         [Fact]
+        public async Task Should_append_manual_checkpoint_with_rfid_disabled()
+        {
+            SystemClock.UseRealClock();
+            var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build(false));
+            
+            using var svc = CreateCheckpointService();
+            var wsConnection = new HubConnectionBuilder()
+                .AddNewtonsoftJsonProtocol()
+                .WithUrl($"{svc.ListenUri}/ws/cp")
+                .Build();
+            var checkpoints = new List<Checkpoint>();
+            await wsConnection.StartAsync();
+            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
+            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
+            var wsConnected = false;
+            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            var cli = new HttpClient();
+            (await cli.PutAsync($"{svc.ListenUri}/cp", 
+                new StringContent("\"555\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
+            await new Timing()
+                .Logger(Logger)
+                .FailureDetails(() => $"checkpoints.Count = {checkpoints.Count}")
+                .ExpectAsync(() => checkpoints.Count == 1);
+            checkpoints.Should().Contain(x => x.RiderId == "555");
+            wsConnected.Should().BeFalse();
+        }
+        
+        [Fact]
         public async Task Should_ignore_empty_manual_checkpoint()
         {
             SystemClock.UseRealClock();

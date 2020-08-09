@@ -28,6 +28,7 @@ namespace maxbl4.Race.CheckpointService.Services
         private readonly UniversalTagStreamFactory factory;
         private IUniversalTagStream stream;
         private CompositeDisposable disposable;
+        private CompositeDisposable aggregatorDisposable;
         private TimestampAggregator<Checkpoint> aggregator;
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
 
@@ -49,9 +50,23 @@ namespace maxbl4.Race.CheckpointService.Services
         {
             DisableRfid();
             logger.Information("Using RfidOptions: {options}", options);
+            ConfigureAggregator(options);
             if (ShouldStartRfid(options))
                 logger.SwallowError(() => EnableRfid(options))
                     .Wait(0);
+        }
+
+        private void ConfigureAggregator(RfidOptions options)
+        {
+            aggregatorDisposable.DisposeSafe();
+            aggregator =
+                TimestampAggregatorConfigurations.ForCheckpoint(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+            aggregatorDisposable = new CompositeDisposable
+            {
+                checkpoints.Subscribe(aggregator),
+                aggregator.Subscribe(OnCheckpoint),
+                aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint)
+            };
         }
 
         private bool ShouldStartRfid(RfidOptions options)
@@ -85,22 +100,19 @@ namespace maxbl4.Race.CheckpointService.Services
             logger.Information("Starting RFID");
             
             stream = factory.CreateStream(options.GetConnectionString());
-            disposable = new CompositeDisposable(stream,
+            disposable = new CompositeDisposable
+            {
+                stream,
                 stream.Tags.Subscribe(x =>
                 {
                     if (options.PersistTags)
                         logger.Swallow(() => storageService.AppendTag(mapper.Map<Tag>(x)));
                     AppendRiderId(x.TagId);
-                }));
-            aggregator =
-                TimestampAggregatorConfigurations.ForCheckpoint(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
-            disposable.Add(stream.Connected.CombineLatest(stream.Heartbeat,
-                    (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
-                .Subscribe(OnReaderStatus)
-            );
-            disposable.Add(checkpoints.Subscribe(aggregator));
-            disposable.Add(aggregator.Subscribe(OnCheckpoint));
-            disposable.Add(aggregator.AggregatedCheckpoints.Subscribe(OnCheckpoint));
+                }),
+                stream.Connected.CombineLatest(stream.Heartbeat,
+                        (con, hb) => new ReaderStatus {IsConnected = con, Heartbeat = hb})
+                    .Subscribe(OnReaderStatus)
+            };
             await stream.Start();
         }
 
