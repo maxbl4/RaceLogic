@@ -7,7 +7,7 @@ namespace maxbl4.Race.CheckpointService.Automapper
     {
         public MainProfile()
         {
-            CreateMap<Tag, Model.Tag>();
+            CreateMap<Tag, Logic.CheckpointService.Model.Tag>();
         }
     }
 }

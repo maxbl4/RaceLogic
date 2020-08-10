@@ -1,4 +1,4 @@
-﻿namespace maxbl4.Race.CheckpointService.Model
+﻿namespace maxbl4.Race.Logic.CheckpointService.Model
 {
     public class LogFileInfo
     {

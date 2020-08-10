@@ -8,13 +8,13 @@ using AutoMapper;
 using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Race.CheckpointService.Model;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.RfidDotNet;
 using maxbl4.RfidDotNet.AlienTech.Extensions;
 using maxbl4.RfidDotNet.GenericSerial.Ext;
 using Serilog;
-using Tag = maxbl4.Race.CheckpointService.Model.Tag;
+using Tag = maxbl4.Race.Logic.CheckpointService.Model.Tag;
 
 namespace maxbl4.Race.CheckpointService.Services
 {

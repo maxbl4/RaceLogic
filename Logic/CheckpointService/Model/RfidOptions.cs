@@ -2,7 +2,7 @@
 using maxbl4.RfidDotNet;
 using Newtonsoft.Json;
 
-namespace maxbl4.Race.CheckpointService.Services
+namespace maxbl4.Race.Logic.CheckpointService.Model
 {
     public class RfidOptions
     {

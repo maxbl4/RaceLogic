@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -9,8 +11,10 @@ using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
-using maxbl4.Race.CheckpointService.Model;
+using maxbl4.Race.Logic;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService.Client;
+using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Tests.CheckpointService.RfidSimulator;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,8 +55,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             });
             
             using var svc = CreateCheckpointService();
-            var client = new HttpClient();
-            var checkpoints = await client.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
+            var client = new CheckpointServiceClient(svc.ListenUri);
+            var checkpoints = await client.GetCheckpoints();
             checkpoints.Should().NotBeNull();
             checkpoints.Count.Should().Be(2);
             checkpoints.Should().Contain(x => x.RiderId == "stored1");
@@ -68,16 +72,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var svc = CreateCheckpointService();
             tagListHandler.ReturnOnce(new Tag{TagId = "1"});
             tagListHandler.ReturnOnce(new Tag{TagId = "2"});
-            var wsConnection = new HubConnectionBuilder()
-                .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{svc.ListenUri}/ws/cp")
-                .Build();
             var checkpoints = new List<Checkpoint>();
-            await wsConnection.StartAsync();
-            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
-            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
             var wsConnected = false;
-            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            
+            var client = new CheckpointServiceClient(svc.ListenUri);
+            using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
+            sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
+            sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
+            await sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
             tagListHandler.ReturnOnce(new Tag{TagId = "3"});
             tagListHandler.ReturnOnce(new Tag{TagId = "4"});
@@ -94,20 +96,16 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateCheckpointService();
-            var wsConnection = new HubConnectionBuilder()
-                .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{svc.ListenUri}/ws/cp")
-                .Build();
+            
             var checkpoints = new List<Checkpoint>();
-            await wsConnection.StartAsync();
-            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
-            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
             var wsConnected = false;
-            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            var client = new CheckpointServiceClient(svc.ListenUri);
+            using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
+            sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
+            sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
+            await sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
-            var cli = new HttpClient();
-            (await cli.PutAsync($"{svc.ListenUri}/cp", 
-                new StringContent("\"555\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
+            await client.AppendCheckpoint("555");
             await new Timing()
                 .Logger(Logger)
                 .FailureDetails(() => $"checkpoints.Count = {checkpoints.Count}")
@@ -122,25 +120,25 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build(false));
             
             using var svc = CreateCheckpointService();
-            var wsConnection = new HubConnectionBuilder()
-                .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{svc.ListenUri}/ws/cp")
-                .Build();
             var checkpoints = new List<Checkpoint>();
-            await wsConnection.StartAsync();
-            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
-            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
             var wsConnected = false;
-            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
-            var cli = new HttpClient();
-            (await cli.PutAsync($"{svc.ListenUri}/cp", 
-                new StringContent("\"555\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
+            ReaderStatus readerStatus = null;
+            var client = new CheckpointServiceClient(svc.ListenUri);
+            using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
+            sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
+            sub.ReaderStatus.Subscribe(x => readerStatus = x);
+            sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
+            await sub.Start();
+            await new Timing().ExpectAsync(() => wsConnected);
+            await client.AppendCheckpoint("555");
             await new Timing()
                 .Logger(Logger)
                 .FailureDetails(() => $"checkpoints.Count = {checkpoints.Count}")
                 .ExpectAsync(() => checkpoints.Count == 1);
             checkpoints.Should().Contain(x => x.RiderId == "555");
-            wsConnected.Should().BeFalse();
+            wsConnected.Should().BeTrue();
+            readerStatus.Should().NotBeNull();
+            readerStatus.IsConnected.Should().Be(false);
         }
         
         [Fact]
@@ -150,20 +148,15 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build());
             
             using var svc = CreateCheckpointService();
-            var wsConnection = new HubConnectionBuilder()
-                .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{svc.ListenUri}/ws/cp")
-                .Build();
             var checkpoints = new List<Checkpoint>();
-            await wsConnection.StartAsync();
-            await wsConnection.SendCoreAsync("Subscribe", new object[]{DateTime.UtcNow.AddHours(-1)});
-            wsConnection.On("Checkpoint", (Checkpoint[] cp) => checkpoints.AddRange(cp));
             var wsConnected = false;
-            wsConnection.On("ReaderStatus", (ReaderStatus s) => wsConnected = true);
+            var client = new CheckpointServiceClient(svc.ListenUri);
+            using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
+            sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
+            sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
+            await sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
-            var cli = new HttpClient();
-            (await cli.PutAsync($"{svc.ListenUri}/cp", 
-                new StringContent("\"\"", Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
+            await client.AppendCheckpoint("");
             (await new Timing()
                 .Timeout(5000)
                 .Logger(Logger)
@@ -193,27 +186,80 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
                 });
             
             using var svc = CreateCheckpointService();
-            var cli = new HttpClient();
-            
-            var response = await cli.DeleteAsync($"{svc.ListenUri}/cp/{original[0].Id}");
-            response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).Should().Be(1);
-            var cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
+            var client = new CheckpointServiceClient(svc.ListenUri);
+
+            (await client.DeleteCheckpoint(original[0].Id)).Should().Be(1);
+            var cps = await client.GetCheckpoints();
             cps.Count.Should().Be(4);
             cps.Should().NotContain(x => x.Id == original[0].Id);
             
-            response = await cli.DeleteAsync($"{svc.ListenUri}/cp?start={now.AddMinutes(1.5):u}&end={now.AddMinutes(3.5):u}");
-            response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).Should().Be(2);
-            cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
+            (await client.DeleteCheckpoints(now.AddMinutes(1.5), now.AddMinutes(3.5))).Should().Be(2);
+            cps = await client.GetCheckpoints();
             cps.Count.Should().Be(2);
             cps.Should().NotContain(x => x.Id == original[2].Id || x.Id == original[3].Id);
             
-            response = await cli.DeleteAsync($"{svc.ListenUri}/cp");
-            response.EnsureSuccessStatusCode();
-            (await response.Content.ReadAs<int>()).Should().Be(2);
-            cps = await cli.GetAsync<List<Checkpoint>>($"{svc.ListenUri}/cp");
+            (await client.DeleteCheckpoints()).Should().Be(2);
+            cps = await client.GetCheckpoints();
             cps.Count.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task Subscription_reconnects()
+        {
+            SystemClock.UseRealClock();
+            var tagListHandler = WithCheckpointStorageService(storageService => new SimulatorBuilder(storageService).Build());
+            
+            var port = GetAvailablePort();
+            var address = $"http://127.0.0.1:{port}";
+            var client = new CheckpointServiceClient(address);
+            var checkpoints = new List<Checkpoint>();
+            var wsConnectionStatus = new List<WsConnectionStatus>();
+            using var sub = (CheckpointSubscription)client.CreateSubscription(DateTime.UtcNow.AddHours(-1), TimeSpan.FromMilliseconds(500));
+            sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
+            sub.WebSocketConnected.Subscribe(s => wsConnectionStatus.Add(s));
+            await sub.Start();
+
+            // Assert we could not connect, but were trying
+            await new Timing().ExpectAsync(() => wsConnectionStatus.Count > 2);
+            wsConnectionStatus.Should().NotContain(x => x.IsConnected);
+            
+            using (CreateCheckpointService(port: port))
+            {
+                // Now we connect
+                await new Timing().ExpectAsync(() => wsConnectionStatus.LastOrDefault()?.IsConnected == true);
+                client.AppendCheckpoint("123");
+                await new Timing().ExpectAsync(() => checkpoints.Any(cp => cp.RiderId == "123"));
+            }
+            // Disconnect again
+            await new Timing().ExpectAsync(() => wsConnectionStatus.LastOrDefault()?.IsConnected == false);
+            
+            using (var svc = CreateCheckpointService(port: port))
+            {
+                // Connect again
+                await new Timing().ExpectAsync(() => wsConnectionStatus.LastOrDefault()?.IsConnected == true);
+                client.AppendCheckpoint("567");
+                await new Timing().ExpectAsync(() => checkpoints.Any(cp => cp.RiderId == "567"));
+            }
+        }
+        
+        public static int GetAvailablePort()
+        {
+            var properties = IPGlobalProperties.GetIPGlobalProperties();
+            
+            var tcpConnectionPorts = properties.GetActiveTcpConnections()
+                .Select(n => n.LocalEndPoint.Port);
+            var tcpListenerPorts = properties.GetActiveTcpListeners()
+                .Select(n => n.Port);
+            var udpListenerPorts = properties.GetActiveUdpListeners()
+                .Select(n => n.Port);
+            var port = Enumerable
+                .Range(30000, 65535 - 30000)
+                .Reverse()
+                .Where(i => !tcpConnectionPorts.Contains(i))
+                .Where(i => !tcpListenerPorts.Contains(i))
+                .FirstOrDefault(i => !udpListenerPorts.Contains(i));
+
+            return port;
         }
     }
 }

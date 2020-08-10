@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
-using maxbl4.Race.CheckpointService.Model;
+using maxbl4.Race.Logic.CheckpointService.Model;
 using Xunit;
 using Xunit.Abstractions;
 

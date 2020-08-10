@@ -1,7 +1,6 @@
 ﻿using System;
-using maxbl4.Race.Logic;
 
-namespace maxbl4.Race.CheckpointService.Model
+namespace maxbl4.Race.Logic.CheckpointService.Model
 {
     public class Tag
     {

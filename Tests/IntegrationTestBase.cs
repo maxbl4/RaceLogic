@@ -78,7 +78,7 @@ namespace maxbl4.Race.Tests
             return storageServiceInitializer(storageService);
         }
         
-        public ServiceRunner<Startup> CreateCheckpointService(int pauseStartupMs = 0)
+        public ServiceRunner<Startup> CreateCheckpointService(int pauseStartupMs = 0, int port = 0)
         {
             Logger.Debug("Creating CheckpointService with {@storageConnectionString}", storageConnectionString);
             var svc = new ServiceRunner<Startup>();
@@ -87,7 +87,7 @@ namespace maxbl4.Race.Tests
                 $"--ServiceOptions:StorageConnectionString={storageConnectionString}", 
                 $"--ServiceOptions:PauseInStartupMs={pauseStartupMs}",
                 $"--Environment={Environments.Development}",
-                $"--Urls=http://127.0.0.1:0"
+                $"--Urls=http://127.0.0.1:{port}"
             }).Wait(0);
             return svc;
         }

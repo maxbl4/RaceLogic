@@ -2,7 +2,6 @@ using System.Reactive.PlatformServices;
 using AutoMapper;
 using Easy.MessageHub;
 using LiteDB;
-using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -31,7 +30,6 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
             services.AddAutoMapper(typeof(Startup));
-            services.RegisterHostedService<CheckpointServiceClient>();
             services.AddControllers().AddNewtonsoftJson();
             services.AddSignalR().AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));

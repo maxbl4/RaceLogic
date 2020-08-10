@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic.CheckpointService.Model;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
