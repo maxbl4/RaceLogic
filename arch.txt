@@ -11,9 +11,10 @@ ConfigurationService
   - Persists configuration
 RecordingService
   - Reads 1+ configured TagService connection strings
-  - When enabled starts recording on TagServices and stream tags
+  - When enabled starts recording on CheckpointServices and stream tags
   - Stores tags in RecordingSession
 EventRepository
   - Stores information about events, riding sessions, riders
+  - There should be rider profiles per race and normalized profile for a real person, that is linked to per race profiles
 TimingService
   - Given riding session, creates TimingSession. Optionally can reuse existing RecordingSession or start new one
