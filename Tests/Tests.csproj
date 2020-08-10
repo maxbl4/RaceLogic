@@ -25,12 +25,9 @@
   <ItemGroup>
     <ProjectReference Include="..\CheckpointService\CheckpointService.csproj" />
     <ProjectReference Include="..\DataService\DataService.csproj" />
-    <ProjectReference Include="..\Logic\Logic.csproj" />
+    <ProjectReference Include="..\Race\Race.csproj" />
   </ItemGroup>  
   <ItemGroup>
     <None Include="Logic\Model\KnownRoundDefs\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>  
-  <ItemGroup>
-    <Folder Include="Logic\Pipeline" />
   </ItemGroup>
 </Project>

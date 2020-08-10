@@ -5,7 +5,7 @@ using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Race.Logic.Extensions;
+using maxbl4.Race.Extensions;
 using Serilog;
 
 namespace ServiceBase

@@ -6,11 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Logic\Logic.csproj" />
+      <PackageReference Include="Ulid" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ulid" Version="1.0.0" />
+      <ProjectReference Include="..\Race\Race.csproj" />
     </ItemGroup>
 
 </Project>

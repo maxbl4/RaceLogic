@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using FluentAssertions;
-using maxbl4.Race.Logic.LogManagement;
+using maxbl4.Race.LogManagement;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.LogManagement

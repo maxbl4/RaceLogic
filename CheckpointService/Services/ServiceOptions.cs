@@ -1,4 +1,6 @@
-﻿namespace maxbl4.Race.CheckpointService.Services
+﻿using maxbl4.Race.Services.CheckpointService.Model;
+
+namespace maxbl4.Race.CheckpointService.Services
 {
     public class ServiceOptions
     {

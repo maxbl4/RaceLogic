@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -87,7 +86,7 @@ namespace ServiceBase
         public void Dispose()
         {
             cts?.Cancel();
-            cts.DisposeSafe();
+            DisposableExt.DisposeSafe(cts);
             hostBuilder?.StopAsync().Wait(5000);
         }
     }

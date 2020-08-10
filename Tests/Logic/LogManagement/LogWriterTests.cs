@@ -2,9 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
-using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.LogManagement.EntryTypes;
-using maxbl4.Race.Logic.LogManagement.IO;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.LogManagement

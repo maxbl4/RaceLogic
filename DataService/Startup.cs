@@ -5,7 +5,7 @@ using LiteDB;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.EventModel.Storage.Traits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

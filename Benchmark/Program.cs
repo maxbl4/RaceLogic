@@ -3,11 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using LiteDB;
+using maxbl4.Race.EventModel.Storage.Identifier;
+using maxbl4.Race.EventModel.Storage.Traits;
+using maxbl4.Race.Extensions;
 using maxbl4.Race.Logic;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
-using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.RoundTiming;
 
 namespace Benchmark

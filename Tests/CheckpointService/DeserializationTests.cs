@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using maxbl4.Race.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using Newtonsoft.Json;
 using Xunit;
 using JsonSerializer = System.Text.Json.JsonSerializer;

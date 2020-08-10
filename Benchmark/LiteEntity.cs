@@ -1,6 +1,6 @@
 ﻿using System;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.EventModel.Storage.Identifier;
+using maxbl4.Race.EventModel.Storage.Traits;
 
 namespace Benchmark
 {

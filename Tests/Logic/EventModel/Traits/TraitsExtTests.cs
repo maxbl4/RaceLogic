@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.EventModel.Storage.Model;
+using maxbl4.Race.EventModel.Storage.Traits;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Logic.EventModel.Traits

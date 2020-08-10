@@ -4,7 +4,7 @@ using System.Threading;
 using FluentAssertions;
 using LiteDB;
 using maxbl4.Race.DataService.Services;
-using maxbl4.Race.Logic.Extensions;
+using maxbl4.Race.Extensions;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Infrastructure

@@ -41,8 +41,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Logic\Logic.csproj" />
+      <ProjectReference Include="..\Race\Race.csproj" />
       <ProjectReference Include="..\ServiceBase\ServiceBase.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Model" />
     </ItemGroup>
 
 </Project>

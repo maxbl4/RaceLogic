@@ -10,7 +10,7 @@ using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.TestOutputHelperExt;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.EventModel.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;

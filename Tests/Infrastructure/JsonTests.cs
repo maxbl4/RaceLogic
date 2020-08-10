@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
-using maxbl4.Race.Logic.LogManagement;
+using maxbl4.Race.LogManagement;
 using Newtonsoft.Json;
 using Xunit;
 

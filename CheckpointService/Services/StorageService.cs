@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reactive.PlatformServices;
 using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Race.CheckpointService.Model;
+using maxbl4.Race.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Services.CheckpointService.Model;
 using Microsoft.Extensions.Options;
 using ServiceBase;
 

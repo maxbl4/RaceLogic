@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Services.CheckpointService.Model;
 using Microsoft.AspNetCore.Mvc;
 
 namespace maxbl4.Race.CheckpointService.Controllers
