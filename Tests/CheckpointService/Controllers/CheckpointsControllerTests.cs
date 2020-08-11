@@ -36,10 +36,10 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             // Make service slow on startup by putting 5000ms sleep
             var sw = Stopwatch.StartNew();
             using var svc = CreateCheckpointService(5000);
-            var client = new HttpClient();
+            var client = new CheckpointServiceClient(svc.ListenUri);
             // Get data from service should succeed, but take 5000+ ms
-            var response = await client.GetAsync($"{svc.ListenUri}/cp");
-            (await response.Content.ReadAsStringAsync()).Should().Be("[]");
+            var response = await client.GetCheckpoints();
+            response.Should().BeEmpty();
             sw.Stop();
             sw.ElapsedMilliseconds.Should().BeGreaterThan(5000);
         }
