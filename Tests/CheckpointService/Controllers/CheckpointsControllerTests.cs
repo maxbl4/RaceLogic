@@ -79,7 +79,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
             sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
             sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
-            await sub.Start();
+            sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
             tagListHandler.ReturnOnce(new Tag{TagId = "3"});
             tagListHandler.ReturnOnce(new Tag{TagId = "4"});
@@ -103,7 +103,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
             sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
             sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
-            await sub.Start();
+            sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
             await client.AppendCheckpoint("555");
             await new Timing()
@@ -128,7 +128,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
             sub.ReaderStatus.Subscribe(x => readerStatus = x);
             sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
-            await sub.Start();
+            sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
             await client.AppendCheckpoint("555");
             await new Timing()
@@ -154,7 +154,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var sub = client.CreateSubscription(DateTime.UtcNow.AddHours(-1));
             sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
             sub.WebSocketConnected.Subscribe(s => wsConnected = s.IsConnected);
-            await sub.Start();
+            sub.Start();
             await new Timing().ExpectAsync(() => wsConnected);
             await client.AppendCheckpoint("");
             (await new Timing()
@@ -217,7 +217,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             using var sub = (CheckpointSubscription)client.CreateSubscription(DateTime.UtcNow.AddHours(-1), TimeSpan.FromMilliseconds(500));
             sub.Checkpoints.Subscribe(cp => checkpoints.Add(cp));
             sub.WebSocketConnected.Subscribe(s => wsConnectionStatus.Add(s));
-            await sub.Start();
+            sub.Start();
 
             // Assert we could not connect, but were trying
             await new Timing().ExpectAsync(() => wsConnectionStatus.Count > 2);

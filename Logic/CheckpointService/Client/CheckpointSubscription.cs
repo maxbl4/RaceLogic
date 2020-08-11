@@ -28,7 +28,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
         public IObservable<ReaderStatus> ReaderStatus => readerStatus;
         
         private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new BehaviorSubject<WsConnectionStatus>(new WsConnectionStatus());
-        private string address;
+        private readonly string address;
         private readonly DateTime @from;
         private readonly TimeSpan reconnectTimeout;
         public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
@@ -45,7 +45,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
             disposable.Add(webSocketConnected);
         }
         
-        public async Task Start()
+        public void Start()
         {   
             logger.Information("Connect");
 

@@ -10,6 +10,6 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
         IObservable<Checkpoint> Checkpoints { get; }
         IObservable<ReaderStatus> ReaderStatus { get; }
         IObservable<WsConnectionStatus> WebSocketConnected { get; }
-        Task Start();
+        void Start();
     }
 }
