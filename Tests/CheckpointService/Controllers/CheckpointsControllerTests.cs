@@ -227,7 +227,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             {
                 // Now we connect
                 await new Timing().ExpectAsync(() => wsConnectionStatus.LastOrDefault()?.IsConnected == true);
-                client.AppendCheckpoint("123");
+                await client.AppendCheckpoint("123");
                 await new Timing().ExpectAsync(() => checkpoints.Any(cp => cp.RiderId == "123"));
             }
             // Disconnect again
@@ -237,7 +237,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             {
                 // Connect again
                 await new Timing().ExpectAsync(() => wsConnectionStatus.LastOrDefault()?.IsConnected == true);
-                client.AppendCheckpoint("567");
+                await client.AppendCheckpoint("567");
                 await new Timing().ExpectAsync(() => checkpoints.Any(cp => cp.RiderId == "567"));
             }
         }
