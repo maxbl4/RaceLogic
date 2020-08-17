@@ -72,12 +72,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         {
             // TODO: Subscribe to checkpoints from each enabled CheckpointService
             // Call OnCheckpoint
-            
+            await Task.Delay(1);
         }
         
         public async Task Stop()
         {
             // TODO: dispose subscription
+            await Task.Delay(1);
         }
 
         public ValueTask DisposeAsync()

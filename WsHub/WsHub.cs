@@ -1,53 +1,26 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using maxbl4.Race.Logic.WsHub;
+using maxbl4.Race.Logic.WsHub.Messages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json.Linq;
 using Serilog;
 
 namespace maxbl4.Race.WsHub
 {
     [Authorize]
-    public class WsHub: Hub<IWsHubClient>
+    public class WsHub: Hub<IWsHubClient>, IWsHubServer
     {
         private static readonly ILogger logger = Log.ForContext<WsHub>();
 
-        public override Task OnConnectedAsync()
+        public async Task SendTo(JObject obj)
         {
-            logger.Debug($"New Connection {Context.ConnectionId} {Context.UserIdentifier} {Context.User?.Identity?.Name}");
-            return base.OnConnectedAsync();
-        }
-
-        public async Task SendTo(MessageBase msg)
-        {
+            var msg = MessageBase.MaterializeConcreteMessage(obj);
             logger.Debug($"Message from {msg.SenderId} to {msg.TargetId}");
             var user = Clients.User(msg.TargetId);
             logger.Debug($"Resolved user {user}");
             await user.ReceiveMessage(msg);
         }
-
-    }
-
-    public class RegisterMessage
-    {
-        public string ClientId { get; set; }
-    }
-
-    public class ClientRegistration
-    {
-        public string ClientId { get; set; }
-        public ConcurrentBag<string> ConnectionIds { get; set; } = new ConcurrentBag<string>();
-    }
-
-    public interface IWsHubClient
-    {
-        Task ReceiveMessage(MessageBase messageBase);
-    }
-
-    public class MessageBase
-    {
-        public string MessageId { get; set; }
-        public string SenderId { get; set; }
-        public string TargetId { get; set; }
-        public string Payload { get; set; }
     }
 }

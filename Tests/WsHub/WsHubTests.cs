@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Race.Logic.CheckpointService.Client;
+using maxbl4.Race.Logic.WsHub;
+using maxbl4.Race.Logic.WsHub.Messages;
 using maxbl4.Race.WsHub;
 using Serilog;
 using Serilog.Core;
@@ -31,16 +33,16 @@ namespace maxbl4.Race.Tests.WsHub
             await cli2.Connect();
             await cli2.ExpectConnected();
 
-            await cli1.Client.SendTo("cli2", new MessageBase {Payload = "some"});
+            await cli1.Client.SendTo("cli2", new TestMessage {Payload = "some"});
             await new Timing()
                 .Logger(Logger)
-                .ExpectAsync(() => cli2.ClientMessages.Any(x => x.Payload == "some"));
+                .ExpectAsync(() => cli2.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "some"));
             cli1.ClientMessages.Should().BeEmpty();
             
-            await cli2.Client.SendTo("cli1", new MessageBase {Payload = "222"});
+            await cli2.Client.SendTo("cli1", new TestMessage {Payload = "222"});
             await new Timing()
                 .Logger(Logger)
-                .ExpectAsync(() => cli1.ClientMessages.Any(x => x.Payload == "222"));
+                .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "222"));
             cli2.ClientMessages.Should().HaveCount(1);
         }
         
@@ -61,12 +63,12 @@ namespace maxbl4.Race.Tests.WsHub
             }).ToList();
             await Task.WhenAll(tasks);
             
-            await sender.Client.SendTo("receiver", new MessageBase {Payload = "some"});
+            await sender.Client.SendTo("receiver", new TestMessage {Payload = "some"});
             for (var i = 0; i < 5; i++)
             {
                 await new Timing()
                     .Logger(Logger)
-                    .ExpectAsync(() => tasks[i].Result.ClientMessages.Any(x => x.Payload == "some"));
+                    .ExpectAsync(() => tasks[i].Result.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "some"));
             }
         }
     }

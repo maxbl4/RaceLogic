@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -7,11 +6,14 @@ using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Infrastructure.Extensions.TaskExt;
 using maxbl4.Race.Logic.CheckpointService.Client;
+using maxbl4.Race.Logic.WsHub.Messages;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Serilog;
 
-namespace maxbl4.Race.WsHub
+namespace maxbl4.Race.Logic.WsHub
 {
     public class WsHubClient: IDisposable
     {
@@ -55,16 +57,18 @@ namespace maxbl4.Race.WsHub
             };
             
             disposable.Add(Disposable.Create(() => logger.Swallow(() => wsConnection.DisposeAsync()).RunSync()));
-            disposable.Add(wsConnection.On(nameof(IWsHubClient.ReceiveMessage), (MessageBase msg) => messages.OnNext(msg)));
+            disposable.Add(wsConnection.On(nameof(IWsHubClient.ReceiveMessage), 
+                (JObject msg) => messages.OnNext(MessageBase.MaterializeConcreteMessage(msg))));
 
             await TryConnect();
         }
 
         public async Task SendTo(string targetId, MessageBase msg)
         {
-            msg.SenderId = this.ClientId;
+            msg.SenderId = ClientId;
             msg.TargetId = targetId;
-            await wsConnection.SendAsync(nameof(WsHub.SendTo), msg);
+            msg.MessageType = msg.GetType().FullName;
+            await wsConnection.SendAsync(nameof(IWsHubServer.SendTo), msg);
         }
         
         async Task HandleDisconnect(Exception ex)
