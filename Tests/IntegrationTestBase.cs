@@ -92,6 +92,17 @@ namespace maxbl4.Race.Tests
             return svc;
         }
         
+        public ServiceRunner<maxbl4.Race.WsHub.Startup> CreateWsHubService(int pauseStartupMs = 0, int port = 0)
+        {
+            Logger.Debug("Creating WsHubService");
+            var svc = new ServiceRunner<maxbl4.Race.WsHub.Startup>();
+            svc.Start(new []
+            {
+                $"--Urls=http://127.0.0.1:{port}"
+            }).Wait(0);
+            return svc;
+        }
+        
         public ServiceRunner<Race.DataService.Startup> CreateDataService(int pauseStartupMs = 0)
         {
             Logger.Debug("Creating CheckpointService with {@storageConnectionString}", storageConnectionString);

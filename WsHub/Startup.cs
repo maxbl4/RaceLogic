@@ -1,8 +1,11 @@
+using System.Reactive.PlatformServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 
 namespace maxbl4.Race.WsHub
 {
@@ -15,27 +18,37 @@ namespace maxbl4.Race.WsHub
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddSingleton<ISystemClock, DefaultSystemClock>();
+            services.AddControllers().AddNewtonsoftJson();
+            services.AddSignalR().AddNewtonsoftJsonProtocol();
+            services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSerilogRequestLogging(o =>
+            {
+                o.GetLevel = (context, duration, error) =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/log"))
+                        return LogEventLevel.Verbose;
+                    return LogEventLevel.Information;
+                };
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<WsHub>("/ws/hub");
+            });
         }
     }
 }
