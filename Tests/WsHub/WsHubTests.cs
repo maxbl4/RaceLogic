@@ -43,6 +43,32 @@ namespace maxbl4.Race.Tests.WsHub
                 .ExpectAsync(() => cli1.ClientMessages.Any(x => x.Payload == "222"));
             cli2.ClientMessages.Should().HaveCount(1);
         }
+        
+        [Fact]
+        public async Task Send_to_multiple_clients_of_same_user()
+        {
+            using var svc = CreateWsHubService();
+            using var sender = new WsClientTestWrapper(svc.ListenUri, "sender");
+            await sender.Connect();
+            await sender.ExpectConnected();
+
+            var tasks = Enumerable.Range(0, 5).Select(async x =>
+            {
+                var cli2 = new WsClientTestWrapper(svc.ListenUri, "receiver");
+                await cli2.Connect();
+                await cli2.ExpectConnected();
+                return cli2;
+            }).ToList();
+            await Task.WhenAll(tasks);
+            
+            await sender.Client.SendTo("receiver", new MessageBase {Payload = "some"});
+            for (var i = 0; i < 5; i++)
+            {
+                await new Timing()
+                    .Logger(Logger)
+                    .ExpectAsync(() => tasks[i].Result.ClientMessages.Any(x => x.Payload == "some"));
+            }
+        }
     }
 
     public class WsClientTestWrapper: IDisposable
