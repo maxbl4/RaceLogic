@@ -28,10 +28,8 @@ namespace maxbl4.Race.Tests.WsHub
             using var svc = CreateWsHubService();
             using var cli1 = new WsClientTestWrapper(svc.ListenUri, "cli1");
             await cli1.Connect();
-            await cli1.ExpectConnected();
             using var cli2 = new WsClientTestWrapper(svc.ListenUri, "cli2");
             await cli2.Connect();
-            await cli2.ExpectConnected();
 
             await cli1.Client.SendTo("cli2", new TestMessage {Payload = "some"});
             await new Timing()
@@ -47,18 +45,54 @@ namespace maxbl4.Race.Tests.WsHub
         }
         
         [Fact]
+        public async Task Messages_are_deduplicated()
+        {
+            using var svc = CreateWsHubService();
+            using var cli1 = new WsClientTestWrapper(svc.ListenUri, "cli1");
+            await cli1.Connect();
+            var msg = new TestMessage{Payload = "Duplicate"};
+            
+            await cli1.Client.SendTo("cli1", msg);
+            await cli1.Client.SendTo("cli1", msg);
+            await new Timing()
+                .Logger(Logger)
+                .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "Duplicate"));
+            await Task.Delay(1000);
+            cli1.ClientMessages.Should().HaveCount(1);
+        }
+        
+        [Fact]
+        public async Task Message_deduplication_cache_is_cleared()
+        {
+            using var svc = CreateWsHubService();
+            using var cli1 = new WsClientTestWrapper(svc.ListenUri, "cli1", new WsHubClientOptions
+            {
+                LastSeenMessageIdsCleanupPeriod = TimeSpan.FromMilliseconds(300),
+                LastSeenMessageIdsRetentionPeriod = TimeSpan.FromMilliseconds(200),
+            });
+            await cli1.Connect();
+            var msg = new TestMessage{Payload = "Duplicate"};
+            
+            await cli1.Client.SendTo("cli1", msg);
+            await Task.Delay(500);
+            await cli1.Client.SendTo("cli1", msg);
+            
+            await new Timing()
+                .Logger(Logger)
+                .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Count(x => x.Payload == "Duplicate") == 2);
+        }
+        
+        [Fact]
         public async Task Send_to_multiple_clients_of_same_user()
         {
             using var svc = CreateWsHubService();
             using var sender = new WsClientTestWrapper(svc.ListenUri, "sender");
             await sender.Connect();
-            await sender.ExpectConnected();
 
             var tasks = Enumerable.Range(0, 5).Select(async x =>
             {
                 var cli2 = new WsClientTestWrapper(svc.ListenUri, "receiver");
                 await cli2.Connect();
-                await cli2.ExpectConnected();
                 return cli2;
             }).ToList();
             await Task.WhenAll(tasks);
@@ -77,20 +111,25 @@ namespace maxbl4.Race.Tests.WsHub
     {
         private readonly WsHubClient client;
         public string ClientId { get; }
-        public List<MessageBase> ClientMessages { get; } = new List<MessageBase>();
+        public List<Message> ClientMessages { get; } = new List<Message>();
         public List<WsConnectionStatus> ConnectionStatuses { get; } = new List<WsConnectionStatus>();
 
         public WsHubClient Client => client;
 
-        public WsClientTestWrapper(string address, string clientId)
+        public WsClientTestWrapper(string address, string clientId, WsHubClientOptions options = null)
         {
             ClientId = clientId;
-            client = new WsHubClient(address, clientId);
+            client = new WsHubClient(address, clientId, options);
             Client.WebSocketConnected.Subscribe(ConnectionStatuses.Add);
             Client.Messages.Subscribe(ClientMessages.Add);
         }
         
-        public Task Connect() => Client.Connect();
+        public async Task Connect(bool expectSuccess = true)
+        {
+            await Client.Connect();
+            if (expectSuccess)
+                await ExpectConnected();
+        }
         
         public async Task ExpectConnected()
         {

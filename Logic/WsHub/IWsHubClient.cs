@@ -5,6 +5,6 @@ namespace maxbl4.Race.Logic.WsHub
 {
     public interface IWsHubClient
     {
-        Task ReceiveMessage(MessageBase messageBase);
+        Task ReceiveMessage(Message message);
     }
 }

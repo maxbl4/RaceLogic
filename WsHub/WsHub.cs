@@ -16,7 +16,7 @@ namespace maxbl4.Race.WsHub
 
         public async Task SendTo(JObject obj)
         {
-            var msg = MessageBase.MaterializeConcreteMessage(obj);
+            var msg = Message.MaterializeConcreteMessage(obj);
             logger.Debug($"Message from {msg.SenderId} to {msg.TargetId}");
             var user = Clients.User(msg.TargetId);
             logger.Debug($"Resolved user {user}");
