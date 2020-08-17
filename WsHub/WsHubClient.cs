@@ -44,7 +44,7 @@ namespace maxbl4.Race.WsHub
                 .AddNewtonsoftJsonProtocol()
                 .WithUrl($"{address}ws/hub", options =>
                 {
-                    options.Credentials = new NetworkCredential(ClientId, "password");
+                    options.AccessTokenProvider = () => Task.FromResult(ClientId);
                 })
                 .Build();
             wsConnection.Closed += exception =>

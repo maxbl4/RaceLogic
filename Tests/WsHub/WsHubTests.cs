@@ -35,6 +35,13 @@ namespace maxbl4.Race.Tests.WsHub
             await new Timing()
                 .Logger(Logger)
                 .ExpectAsync(() => cli2.ClientMessages.Any(x => x.Payload == "some"));
+            cli1.ClientMessages.Should().BeEmpty();
+            
+            await cli2.Client.SendTo("cli1", new MessageBase {Payload = "222"});
+            await new Timing()
+                .Logger(Logger)
+                .ExpectAsync(() => cli1.ClientMessages.Any(x => x.Payload == "222"));
+            cli2.ClientMessages.Should().HaveCount(1);
         }
     }
 

@@ -1,10 +1,12 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Serilog;
 
 namespace maxbl4.Race.WsHub
 {
+    [Authorize]
     public class WsHub: Hub<IWsHubClient>
     {
         private static readonly ILogger logger = Log.ForContext<WsHub>();
