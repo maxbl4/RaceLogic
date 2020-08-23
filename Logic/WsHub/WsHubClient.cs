@@ -29,6 +29,7 @@ namespace maxbl4.Race.Logic.WsHub
     
     public class WsHubClient: IDisposable
     {
+        public ServiceRegistration ServiceRegistration { get; }
         private volatile bool disposed = false;
         private readonly ILogger logger = Log.ForContext<WsHubClient>();
         private readonly CompositeDisposable disposable = new CompositeDisposable();
@@ -43,16 +44,14 @@ namespace maxbl4.Race.Logic.WsHub
         private readonly Subject<Message> messages = new Subject<Message>();
         public IObservable<Message> Messages => messages;
 
-        public string ClientId { get; }
-
-        public WsHubClient(string address, string clientId, WsHubClientOptions options = null, ISystemClock systemClock = null)
+        public WsHubClient(string address, ServiceRegistration serviceRegistration, WsHubClientOptions options = null, ISystemClock systemClock = null)
         {
+            ServiceRegistration = serviceRegistration;
             if (!address.EndsWith("/"))
                 address += "/";
             this.address = address;
             this.options = options ?? WsHubClientOptions.Default;
             this.systemClock = systemClock ?? new DefaultSystemClock();
-            ClientId = clientId;
             _ = CleanupSeenMessageIds();
         }
 
@@ -62,7 +61,7 @@ namespace maxbl4.Race.Logic.WsHub
                 .AddNewtonsoftJsonProtocol()
                 .WithUrl($"{address}ws/hub", options =>
                 {
-                    options.AccessTokenProvider = () => Task.FromResult(ClientId);
+                    options.AccessTokenProvider = () => Task.FromResult(ServiceRegistration.ServiceId);
                 })
                 .Build();
             wsConnection.Closed += exception =>
@@ -95,10 +94,28 @@ namespace maxbl4.Race.Logic.WsHub
 
         public async Task SendTo(string targetId, Message msg)
         {
-            msg.SenderId = ClientId;
+            msg.SenderId = ServiceRegistration.ServiceId;
             msg.TargetId = targetId;
             msg.MessageType = msg.GetType().FullName;
             await wsConnection.SendAsync(nameof(IWsHubServer.SendTo), msg);
+        }
+
+        public async Task RegisterService(ServiceFeatures serviceFeatures)
+        {
+            await wsConnection.SendAsync(nameof(IWsHubServer.Register), new RegisterServiceMessage
+            {
+                Features = serviceFeatures
+            });
+            logger.Information($"Registered as {ServiceRegistration}");
+        }
+        
+        public async Task<List<ServiceRegistration>> ListServiceRegistrations()
+        {
+            var response = await wsConnection
+                .InvokeAsync<ListServiceRegistrationsResponse>(
+                    nameof(IWsHubServer.ListServiceRegistrations), 
+                    new ListServiceRegistrationsRequest());
+            return response.Registrations;
         }
         
         async Task HandleDisconnect(Exception ex)
@@ -112,12 +129,12 @@ namespace maxbl4.Race.Logic.WsHub
         {
             try
             {
-                logger.Warning("TryConnect");
                 if (wsConnection.State != HubConnectionState.Connected && wsConnection.State != HubConnectionState.Connecting
                                                                        && !disposed)
                 {
                     await wsConnection.StartAsync();
-                    logger.Warning("TryConnect success");
+                    logger.Information("TryConnect success");
+                    await RegisterService(ServiceRegistration.Features);
                 }
                 webSocketConnected.OnNext(new WsConnectionStatus{IsConnected = true});
             }

@@ -26,9 +26,9 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Send_simple_message()
         {
             using var svc = CreateWsHubService();
-            using var cli1 = new WsClientTestWrapper(svc.ListenUri, "cli1");
+            using var cli1 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli1"});
             await cli1.Connect();
-            using var cli2 = new WsClientTestWrapper(svc.ListenUri, "cli2");
+            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
 
             await cli1.Client.SendTo("cli2", new TestMessage {Payload = "some"});
@@ -48,7 +48,7 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Messages_are_deduplicated()
         {
             using var svc = CreateWsHubService();
-            using var cli1 = new WsClientTestWrapper(svc.ListenUri, "cli1");
+            using var cli1 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli1"});
             await cli1.Connect();
             var msg = new TestMessage{Payload = "Duplicate"};
             
@@ -65,7 +65,7 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Message_deduplication_cache_is_cleared()
         {
             using var svc = CreateWsHubService();
-            using var cli1 = new WsClientTestWrapper(svc.ListenUri, "cli1", new WsHubClientOptions
+            using var cli1 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli1"}, new WsHubClientOptions
             {
                 LastSeenMessageIdsCleanupPeriod = TimeSpan.FromMilliseconds(300),
                 LastSeenMessageIdsRetentionPeriod = TimeSpan.FromMilliseconds(200),
@@ -86,12 +86,12 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Send_to_multiple_clients_of_same_user()
         {
             using var svc = CreateWsHubService();
-            using var sender = new WsClientTestWrapper(svc.ListenUri, "sender");
+            using var sender = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "sender"});
             await sender.Connect();
 
             var tasks = Enumerable.Range(0, 5).Select(async x =>
             {
-                var cli2 = new WsClientTestWrapper(svc.ListenUri, "receiver");
+                var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "receiver"});
                 await cli2.Connect();
                 return cli2;
             }).ToList();
@@ -105,21 +105,43 @@ namespace maxbl4.Race.Tests.WsHub
                     .ExpectAsync(() => tasks[i].Result.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "some"));
             }
         }
+        
+        [Fact]
+        public async Task Register_service_and_list_and_unregister()
+        {
+            using var svc = CreateWsHubService();
+            using (var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration
+            {
+                ServiceId = "cli",
+                Features = ServiceFeatures.RfidReader | ServiceFeatures.ManualInputTerminal
+            }))
+            {
+                await cli.Connect();
+                var regs = await cli.Client.ListServiceRegistrations();
+                regs.Should().HaveCount(1);
+                regs[0].ServiceId.Should().Be("cli");
+                regs[0].Features.Should().Be(ServiceFeatures.RfidReader | ServiceFeatures.ManualInputTerminal);
+            }
+
+            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            await cli2.Connect();
+            await new Timing().ExpectAsync(async () => (await cli2.Client.ListServiceRegistrations()).All(x => x.ServiceId != "cli"));
+        }
     }
 
     public class WsClientTestWrapper: IDisposable
     {
+        public ServiceRegistration Registration { get; }
         private readonly WsHubClient client;
-        public string ClientId { get; }
         public List<Message> ClientMessages { get; } = new List<Message>();
         public List<WsConnectionStatus> ConnectionStatuses { get; } = new List<WsConnectionStatus>();
 
         public WsHubClient Client => client;
 
-        public WsClientTestWrapper(string address, string clientId, WsHubClientOptions options = null)
+        public WsClientTestWrapper(string address, ServiceRegistration registration, WsHubClientOptions options = null)
         {
-            ClientId = clientId;
-            client = new WsHubClient(address, clientId, options);
+            Registration = registration;
+            client = new WsHubClient(address, registration, options);
             Client.WebSocketConnected.Subscribe(ConnectionStatuses.Add);
             Client.Messages.Subscribe(ClientMessages.Add);
         }
@@ -134,7 +156,7 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task ExpectConnected()
         {
             await new Timing()
-                .Logger(Log.ForContext(new PropertyEnricher(Constants.SourceContextPropertyName, $"{nameof(WsClientTestWrapper)}: {ClientId}")))
+                .Logger(Log.ForContext(new PropertyEnricher(Constants.SourceContextPropertyName, $"{nameof(WsClientTestWrapper)}: {Registration}")))
                 .ExpectAsync(() => ConnectionStatuses.LastOrDefault()?.IsConnected == true);
         }
 

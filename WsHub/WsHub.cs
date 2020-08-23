@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
@@ -13,6 +16,45 @@ namespace maxbl4.Race.WsHub
     public class WsHub: Hub<IWsHubClient>, IWsHubServer
     {
         private static readonly ILogger logger = Log.ForContext<WsHub>();
+        private static readonly ConcurrentDictionary<string, WsServiceRegistration>
+            serviceRegistrations = new ConcurrentDictionary<string, WsServiceRegistration>();
+
+        public void Register(RegisterServiceMessage msg)
+        {
+            lock(serviceRegistrations)
+            {
+                var reg = serviceRegistrations.GetOrAdd(Context.UserIdentifier, new WsServiceRegistration());
+                reg.ServiceId = Context.UserIdentifier;
+                reg.Features = msg.Features;
+                reg.ConnectionIds.Add(Context.ConnectionId);
+                logger.Information($"Service {Context.UserIdentifier} registered on {Context.ConnectionId} with features {msg.Features}" +
+                                   $". Has {reg.ConnectionIds.Count} connections");
+            }
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            lock (serviceRegistrations)
+            {
+                if (serviceRegistrations.TryGetValue(Context.UserIdentifier, out var reg))
+                {
+                    reg.ConnectionIds.Remove(Context.ConnectionId);
+                    logger.Information($"Service {Context.UserIdentifier} disconnected on {Context.ConnectionId}" +
+                                       $". Has {reg.ConnectionIds.Count} connections");
+                    if (reg.ConnectionIds.Count == 0)
+                        serviceRegistrations.TryRemove(Context.UserIdentifier, out _);
+                }
+            }
+            return base.OnDisconnectedAsync(exception);
+        }
+
+        public ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request)
+        {
+            return new ListServiceRegistrationsResponse
+            {
+                Registrations = serviceRegistrations.Values.Select(x => x.ToServiceRegistration()).ToList()
+            };
+        }
 
         public async Task SendTo(JObject obj)
         {
