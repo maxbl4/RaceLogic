@@ -9,5 +9,7 @@ namespace maxbl4.Race.Logic.WsHub
         Task SendTo(JObject msg);
         void Register(RegisterServiceMessage msg);
         ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request);
+        Task Subscribe(TopicSubscribeMessage msg);
+        Task Unsubscribe(TopicSubscribeMessage msg);
     }
 }

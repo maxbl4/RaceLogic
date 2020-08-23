@@ -9,7 +9,7 @@ namespace maxbl4.Race.Logic.WsHub.Messages
     {
         public Id<Message> MessageId { get; set; } = Id<Message>.NewId();
         public string SenderId { get; set; }
-        public string TargetId { get; set; }
+        public MessageTarget Target { get; set; }
         public string MessageType { get; set; }
         
         public static Message MaterializeConcreteMessage(JObject obj)
@@ -22,6 +22,29 @@ namespace maxbl4.Race.Logic.WsHub.Messages
             }   
             return obj.ToObject<Message>();
         }
+    }
+
+    public class MessageTarget
+    {
+        public TargetType Type { get; set; }
+        public string TargetId { get; set; }
+
+        public override string ToString()
+        {
+            var prefix = Type switch
+            {
+                TargetType.Direct => "@",
+                TargetType.Topic => "#",
+                _ => "_"
+            };
+            return $"{prefix}{TargetId}";
+        }
+    }
+
+    public enum TargetType
+    {
+        Direct,
+        Topic
     }
 
     public class RegisterServiceMessage
@@ -48,6 +71,11 @@ namespace maxbl4.Race.Logic.WsHub.Messages
         {
             return $"ServiceId: {ServiceId}, Features: {Features}";
         }
+    }
+
+    public class TopicSubscribeMessage
+    {
+        public string[] TopicIds { get; set; }
     }
 
     [Flags]

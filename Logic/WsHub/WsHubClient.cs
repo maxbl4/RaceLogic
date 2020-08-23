@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -40,7 +41,8 @@ namespace maxbl4.Race.Logic.WsHub
         private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new BehaviorSubject<WsConnectionStatus>(new WsConnectionStatus());
         public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
         
-        private readonly Dictionary<Id<Message>, DateTime> lastSeenMessageIds = new Dictionary<Id<Message>, DateTime>();
+        private readonly ConcurrentDictionary<Id<Message>, DateTime> lastSeenMessageIds = new ConcurrentDictionary<Id<Message>, DateTime>();
+        private readonly ConcurrentDictionary<string, string> topicSubscriptions = new ConcurrentDictionary<string, string>();
         private readonly Subject<Message> messages = new Subject<Message>();
         public IObservable<Message> Messages => messages;
 
@@ -92,17 +94,38 @@ namespace maxbl4.Race.Logic.WsHub
             }
         }
 
-        public async Task SendTo(string targetId, Message msg)
+        public async Task SendToDirect(string targetId, Message msg)
+        {
+            msg.Target = new MessageTarget
+            {
+                Type = TargetType.Direct,
+                TargetId = targetId
+            };
+            msg.MessageType = msg.GetType().FullName;
+            await SendCore(msg);
+        }
+        
+        public async Task SendToTopic(string topicId, Message msg)
+        {
+            msg.Target = new MessageTarget
+            {
+                Type = TargetType.Topic,
+                TargetId = topicId
+            };
+            msg.MessageType = msg.GetType().FullName;
+            await SendCore(msg);
+        }
+        
+        public async Task SendCore(Message msg)
         {
             msg.SenderId = ServiceRegistration.ServiceId;
-            msg.TargetId = targetId;
             msg.MessageType = msg.GetType().FullName;
-            await wsConnection.SendAsync(nameof(IWsHubServer.SendTo), msg);
+            await wsConnection.InvokeAsync(nameof(IWsHubServer.SendTo), msg);
         }
 
         public async Task RegisterService(ServiceFeatures serviceFeatures)
         {
-            await wsConnection.SendAsync(nameof(IWsHubServer.Register), new RegisterServiceMessage
+            await wsConnection.InvokeAsync(nameof(IWsHubServer.Register), new RegisterServiceMessage
             {
                 Features = serviceFeatures
             });
@@ -116,6 +139,32 @@ namespace maxbl4.Race.Logic.WsHub
                     nameof(IWsHubServer.ListServiceRegistrations), 
                     new ListServiceRegistrationsRequest());
             return response.Registrations;
+        }
+
+        public async Task Subscribe(params string[] topicIds)
+        {
+            foreach (var topicId in topicIds)
+            {
+                topicSubscriptions.TryAdd(topicId, topicId);
+            }
+            await wsConnection.InvokeAsync(nameof(IWsHubServer.Subscribe),
+                new TopicSubscribeMessage
+                {
+                    TopicIds = topicIds
+                });
+        }
+        
+        public async Task Unsubscribe(params string[] topicIds)
+        {
+            foreach (var topicId in topicIds)
+            {
+                topicSubscriptions.TryRemove(topicId, out _);
+            }
+            await wsConnection.InvokeAsync(nameof(IWsHubServer.Unsubscribe),
+                new TopicSubscribeMessage
+                {
+                    TopicIds = topicIds
+                });
         }
         
         async Task HandleDisconnect(Exception ex)
@@ -135,6 +184,7 @@ namespace maxbl4.Race.Logic.WsHub
                     await wsConnection.StartAsync();
                     logger.Information("TryConnect success");
                     await RegisterService(ServiceRegistration.Features);
+                    await Subscribe(topicSubscriptions.Keys.ToArray());
                 }
                 webSocketConnected.OnNext(new WsConnectionStatus{IsConnected = true});
             }
@@ -154,7 +204,7 @@ namespace maxbl4.Race.Logic.WsHub
                                 > options.LastSeenMessageIdsRetentionPeriod).ToList();
                 foreach (var oldMessageId in oldMessageIds)
                 {
-                    lastSeenMessageIds.Remove(oldMessageId.Key);
+                    lastSeenMessageIds.TryRemove(oldMessageId.Key, out _);
                 }
                 await Task.Delay(options.LastSeenMessageIdsCleanupPeriod);
             }

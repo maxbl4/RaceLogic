@@ -56,13 +56,39 @@ namespace maxbl4.Race.WsHub
             };
         }
 
+        public async Task Subscribe(TopicSubscribeMessage msg)
+        {
+            foreach (var topic in msg.TopicIds)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, topic);
+            }
+        }
+        
+        public async Task Unsubscribe(TopicSubscribeMessage msg)
+        {
+            foreach (var topic in msg.TopicIds)
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, topic);
+            }
+        }
+
         public async Task SendTo(JObject obj)
         {
             var msg = Message.MaterializeConcreteMessage(obj);
-            logger.Debug($"Message from {msg.SenderId} to {msg.TargetId}");
-            var user = Clients.User(msg.TargetId);
-            logger.Debug($"Resolved user {user}");
-            await user.ReceiveMessage(msg);
+            logger.Debug($"Message from {msg.SenderId} to {msg.Target}");
+            switch (msg.Target.Type)
+            {
+                case TargetType.Direct:
+                    var user = Clients.User(msg.Target.TargetId);
+                    logger.Debug($"Resolved user {user}");
+                    await user.ReceiveMessage(msg);
+                    break;
+                case TargetType.Topic:
+                    var group = Clients.OthersInGroup(msg.Target.TargetId);
+                    logger.Debug($"Resolved group {group}");
+                    await group.ReceiveMessage(msg);
+                    break;
+            }
         }
     }
 }

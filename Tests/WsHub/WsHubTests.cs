@@ -31,13 +31,13 @@ namespace maxbl4.Race.Tests.WsHub
             using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
 
-            await cli1.Client.SendTo("cli2", new TestMessage {Payload = "some"});
+            await cli1.Client.SendToDirect("cli2", new TestMessage {Payload = "some"});
             await new Timing()
                 .Logger(Logger)
                 .ExpectAsync(() => cli2.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "some"));
             cli1.ClientMessages.Should().BeEmpty();
             
-            await cli2.Client.SendTo("cli1", new TestMessage {Payload = "222"});
+            await cli2.Client.SendToDirect("cli1", new TestMessage {Payload = "222"});
             await new Timing()
                 .Logger(Logger)
                 .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "222"));
@@ -52,8 +52,8 @@ namespace maxbl4.Race.Tests.WsHub
             await cli1.Connect();
             var msg = new TestMessage{Payload = "Duplicate"};
             
-            await cli1.Client.SendTo("cli1", msg);
-            await cli1.Client.SendTo("cli1", msg);
+            await cli1.Client.SendToDirect("cli1", msg);
+            await cli1.Client.SendToDirect("cli1", msg);
             await new Timing()
                 .Logger(Logger)
                 .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "Duplicate"));
@@ -73,9 +73,9 @@ namespace maxbl4.Race.Tests.WsHub
             await cli1.Connect();
             var msg = new TestMessage{Payload = "Duplicate"};
             
-            await cli1.Client.SendTo("cli1", msg);
+            await cli1.Client.SendToDirect("cli1", msg);
             await Task.Delay(500);
-            await cli1.Client.SendTo("cli1", msg);
+            await cli1.Client.SendToDirect("cli1", msg);
             
             await new Timing()
                 .Logger(Logger)
@@ -97,7 +97,7 @@ namespace maxbl4.Race.Tests.WsHub
             }).ToList();
             await Task.WhenAll(tasks);
             
-            await sender.Client.SendTo("receiver", new TestMessage {Payload = "some"});
+            await sender.Client.SendToDirect("receiver", new TestMessage {Payload = "some"});
             for (var i = 0; i < 5; i++)
             {
                 await new Timing()
@@ -126,6 +126,27 @@ namespace maxbl4.Race.Tests.WsHub
             using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
             await new Timing().ExpectAsync(async () => (await cli2.Client.ListServiceRegistrations()).All(x => x.ServiceId != "cli"));
+        }
+        
+        [Fact]
+        public async Task Send_to_topic()
+        {
+            using var svc = CreateWsHubService();
+            using var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli"});
+            await cli.Connect();
+            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            await cli2.Connect();
+            await cli.Client.Subscribe("topic1");
+            await cli2.Client.Subscribe("topic1");
+            await cli2.Client.SendToTopic("topic1", new TestMessage {Payload = "test topic"});
+            await new Timing()
+                .Logger(Logger)
+                .ExpectAsync(() => cli.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "test topic"));
+            cli2.ClientMessages.Should().BeEmpty();
+            await cli.Client.Unsubscribe("topic1");
+            await cli2.Client.SendToTopic("topic1", new TestMessage {Payload = "test2"});
+            await Task.Delay(100);
+            cli.ClientMessages.Should().HaveCount(1);
         }
     }
 
