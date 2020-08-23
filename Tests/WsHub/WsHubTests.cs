@@ -141,12 +141,37 @@ namespace maxbl4.Race.Tests.WsHub
             await cli2.Client.SendToTopic("topic1", new TestMessage {Payload = "test topic"});
             await new Timing()
                 .Logger(Logger)
-                .ExpectAsync(() => cli.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "test topic"));
+                .ExpectAsync(() => cli.ClientMessages.Count > 0);
+            cli.ClientMessages.Should().HaveCount(1);
+            var msg = cli.ClientMessages.OfType<TestMessage>().First();
+            msg.Payload.Should().Be("test topic");
+            msg.Target.Type.Should().Be(TargetType.Topic);
+            msg.Target.TargetId.Should().Be("topic1");
+            msg.SenderId.Should().Be("cli2");
+            
             cli2.ClientMessages.Should().BeEmpty();
             await cli.Client.Unsubscribe("topic1");
             await cli2.Client.SendToTopic("topic1", new TestMessage {Payload = "test2"});
             await Task.Delay(100);
             cli.ClientMessages.Should().HaveCount(1);
+        }
+        
+        [Fact]
+        public async Task Invoke_request()
+        {
+            using var svc = CreateWsHubService();
+            using var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli"});
+            await cli.Connect();
+            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            await cli2.Connect();
+            cli.Client.RequestHandler = msg =>
+            {
+                var tst = (TestMessage) msg;
+                tst.Payload += " hello";
+                return Task.FromResult<Message>(tst);
+            };
+            var response = await cli2.Client.InvokeRequest<TestMessage>("cli", new TestMessage {Payload = "test"});
+            response.Payload.Should().Be("test hello");
         }
     }
 

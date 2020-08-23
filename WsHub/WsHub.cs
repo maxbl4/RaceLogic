@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
 using Microsoft.AspNetCore.Authorization;
@@ -81,14 +82,48 @@ namespace maxbl4.Race.WsHub
                 case TargetType.Direct:
                     var user = Clients.User(msg.Target.TargetId);
                     logger.Debug($"Resolved user {user}");
+                    if (user == null)
+                        throw new HubException($"User {msg.Target.TargetId} not found");
                     await user.ReceiveMessage(msg);
                     break;
                 case TargetType.Topic:
                     var group = Clients.OthersInGroup(msg.Target.TargetId);
                     logger.Debug($"Resolved group {group}");
+                    if (group == null)
+                        throw new HubException($"Group {msg.Target.TargetId} not found");
                     await group.ReceiveMessage(msg);
                     break;
             }
+        }
+        
+        private static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
+            outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
+        
+        public async Task<JObject> InvokeRequest(JObject obj)
+        {
+            var msg = Message.MaterializeConcreteMessage(obj);
+            logger.Debug($"InvokeRequest Message from {msg.SenderId} to {msg.Target}");
+            var user = Clients.User(msg.Target.TargetId);
+            logger.Debug($"InvokeRequest Resolved user {user}");
+            if (user == null)
+                throw new HubException($"User {msg.Target.TargetId} not found");
+            TaskCompletionSource<Message> tcs;
+            outstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
+            await user.InvokeRequest(msg);
+            var result = await Task.WhenAny(Task.Delay(30000), tcs.Task);
+            if (result is Task<Message> r)
+                return JObject.FromObject(r.Result);
+            throw new HubException($"Proxy call to {msg.Target} timed out {obj}", new TimeoutException());
+        }
+
+        public void AcceptResponse(JObject obj)
+        {
+            var msg = Message.MaterializeConcreteMessage(obj);
+            logger.Debug($"AcceptResponse Message from {Context.UserIdentifier} to {msg.Target}");
+            if (outstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
+                tcs.TrySetResult(msg);
+            else
+                tcs.TrySetCanceled();
         }
     }
 }

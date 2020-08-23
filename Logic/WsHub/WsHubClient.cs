@@ -45,6 +45,7 @@ namespace maxbl4.Race.Logic.WsHub
         private readonly ConcurrentDictionary<string, string> topicSubscriptions = new ConcurrentDictionary<string, string>();
         private readonly Subject<Message> messages = new Subject<Message>();
         public IObservable<Message> Messages => messages;
+        public Func<Message, Task<Message>> RequestHandler { get; set; }
 
         public WsHubClient(string address, ServiceRegistration serviceRegistration, WsHubClientOptions options = null, ISystemClock systemClock = null)
         {
@@ -76,8 +77,26 @@ namespace maxbl4.Race.Logic.WsHub
             disposable.Add(Disposable.Create(() => logger.Swallow(() => wsConnection.DisposeAsync()).RunSync()));
             disposable.Add(wsConnection.On(nameof(IWsHubClient.ReceiveMessage), 
                 (JObject msg) => DispatchMessage(msg)));
+            disposable.Add(wsConnection.On(nameof(IWsHubClient.InvokeRequest), 
+                (JObject msg) => HandleRequest(msg)));
 
             await TryConnect();
+        }
+        
+        private async Task HandleRequest(JObject obj)
+        {
+            try
+            {
+                var response = await RequestHandler(Message.MaterializeConcreteMessage(obj));
+                response.SenderId = ServiceRegistration.ServiceId;
+                response.MessageType = response.GetType().FullName;
+                await wsConnection.SendAsync(nameof(IWsHubServer.AcceptResponse), response);
+            }
+            catch (Exception ex)
+            {
+                logger.Warning(ex, $"Error handling request {obj}");
+                throw;
+            }
         }
 
         private void DispatchMessage(JObject obj)
@@ -90,7 +109,7 @@ namespace maxbl4.Race.Logic.WsHub
             }
             catch (Exception ex)
             {
-                logger.Warning(ex, "Error dispatching message");
+                logger.Warning(ex, $"Error dispatching message {obj}");
             }
         }
 
@@ -121,6 +140,14 @@ namespace maxbl4.Race.Logic.WsHub
             msg.SenderId = ServiceRegistration.ServiceId;
             msg.MessageType = msg.GetType().FullName;
             await wsConnection.InvokeAsync(nameof(IWsHubServer.SendTo), msg);
+        }
+        
+        public async Task<T> InvokeRequest<T>(string targetId, Message msg)
+        {
+            msg.SenderId = ServiceRegistration.ServiceId;
+            msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};
+            msg.MessageType = msg.GetType().FullName;
+            return await wsConnection.InvokeAsync<T>(nameof(IWsHubServer.InvokeRequest), msg);
         }
 
         public async Task RegisterService(ServiceFeatures serviceFeatures)
