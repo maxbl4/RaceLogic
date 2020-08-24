@@ -11,7 +11,7 @@ namespace maxbl4.Race.WsHub
     public class WsAccessTokenAuthenticationHandler: AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IAuthService authService;
-        public const string SchemeName = "WsAccessToken";
+        
         public WsAccessTokenAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, 
             ILoggerFactory logger, 
             UrlEncoder encoder, 

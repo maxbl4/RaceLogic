@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using maxbl4.Race.WsHub.Models;
+using maxbl4.Race.Logic;
+using maxbl4.Race.Logic.WsHub.Model;
 using maxbl4.Race.WsHub.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace maxbl4.Race.WsHub.Controllers
 {
     [ApiController]
-    [Authorize(Roles = Constants.RoleAdmin)]
+    [Authorize(Roles = Constants.WsHub.Roles.Admin)]
     [Route("tokens")]
     public class AuthController: ControllerBase
     {
@@ -21,7 +22,7 @@ namespace maxbl4.Race.WsHub.Controllers
         [HttpGet]
         public IEnumerable<AuthToken> Get()
         {
-            return authService.ListTokens();
+            return authService.GetTokens();
         }
         
         [HttpPut]
@@ -31,7 +32,7 @@ namespace maxbl4.Race.WsHub.Controllers
             return authService.UpsertToken(token);
         }
         
-        [HttpDelete]
+        [HttpDelete("{token}")]
         public bool Delete(string token)
         {
             return authService.DeleteToken(token);

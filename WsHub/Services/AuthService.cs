@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.WsHub.Models;
+using maxbl4.Race.Logic;
+using maxbl4.Race.Logic.WsHub.Model;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +13,7 @@ namespace maxbl4.Race.WsHub.Services
     public interface IAuthService
     {
         AuthenticateResult ValidateToken(string token);
-        IEnumerable<AuthToken> ListTokens();
+        IEnumerable<AuthToken> GetTokens();
         bool UpsertToken(AuthToken token);
         bool DeleteToken(string token);
     }
@@ -26,7 +26,7 @@ namespace maxbl4.Race.WsHub.Services
         public AuthService(StorageService storageService, IOptions<ServiceOptions> options)
         {
             this.storageService = storageService;
-            var tokens = storageService.ListTokens()
+            var tokens = storageService.GetTokens()
                 .GroupBy(x => x.Token)
                 .Select(x => new KeyValuePair<string, AuthToken>(x.Key, x.First()));
             tokenCache = new ConcurrentDictionary<string, AuthToken>(tokens);
@@ -38,13 +38,13 @@ namespace maxbl4.Race.WsHub.Services
                 {
                     foreach (var initialToken in initialTokens)
                     {
-                        UpsertToken(new AuthToken{Token = initialToken, ServiceName = initialToken, Roles = Constants.RoleAdmin});
+                        UpsertToken(new AuthToken{Token = initialToken, ServiceName = initialToken, Roles = Constants.WsHub.Roles.Admin});
                     }
                 }
             }
         }
 
-        public IEnumerable<AuthToken> ListTokens()
+        public IEnumerable<AuthToken> GetTokens()
         {
             return tokenCache.Values.OrderBy(x => x.ServiceName);
         }
@@ -75,16 +75,11 @@ namespace maxbl4.Race.WsHub.Services
             var roles = auth.Roles?.Split(',', StringSplitOptions.RemoveEmptyEntries);
             if (roles != null)
                 claims.AddRange(roles.Select(x => new Claim(ClaimTypes.Role, x)));
-            var identity = new ClaimsIdentity(claims, WsAccessTokenAuthenticationHandler.SchemeName);
+            var identity = new ClaimsIdentity(claims, Constants.WsHub.Authentication.SchemeName);
             var principal = new ClaimsPrincipal(identity);
 
             return AuthenticateResult.Success(new AuthenticationTicket(principal,
-                WsAccessTokenAuthenticationHandler.SchemeName));
+                Constants.WsHub.Authentication.SchemeName));
         }
-    }
-
-    public class Constants
-    {
-        public const string RoleAdmin = "Admin";
     }
 }

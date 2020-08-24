@@ -2,7 +2,7 @@ using System;
 using LiteDB;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
-namespace maxbl4.Race.WsHub.Models
+namespace maxbl4.Race.Logic.WsHub.Model
 {
     public class AuthToken: IHasTimestamp
     {

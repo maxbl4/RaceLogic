@@ -19,8 +19,6 @@ namespace maxbl4.Race.Tests.WsHub
 {
     public class WsHubClientTests: IntegrationTestBase
     {
-        private const bool RunAgainstPublicHub = false;
-        
         public WsHubClientTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
         }
@@ -37,13 +35,13 @@ namespace maxbl4.Race.Tests.WsHub
             await cli1.Client.SendToDirect(WsToken2, new TestMessage {Payload = "some"});
             await new Timing()
                 .Logger(Logger)
-                .ExpectAsync(() => cli2.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "some"));
+                .ExpectAsync(() => cli2.ClientMessages.ToList().OfType<TestMessage>().Any(x => x.Payload == "some"));
             cli1.ClientMessages.Should().BeEmpty();
             
             await cli2.Client.SendToDirect(WsToken1, new TestMessage {Payload = "222"});
             await new Timing()
                 .Logger(Logger)
-                .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "222"));
+                .ExpectAsync(() => cli1.ClientMessages.ToList().OfType<TestMessage>().Any(x => x.Payload == "222"));
             cli2.ClientMessages.Should().HaveCount(1);
         }
         
@@ -181,7 +179,7 @@ namespace maxbl4.Race.Tests.WsHub
         {
             using var svc = CreateWsHubService();
             using var cli = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), "Bad token"));
-            cli.Connect();
+            _ = cli.Connect();
             await new Timing().Logger(Logger)
                 .ExpectAsync(() => cli.ConnectionStatuses.Any(x => x.Exception != null));
             var status = cli.ConnectionStatuses.First(x => x.Exception != null);
@@ -191,9 +189,6 @@ namespace maxbl4.Race.Tests.WsHub
         
         private string GetHubAddress(ServiceRunner<maxbl4.Race.WsHub.Startup> svc)
         {
-            //return "http://192.168.1.199:18000";
-            if (RunAgainstPublicHub)
-                return "https://hub.braaap.ru";
             return svc.ListenUri;
         }
     }
