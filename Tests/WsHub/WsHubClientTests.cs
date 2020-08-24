@@ -178,6 +178,7 @@ namespace maxbl4.Race.Tests.WsHub
         
         private string GetHubAddress(ServiceRunner<maxbl4.Race.WsHub.Startup> svc)
         {
+            //return "http://192.168.1.199:18000";
             if (RunAgainstPublicHub)
                 return "https://hub.braaap.ru";
             return svc.ListenUri;
