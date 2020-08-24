@@ -21,20 +21,27 @@ namespace maxbl4.Race.Logic.WsHub
 {
     public class WsHubClientOptions
     {
+        public string Address { get; }
+        public string AccessToken { get; }
+        public ServiceFeatures Features { get; set; } = ServiceFeatures.None;
         public TimeSpan ReconnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
         public TimeSpan LastSeenMessageIdsRetentionPeriod { get; set; } = TimeSpan.FromSeconds(60);
         public TimeSpan LastSeenMessageIdsCleanupPeriod { get; set; } = TimeSpan.FromSeconds(5);
-        
-        public static WsHubClientOptions Default => new WsHubClientOptions();
+
+        public WsHubClientOptions(string address, string accessToken)
+        {
+            if (!address.EndsWith("/"))
+                address += "/";
+            Address = address;
+            AccessToken = accessToken;
+        }
     }
     
     public class WsHubClient: IDisposable
     {
-        public ServiceRegistration ServiceRegistration { get; }
         private volatile bool disposed = false;
         private readonly ILogger logger = Log.ForContext<WsHubClient>();
         private readonly CompositeDisposable disposable = new CompositeDisposable();
-        private readonly string address;
         private readonly WsHubClientOptions options;
         private readonly ISystemClock systemClock;
         private HubConnection wsConnection;
@@ -47,13 +54,9 @@ namespace maxbl4.Race.Logic.WsHub
         public IObservable<Message> Messages => messages;
         public Func<Message, Task<Message>> RequestHandler { get; set; }
 
-        public WsHubClient(string address, ServiceRegistration serviceRegistration, WsHubClientOptions options = null, ISystemClock systemClock = null)
+        public WsHubClient(WsHubClientOptions options, ISystemClock systemClock = null)
         {
-            ServiceRegistration = serviceRegistration;
-            if (!address.EndsWith("/"))
-                address += "/";
-            this.address = address;
-            this.options = options ?? WsHubClientOptions.Default;
+            this.options = options;
             this.systemClock = systemClock ?? new DefaultSystemClock();
             _ = CleanupSeenMessageIds();
         }
@@ -62,9 +65,9 @@ namespace maxbl4.Race.Logic.WsHub
         {
             wsConnection = new HubConnectionBuilder()
                 .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{address}_ws/hub", options =>
+                .WithUrl($"{this.options.Address}_ws/hub", options =>
                 {
-                    options.AccessTokenProvider = () => Task.FromResult(ServiceRegistration.ServiceId);
+                    options.AccessTokenProvider = () => Task.FromResult(this.options.AccessToken);
                 })
                 .Build();
             wsConnection.Closed += exception =>
@@ -88,7 +91,6 @@ namespace maxbl4.Race.Logic.WsHub
             try
             {
                 var response = await RequestHandler(Message.MaterializeConcreteMessage(obj));
-                response.SenderId = ServiceRegistration.ServiceId;
                 response.MessageType = response.GetType().FullName;
                 await wsConnection.SendAsync(nameof(IWsHubServer.AcceptResponse), response);
             }
@@ -137,14 +139,12 @@ namespace maxbl4.Race.Logic.WsHub
         
         public async Task SendCore(Message msg)
         {
-            msg.SenderId = ServiceRegistration.ServiceId;
             msg.MessageType = msg.GetType().FullName;
             await wsConnection.InvokeAsync(nameof(IWsHubServer.SendTo), msg);
         }
         
         public async Task<T> InvokeRequest<T>(string targetId, RequestMessage msg)
         {
-            msg.SenderId = ServiceRegistration.ServiceId;
             msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};
             msg.MessageType = msg.GetType().FullName;
             return await wsConnection.InvokeAsync<T>(nameof(IWsHubServer.InvokeRequest), msg);
@@ -156,7 +156,7 @@ namespace maxbl4.Race.Logic.WsHub
             {
                 Features = serviceFeatures
             });
-            logger.Information($"Registered as {ServiceRegistration}");
+            logger.Information($"Registered as {options.Features}");
         }
         
         public async Task<List<ServiceRegistration>> ListServiceRegistrations()
@@ -210,7 +210,7 @@ namespace maxbl4.Race.Logic.WsHub
                 {
                     await wsConnection.StartAsync();
                     logger.Information("TryConnect success");
-                    await RegisterService(ServiceRegistration.Features);
+                    await RegisterService(options.Features);
                     await Subscribe(topicSubscriptions.Keys.ToArray());
                 }
                 webSocketConnected.OnNext(new WsConnectionStatus{IsConnected = true});

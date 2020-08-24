@@ -22,6 +22,10 @@ namespace maxbl4.Race.Tests
 {
     public class IntegrationTestBase
     {
+        public const string TestAdminWsToken = "test-admin-token";
+        public const string WsToken1 = "ws-token-1";
+        public const string WsToken2 = "ws-token-2";
+
         static object sync = new object();
         private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new MessageHub());
         protected IMessageHub MessageHub => messageHub.Value;
@@ -92,17 +96,18 @@ namespace maxbl4.Race.Tests
             return svc;
         }
         
-        public ServiceRunner<maxbl4.Race.WsHub.Startup> CreateWsHubService(int pauseStartupMs = 0, int port = 0)
+        public ServiceRunner<maxbl4.Race.WsHub.Startup> CreateWsHubService()
         {
             Logger.Debug("Creating WsHubService");
             var svc = new ServiceRunner<maxbl4.Race.WsHub.Startup>();
             svc.Start(new []
             {
-                $"--Urls=http://127.0.0.1:{port}"
+                $"--Urls=http://127.0.0.1:0",
+                $"--ServiceOptions:InitialAdminTokens={TestAdminWsToken},{WsToken1},{WsToken2}"
             }).Wait(0);
             return svc;
         }
-        
+
         public ServiceRunner<Race.DataService.Startup> CreateDataService(int pauseStartupMs = 0)
         {
             Logger.Debug("Creating CheckpointService with {@storageConnectionString}", storageConnectionString);

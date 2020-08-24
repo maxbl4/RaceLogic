@@ -135,6 +135,7 @@ namespace maxbl4.Race.WsHub
             try
             {
                 var msg = Message.MaterializeConcreteMessage<T>(obj);
+                msg.SenderId = Context.UserIdentifier;
                 logger.Debug($"{methodName} materialized {msg.GetType().Name} from {Context.UserIdentifier} to {msg.Target}");
                 return msg;
             }
