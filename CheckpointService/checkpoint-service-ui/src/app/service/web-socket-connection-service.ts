@@ -16,7 +16,7 @@ export class WebSocketConnectionService {
     .subtract(5, 'days').format();
 
   constructor() {
-    this.connection = new HubConnectionBuilder().withUrl("/ws/cp").build();
+    this.connection = new HubConnectionBuilder().withUrl("/_ws/cp").build();
     this.connection.on("Checkpoint", (cps:Checkpoint[]) => this.$checkpoints.next(cps));
     this.connection.on("ReaderStatus", (status:ReaderStatus) => {
       this.$readerStatus.next(status);

@@ -85,7 +85,7 @@ namespace maxbl4.Race.CheckpointService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<CheckpointsHub>("/ws/cp");
+                endpoints.MapHub<CheckpointsHub>("/_ws/cp");
             });
         }
     }

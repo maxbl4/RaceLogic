@@ -51,7 +51,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
 
             wsConnection = new HubConnectionBuilder()
                 .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{address}ws/cp")
+                .WithUrl($"{address}_ws/cp")
                 .Build();
             wsConnection.Closed += exception =>
             {

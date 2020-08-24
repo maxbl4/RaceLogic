@@ -7,10 +7,10 @@ using maxbl4.Infrastructure;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
-using maxbl4.Race.WsHub;
 using Serilog;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
+using ServiceBase;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,6 +18,8 @@ namespace maxbl4.Race.Tests.WsHub
 {
     public class WsHubClientTests: IntegrationTestBase
     {
+        private const bool RunAgainstPublicHub = false;
+        
         public WsHubClientTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
         }
@@ -26,9 +28,9 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Send_simple_message()
         {
             using var svc = CreateWsHubService();
-            using var cli1 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli1"});
+            using var cli1 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli1"});
             await cli1.Connect();
-            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            using var cli2 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
 
             await cli1.Client.SendToDirect("cli2", new TestMessage {Payload = "some"});
@@ -48,7 +50,7 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Messages_are_deduplicated()
         {
             using var svc = CreateWsHubService();
-            using var cli1 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli1"});
+            using var cli1 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli1"});
             await cli1.Connect();
             var msg = new TestMessage{Payload = "Duplicate"};
             
@@ -65,7 +67,7 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Message_deduplication_cache_is_cleared()
         {
             using var svc = CreateWsHubService();
-            using var cli1 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli1"}, new WsHubClientOptions
+            using var cli1 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli1"}, new WsHubClientOptions
             {
                 LastSeenMessageIdsCleanupPeriod = TimeSpan.FromMilliseconds(300),
                 LastSeenMessageIdsRetentionPeriod = TimeSpan.FromMilliseconds(200),
@@ -86,12 +88,12 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Send_to_multiple_clients_of_same_user()
         {
             using var svc = CreateWsHubService();
-            using var sender = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "sender"});
+            using var sender = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "sender"});
             await sender.Connect();
 
             var tasks = Enumerable.Range(0, 5).Select(async x =>
             {
-                var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "receiver"});
+                var cli2 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "receiver"});
                 await cli2.Connect();
                 return cli2;
             }).ToList();
@@ -110,7 +112,7 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Register_service_and_list_and_unregister()
         {
             using var svc = CreateWsHubService();
-            using (var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration
+            using (var cli = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration
             {
                 ServiceId = "cli",
                 Features = ServiceFeatures.RfidReader | ServiceFeatures.ManualInputTerminal
@@ -123,7 +125,7 @@ namespace maxbl4.Race.Tests.WsHub
                 regs[0].Features.Should().Be(ServiceFeatures.RfidReader | ServiceFeatures.ManualInputTerminal);
             }
 
-            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            using var cli2 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
             await new Timing().ExpectAsync(async () => (await cli2.Client.ListServiceRegistrations()).All(x => x.ServiceId != "cli"));
         }
@@ -132,9 +134,9 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Send_to_topic()
         {
             using var svc = CreateWsHubService();
-            using var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli"});
+            using var cli = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli"});
             await cli.Connect();
-            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            using var cli2 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
             await cli.Client.Subscribe("topic1");
             await cli2.Client.Subscribe("topic1");
@@ -160,9 +162,9 @@ namespace maxbl4.Race.Tests.WsHub
         public async Task Invoke_request()
         {
             using var svc = CreateWsHubService();
-            using var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli"});
+            using var cli = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli"});
             await cli.Connect();
-            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
+            using var cli2 = new WsClientTestWrapper(GetHubAddress(svc), new ServiceRegistration{ServiceId = "cli2"});
             await cli2.Connect();
             cli.Client.RequestHandler = msg =>
             {
@@ -172,6 +174,13 @@ namespace maxbl4.Race.Tests.WsHub
             };
             var response = await cli2.Client.InvokeRequest<TestMessage>("cli", new TestMessage {Payload = "test"});
             response.Payload.Should().Be("test hello");
+        }
+        
+        private string GetHubAddress(ServiceRunner<maxbl4.Race.WsHub.Startup> svc)
+        {
+            if (RunAgainstPublicHub)
+                return "https://hub.braaap.ru";
+            return svc.ListenUri;
         }
     }
 

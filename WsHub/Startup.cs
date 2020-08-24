@@ -59,7 +59,7 @@ namespace maxbl4.Race.WsHub
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<WsHub>("/ws/hub");
+                endpoints.MapHub<WsHub>("/_ws/hub");
             });
         }
     }

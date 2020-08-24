@@ -62,7 +62,7 @@ namespace maxbl4.Race.Logic.WsHub
         {
             wsConnection = new HubConnectionBuilder()
                 .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{address}ws/hub", options =>
+                .WithUrl($"{address}_ws/hub", options =>
                 {
                     options.AccessTokenProvider = () => Task.FromResult(ServiceRegistration.ServiceId);
                 })
