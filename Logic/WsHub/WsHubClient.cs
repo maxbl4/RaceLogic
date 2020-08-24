@@ -142,7 +142,7 @@ namespace maxbl4.Race.Logic.WsHub
             await wsConnection.InvokeAsync(nameof(IWsHubServer.SendTo), msg);
         }
         
-        public async Task<T> InvokeRequest<T>(string targetId, Message msg)
+        public async Task<T> InvokeRequest<T>(string targetId, RequestMessage msg)
         {
             msg.SenderId = ServiceRegistration.ServiceId;
             msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};

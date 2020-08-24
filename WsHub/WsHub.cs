@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.WsHub;
@@ -19,6 +19,8 @@ namespace maxbl4.Race.WsHub
         private static readonly ILogger logger = Log.ForContext<WsHub>();
         private static readonly ConcurrentDictionary<string, WsServiceRegistration>
             serviceRegistrations = new ConcurrentDictionary<string, WsServiceRegistration>();
+        private static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
+            outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
 
         public void Register(RegisterServiceMessage msg)
         {
@@ -75,55 +77,71 @@ namespace maxbl4.Race.WsHub
 
         public async Task SendTo(JObject obj)
         {
-            var msg = Message.MaterializeConcreteMessage(obj);
-            logger.Debug($"Message from {msg.SenderId} to {msg.Target}");
-            switch (msg.Target.Type)
-            {
-                case TargetType.Direct:
-                    var user = Clients.User(msg.Target.TargetId);
-                    logger.Debug($"Resolved user {user}");
-                    if (user == null)
-                        throw new HubException($"User {msg.Target.TargetId} not found");
-                    await user.ReceiveMessage(msg);
-                    break;
-                case TargetType.Topic:
-                    var group = Clients.OthersInGroup(msg.Target.TargetId);
-                    logger.Debug($"Resolved group {group}");
-                    if (group == null)
-                        throw new HubException($"Group {msg.Target.TargetId} not found");
-                    await group.ReceiveMessage(msg);
-                    break;
-            }
+            var msg = MaterializeMessage<Message>(obj);
+            var target = ResolveTarget(msg);
+            await target.ReceiveMessage(msg);
         }
-        
-        private static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
-            outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
         
         public async Task<JObject> InvokeRequest(JObject obj)
         {
-            var msg = Message.MaterializeConcreteMessage(obj);
-            logger.Debug($"InvokeRequest Message from {msg.SenderId} to {msg.Target}");
-            var user = Clients.User(msg.Target.TargetId);
-            logger.Debug($"InvokeRequest Resolved user {user}");
-            if (user == null)
-                throw new HubException($"User {msg.Target.TargetId} not found");
-            TaskCompletionSource<Message> tcs;
-            outstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
-            await user.InvokeRequest(msg);
-            var result = await Task.WhenAny(Task.Delay(30000), tcs.Task);
-            if (result is Task<Message> r)
-                return JObject.FromObject(r.Result);
-            throw new HubException($"Proxy call to {msg.Target} timed out {obj}", new TimeoutException());
+            var msg = MaterializeMessage<RequestMessage>(obj);
+            var target = ResolveTarget(msg);
+            try
+            {
+                TaskCompletionSource<Message> tcs;
+                outstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
+                await target.InvokeRequest(msg);
+                var result = await Task.WhenAny(Task.Delay(msg.Timeout), tcs.Task);
+                if (result is Task<Message> r)
+                    return JObject.FromObject(r.Result);
+                throw new HubException($"Proxy call to {msg.Target} timed out {obj}", new TimeoutException());
+            }
+            finally
+            {
+                outstandingClientRequests.TryRemove(msg.MessageId, out _);
+            }
         }
 
         public void AcceptResponse(JObject obj)
         {
-            var msg = Message.MaterializeConcreteMessage(obj);
-            logger.Debug($"AcceptResponse Message from {Context.UserIdentifier} to {msg.Target}");
+            var msg = MaterializeMessage<Message>(obj);
             if (outstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
                 tcs.TrySetResult(msg);
             else
                 tcs.TrySetCanceled();
+        }
+
+        IWsHubClient ResolveTarget(Message msg, [CallerMemberName] string methodName = null)
+        {
+            IWsHubClient client = null;
+            switch (msg.Target.Type)
+            {
+                case TargetType.Direct:
+                    client = Clients.User(msg.Target.TargetId);
+                    break;
+                case TargetType.Topic:
+                    client = Clients.OthersInGroup(msg.Target.TargetId);
+                    break;
+            }
+
+            if (client == null) throw new HubException($"Could not resolve target {msg.Target}");
+            logger.Debug($"Resolved {msg.Target} into {client}");
+            return client;
+        }
+
+        T MaterializeMessage<T>(JObject obj, [CallerMemberName]string methodName = null)
+            where T: Message
+        {
+            try
+            {
+                var msg = Message.MaterializeConcreteMessage<T>(obj);
+                logger.Debug($"{methodName} materialized {msg.GetType().Name} from {Context.UserIdentifier} to {msg.Target}");
+                return msg;
+            }
+            catch (Exception ex)
+            {
+                throw new HubException($"Failed to materialize from {Context.UserIdentifier} {obj}", ex);
+            }
         }
     }
 }
