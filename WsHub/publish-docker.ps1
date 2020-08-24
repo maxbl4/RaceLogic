@@ -1,4 +1,4 @@
-#1.0.2
+#1.0.3
 
 function Main()
 {
@@ -9,9 +9,10 @@ function Main()
   rmdir -Force -Recurs $publishRoot
   dotnet publish -c Release -o _build\
 
-  docker build --pull -t "maxbl4/$($imageName):$version" -t "maxbl4/$($imageName):latest" -f dockerfile $publishRoot
+  docker build --pull -t "maxbl4/$($imageName):$version" -t "maxbl4/$($imageName):latest" -t "maxbl4/$($imageName):release" -f dockerfile $publishRoot
   docker push "maxbl4/$($imageName):$version"
   docker push "maxbl4/$($imageName):latest"
+  docker push "maxbl4/$($imageName):release"
 
   UpdateVersion $version
 }
