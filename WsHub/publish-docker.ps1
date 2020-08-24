@@ -1,4 +1,4 @@
-#1.0.8
+#1.0.13
 
 function Main()
 {
@@ -6,8 +6,8 @@ function Main()
 
   $publishRoot = "./_build"
   $imageName = "ws-hub"
-  #rmdir -Force -Recurs $publishRoot
-  #dotnet publish -c Release -o _build\
+  rmdir -Force -Recurs $publishRoot
+  dotnet publish -c Release -o _build\
 
   docker buildx build --platform "linux/arm64" --pull -t "maxbl4/$($imageName):arm64-$version" -t "maxbl4/$($imageName):arm64" -f dockerfile $publishRoot
   docker buildx build --platform "linux/amd64" --pull -t "maxbl4/$($imageName):amd64-$version" -t "maxbl4/$($imageName):amd64" -f dockerfile $publishRoot
@@ -16,10 +16,10 @@ function Main()
   docker push "maxbl4/$($imageName):amd64-$version"
   docker push "maxbl4/$($imageName):amd64"
 
-  docker manifest create "maxbl4/$($imageName):latest" "maxbl4/$($imageName):arm64" "maxbl4/$($imageName):amd64"
-  docker manifest push "maxbl4/$($imageName):latest"
-  docker manifest create "maxbl4/$($imageName):release" "maxbl4/$($imageName):arm64" "maxbl4/$($imageName):amd64"
-  docker manifest push "maxbl4/$($imageName):release"
+  docker manifest create --amend "maxbl4/$($imageName):latest" "maxbl4/$($imageName):arm64" "maxbl4/$($imageName):amd64"
+  docker manifest push -p "maxbl4/$($imageName):latest"
+  docker manifest create --amend "maxbl4/$($imageName):release" "maxbl4/$($imageName):arm64" "maxbl4/$($imageName):amd64"
+  docker manifest push -p "maxbl4/$($imageName):release"
   
   UpdateVersion $version
 }

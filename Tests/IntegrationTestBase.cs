@@ -98,10 +98,11 @@ namespace maxbl4.Race.Tests
         
         public ServiceRunner<maxbl4.Race.WsHub.Startup> CreateWsHubService()
         {
-            Logger.Debug("Creating WsHubService");
+            Logger.Debug("Creating WsHubService with {@storageConnectionString}", storageConnectionString);
             var svc = new ServiceRunner<maxbl4.Race.WsHub.Startup>();
             svc.Start(new []
             {
+                $"--ServiceOptions:StorageConnectionString={storageConnectionString}",
                 $"--Urls=http://127.0.0.1:0",
                 $"--ServiceOptions:InitialAdminTokens={TestAdminWsToken},{WsToken1},{WsToken2}"
             }).Wait(0);
