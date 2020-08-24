@@ -173,24 +173,6 @@ namespace maxbl4.Race.Tests.WsHub
             var response = await cli2.Client.InvokeRequest<TestMessage>("cli", new TestMessage {Payload = "test"});
             response.Payload.Should().Be("test hello");
         }
-        
-        [Fact]
-        public async Task Invoke_request_errors()
-        {
-            using var svc = CreateWsHubService();
-            using var cli = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli"});
-            await cli.Connect();
-            using var cli2 = new WsClientTestWrapper(svc.ListenUri, new ServiceRegistration{ServiceId = "cli2"});
-            await cli2.Connect();
-            cli.Client.RequestHandler = msg =>
-            {
-                var tst = (TestMessage) msg;
-                tst.Payload += " hello";
-                return Task.FromResult<Message>(tst);
-            };
-            var response = await cli2.Client.InvokeRequest<TestMessage>("cli", new TestMessage {Payload = "test"});
-            response.Payload.Should().Be("test hello");
-        }
     }
 
     public class WsClientTestWrapper: IDisposable

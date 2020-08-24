@@ -19,8 +19,8 @@ namespace maxbl4.Race.WsHub
         private static readonly ILogger logger = Log.ForContext<WsHub>();
         private static readonly ConcurrentDictionary<string, WsServiceRegistration>
             serviceRegistrations = new ConcurrentDictionary<string, WsServiceRegistration>();
-        private static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
-            outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
+        public static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
+            OutstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
 
         public void Register(RegisterServiceMessage msg)
         {
@@ -89,23 +89,23 @@ namespace maxbl4.Race.WsHub
             try
             {
                 TaskCompletionSource<Message> tcs;
-                outstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
+                OutstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
                 await target.InvokeRequest(msg);
                 var result = await Task.WhenAny(Task.Delay(msg.Timeout), tcs.Task);
                 if (result is Task<Message> r)
                     return JObject.FromObject(r.Result);
-                throw new HubException($"Proxy call to {msg.Target} timed out {obj}", new TimeoutException());
+                throw new HubException($"Proxy call to {msg.Target} timed out {obj}");
             }
             finally
             {
-                outstandingClientRequests.TryRemove(msg.MessageId, out _);
+                OutstandingClientRequests.TryRemove(msg.MessageId, out _);
             }
         }
 
         public void AcceptResponse(JObject obj)
         {
             var msg = MaterializeMessage<Message>(obj);
-            if (outstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
+            if (OutstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
                 tcs.TrySetResult(msg);
             else
                 tcs.TrySetCanceled();
@@ -140,7 +140,7 @@ namespace maxbl4.Race.WsHub
             }
             catch (Exception ex)
             {
-                throw new HubException($"Failed to materialize from {Context.UserIdentifier} {obj}", ex);
+                throw new HubException($"Failed to materialize from {Context.UserIdentifier} {obj} {ex}");
             }
         }
     }

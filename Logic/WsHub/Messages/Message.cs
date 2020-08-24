@@ -11,6 +11,11 @@ namespace maxbl4.Race.Logic.WsHub.Messages
         public MessageTarget Target { get; set; }
         public string MessageType { get; set; }
 
+        protected Message()
+        {
+            MessageType = GetType().FullName;
+        }
+
         public static T MaterializeConcreteMessage<T>(JObject obj)
             where T: Message
         {
