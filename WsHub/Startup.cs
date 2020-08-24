@@ -1,5 +1,7 @@
 using System.Reactive.PlatformServices;
 using System.Threading.Tasks;
+using Easy.MessageHub;
+using maxbl4.Race.WsHub.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -26,6 +28,9 @@ namespace maxbl4.Race.WsHub
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
+            services.AddSingleton<IMessageHub, MessageHub>();
+            services.AddSingleton<IAuthService, AuthService>();
+            services.AddSingleton<StorageService>();
             services.AddAuthentication(WsAccessTokenAuthenticationHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, WsAccessTokenAuthenticationHandler>(
                     WsAccessTokenAuthenticationHandler.SchemeName, options =>

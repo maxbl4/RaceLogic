@@ -1,11 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using maxbl4.Race.WsHub.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,9 +10,14 @@ namespace maxbl4.Race.WsHub
 {
     public class WsAccessTokenAuthenticationHandler: AuthenticationHandler<AuthenticationSchemeOptions>
     {
+        private readonly IAuthService authService;
         public const string SchemeName = "WsAccessToken";
-        public WsAccessTokenAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+        public WsAccessTokenAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, 
+            ILoggerFactory logger, 
+            UrlEncoder encoder, 
+            ISystemClock clock, IAuthService authService) : base(options, logger, encoder, clock)
         {
+            this.authService = authService;
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -25,14 +27,8 @@ namespace maxbl4.Race.WsHub
                 return Task.FromResult(AuthenticateResult.Fail("Missing or bad authorization header"));
             if (string.IsNullOrWhiteSpace(headerValue.Parameter))
                 return Task.FromResult(AuthenticateResult.Fail("Empty user id"));
-            
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, headerValue.Parameter)
-            };
-            var identity = new ClaimsIdentity(claims, Scheme.Name);
-            var principal = new ClaimsPrincipal(identity);
-            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
+
+            return Task.FromResult(authService.ValidateToken(headerValue.Parameter));
         }
     }
 }
