@@ -20,9 +20,10 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub.Subscriptions
 {
-    public class SubscriptionManager
+    public class SubscriptionManager: IAsyncInitialize, IAsyncDisposable
     {
         private readonly ISubscriptionStorage subscriptionStorage;
+        private readonly IUpstreamOptionsStorage upstreamOptionsStorage;
         private readonly ICheckpointStorage checkpointStorage;
         private readonly ISystemClock systemClock;
         private readonly ILogger logger = Log.ForContext<SubscriptionManager>();
@@ -33,10 +34,13 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
         private readonly SerialDisposable wsClientDisposable;
         private WsHubClient wsClient;
 
-        public SubscriptionManager(ISubscriptionStorage subscriptionStorage, ICheckpointStorage checkpointStorage,
+        public SubscriptionManager(ISubscriptionStorage subscriptionStorage,
+            IUpstreamOptionsStorage upstreamOptionsStorage,
+            ICheckpointStorage checkpointStorage,
             ISystemClock systemClock = null)
         {
             this.subscriptionStorage = subscriptionStorage;
+            this.upstreamOptionsStorage = upstreamOptionsStorage;
             this.checkpointStorage = checkpointStorage;
             this.systemClock = systemClock ?? new DefaultSystemClock();
             disposable.Add(wsClientDisposable = new SerialDisposable());
@@ -55,7 +59,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
 
         public async Task OptionsChanged()
         {
-            var options = await subscriptionStorage.GetSubscriptionManagerOptions();
+            var options = await upstreamOptionsStorage.GetUpstreamOptions();
             wsClientDisposable.Disposable = wsClient = new WsHubClient(options.ConnectionOptions);
             wsClient.RequestHandler = HandleRequest;
             await wsClient.Connect();
@@ -128,11 +132,6 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             }
         }
 
-        public void Dispose()
-        {
-            disposable.DisposeSafe();
-        }
-
         public void StopStream(string contextConnectionId)
         {
             try
@@ -187,6 +186,12 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             {
                 rwlock.ExitWriteLock();
             }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            disposable.DisposeSafe();
+            return default;
         }
     }
 }

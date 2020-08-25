@@ -8,6 +8,7 @@ using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
 using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
 using Microsoft.Extensions.Options;
@@ -15,7 +16,7 @@ using ServiceBase;
 
 namespace maxbl4.Race.CheckpointService.Services
 {
-    public class StorageService : StorageServiceBase, ICheckpointStorage, ISubscriptionStorage
+    public class StorageService : StorageServiceBase, ICheckpointStorage, ISubscriptionStorage, IUpstreamOptionsStorage
     {
         private readonly IOptions<ServiceOptions> serviceOptions;
 
@@ -106,13 +107,13 @@ namespace maxbl4.Race.CheckpointService.Services
             SetRfidOptions(opts);
         }
 
-        public Task<SubscriptionManagerOptions> GetSubscriptionManagerOptions()
+        public Task<UpstreamOptions> GetUpstreamOptions()
         {
-            var options = repo.SingleOrDefault<SubscriptionManagerOptions>(x => true) ?? new SubscriptionManagerOptions();
+            var options = repo.SingleOrDefault<UpstreamOptions>(x => true) ?? new UpstreamOptions();
             return Task.FromResult(options);
         }
         
-        public Task SetSubscriptionManagerOptions(SubscriptionManagerOptions options)
+        public Task SetUpstreamOptions(UpstreamOptions options)
         {
             options.Timestamp = systemClock.UtcNow.UtcDateTime; 
             repo.Upsert(options);

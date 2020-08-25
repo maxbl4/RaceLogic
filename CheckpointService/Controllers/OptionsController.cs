@@ -2,6 +2,7 @@
 using System.Linq;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.CheckpointService.Model;
+using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
 using Microsoft.AspNetCore.Mvc;
 
 namespace maxbl4.Race.CheckpointService.Controllers
