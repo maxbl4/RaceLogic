@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -10,9 +11,11 @@ using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.WsHub.Messages;
 using maxbl4.Race.Logic.WsHub.Subscriptions.Messages;
+using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
 using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub.Subscriptions
@@ -21,6 +24,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
     {
         private readonly ISubscriptionStorage subscriptionStorage;
         private readonly ICheckpointStorage checkpointStorage;
+        private readonly ISystemClock systemClock;
         private readonly ILogger logger = Log.ForContext<SubscriptionManager>();
         private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly CompositeDisposable disposable;
@@ -29,26 +33,50 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
         private readonly SerialDisposable wsClientDisposable;
         private WsHubClient wsClient;
 
-        public SubscriptionManager(ISubscriptionStorage subscriptionStorage, ICheckpointStorage checkpointStorage)
+        public SubscriptionManager(ISubscriptionStorage subscriptionStorage, ICheckpointStorage checkpointStorage,
+            ISystemClock systemClock = null)
         {
             this.subscriptionStorage = subscriptionStorage;
             this.checkpointStorage = checkpointStorage;
+            this.systemClock = systemClock ?? new DefaultSystemClock();
             disposable.Add(wsClientDisposable = new SerialDisposable());
+        }
+
+        public async Task InitializeAsync()
+        {
+            await OptionsChanged();
+            await subscriptionStorage.DeleteExpiredSubscriptions();
+            var subs = await subscriptionStorage.GetSubscriptions();
+            foreach (var sub in subs.Where(x => x.SubscriptionExpiration > systemClock.UtcNow.DateTime))
+            {
+                StartStream(sub.SenderId, sub.FromTimestamp);
+            }
         }
 
         public async Task OptionsChanged()
         {
-            var options = await subscriptionStorage.GetOptions();
+            var options = await subscriptionStorage.GetSubscriptionManagerOptions();
             wsClientDisposable.Disposable = wsClient = new WsHubClient(options.ConnectionOptions);
             wsClient.RequestHandler = HandleRequest;
             await wsClient.Connect();
         }
 
-        private Task<Message> HandleRequest(Message arg)
+        private async Task<Message> HandleRequest(Message arg)
         {
             switch (arg)
             {
-                case SubscribeRequest sub:
+                case SubscriptionRequest sub:
+                    switch (sub.RequestType)
+                    {
+                        case SubscriptionRequestTypes.Subscribe:
+                            await subscriptionStorage.AddSubscription(sub.SenderId, sub.FromTimestamp, sub.SubscriptionExpiration);
+                            StartStream(sub.SenderId, sub.FromTimestamp);
+                            return new SubscriptionResponse();
+                        case SubscriptionRequestTypes.Unsubscribe:
+                            await subscriptionStorage.DeleteSubscription(sub.SenderId);
+                            StopStream(sub.SenderId);
+                            return new SubscriptionResponse();
+                    }
                     break;
             }
             return null;
@@ -126,13 +154,13 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             }
         }
 
-        public void StartStream(string contextConnectionId, in DateTime from)
+        public void StartStream(string targetId, in DateTime from)
         {
             try
             {
                 rwlock.EnterWriteLock();
-                StopStream(contextConnectionId);
-                clients[contextConnectionId] = checkpointStorage.ListCheckpoints(from)
+                StopStream(targetId);
+                clients[targetId] = checkpointStorage.ListCheckpoints(from)
                     .ToObservable()
                     .Buffer(TimeSpan.FromMilliseconds(100), 100)
                     .Concat(checkpoints.Select(x => new[] {x}))
@@ -141,15 +169,15 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                         Observable.FromAsync(() =>
                             logger.Swallow(async () =>
                             {
-                                logger.Information($"Sending checkpoint {x} via WS to {contextConnectionId}");
-                                await wsClient.InvokeRequest<Message>(contextConnectionId, new ChekpointsUpdate
+                                logger.Information($"Sending checkpoint {x} via WS to {targetId}");
+                                await wsClient.InvokeRequest<Message>(targetId, new ChekpointsUpdate
                                 {
                                     Checkpoints = x,
                                 });
                             })))
                     .Concat()
                     .Subscribe();
-                logger.Information($"Client subscribed {contextConnectionId}");
+                logger.Information($"Client subscribed {targetId}");
             }
             catch (Exception ex)
             {

@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.PlatformServices;
+using System.Threading.Tasks;
 using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.WsHub.Subscriptions;
+using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
 using Microsoft.Extensions.Options;
 using ServiceBase;
 
 namespace maxbl4.Race.CheckpointService.Services
 {
-    public class StorageService : StorageServiceBase
+    public class StorageService : StorageServiceBase, ICheckpointStorage, ISubscriptionStorage
     {
         private readonly IOptions<ServiceOptions> serviceOptions;
 
@@ -32,6 +36,7 @@ namespace maxbl4.Race.CheckpointService.Services
         {
             repo.Database.GetCollection<Checkpoint>().EnsureIndex(x => x.Timestamp);
             repo.Database.GetCollection<Tag>().EnsureIndex(x => x.DiscoveryTime);
+            repo.Database.GetCollection<SubscriptionDto>().EnsureIndex(x => x.SenderId);
         }
 
         public void AppendCheckpoint(Checkpoint cp)
@@ -99,6 +104,47 @@ namespace maxbl4.Race.CheckpointService.Services
             var opts = GetRfidOptions();
             modifier(opts);
             SetRfidOptions(opts);
+        }
+
+        public Task<SubscriptionManagerOptions> GetSubscriptionManagerOptions()
+        {
+            var options = repo.SingleOrDefault<SubscriptionManagerOptions>(x => true) ?? new SubscriptionManagerOptions();
+            return Task.FromResult(options);
+        }
+        
+        public Task SetSubscriptionManagerOptions(SubscriptionManagerOptions options)
+        {
+            options.Timestamp = systemClock.UtcNow.UtcDateTime; 
+            repo.Upsert(options);
+            logger.Swallow(() => messageHub.Publish(options));
+            return Task.CompletedTask;
+        }
+
+        public Task AddSubscription(string senderId, DateTime fromTimestamp, DateTime subscriptionExpiration)
+        {
+            var existing = repo.FirstOrDefault<SubscriptionDto>(x => x.SenderId == senderId)
+                ?? new SubscriptionDto{SenderId = senderId};
+            existing.FromTimestamp = fromTimestamp;
+            existing.SubscriptionExpiration = subscriptionExpiration;
+            repo.Upsert(existing);
+            return Task.CompletedTask;
+        }
+        
+        public Task DeleteSubscription(string senderId)
+        {
+            repo.DeleteMany<SubscriptionDto>(x => x.SenderId == senderId);
+            return Task.CompletedTask;
+        }
+
+        public Task<List<SubscriptionDto>> GetSubscriptions()
+        {
+            return Task.FromResult(repo.Query<SubscriptionDto>().ToList());
+        }
+        
+        public Task DeleteExpiredSubscriptions()
+        {
+            repo.DeleteMany<SubscriptionDto>(x => x.SubscriptionExpiration <= systemClock.UtcNow.DateTime);
+            return Task.CompletedTask;
         }
     }
 }

@@ -7,7 +7,9 @@ using LiteDB;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.WsHub.Subscriptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
@@ -36,6 +38,7 @@ namespace maxbl4.Race.CheckpointService
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
+            services.AddSingleton<ICheckpointStorage>(p => p.GetService<StorageService>());
             services.AddAutoMapper(typeof(Startup));
             services.RegisterHostedService<IRfidService, RfidService>();
             services.RegisterHostedService<DistributionService>();
