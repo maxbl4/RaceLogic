@@ -167,11 +167,26 @@ namespace maxbl4.Race.Tests.WsHub
             cli.Client.RequestHandler = msg =>
             {
                 var tst = (TestMessage) msg;
-                tst.Payload += " hello";
-                return Task.FromResult<Message>(tst);
+                return Task.FromResult<Message>(new TestMessage
+                {
+                    Payload = tst.Payload + " hello"
+                });
             };
             var response = await cli2.Client.InvokeRequest<TestMessage>(WsToken1, new TestMessage {Payload = "test"});
             response.Payload.Should().Be("test hello");
+        }
+        
+        [Fact]
+        public async Task Invoke_request_returns_unhandled()
+        {
+            using var svc = CreateWsHubService();
+            using var cli = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken1));
+            await cli.Connect();
+            using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));
+            await cli2.Connect();
+
+            await Assert.ThrowsAsync<UnhandledRequestException>(() =>
+                cli.Client.InvokeRequest<UnhandledRequest>(WsToken2, new TestMessage()));
         }
         
         [Fact]

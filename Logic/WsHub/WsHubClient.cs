@@ -90,13 +90,24 @@ namespace maxbl4.Race.Logic.WsHub
         {
             try
             {
-                var response = await RequestHandler(Message.MaterializeConcreteMessage(obj));
+                var request = Message.MaterializeConcreteMessage(obj);
+                Message response;
+                try
+                {
+                    response = await RequestHandler(request) ?? new UnhandledRequest();
+                }
+                catch (Exception ex)
+                {
+                    logger.Warning(ex, $"Error handling request {obj}");
+                    response = new UnhandledRequest{Exception = ex};
+                }
+                response.MessageId = request.MessageId;
                 response.MessageType = response.GetType().FullName;
                 await wsConnection.SendAsync(nameof(IWsHubServer.AcceptResponse), response);
             }
             catch (Exception ex)
             {
-                logger.Warning(ex, $"Error handling request {obj}");
+                logger.Warning(ex, $"Error responding to request {obj}");
                 throw;
             }
         }
@@ -144,10 +155,15 @@ namespace maxbl4.Race.Logic.WsHub
         }
         
         public async Task<T> InvokeRequest<T>(string targetId, RequestMessage msg)
+            where T: Message
         {
             msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};
             msg.MessageType = msg.GetType().FullName;
-            return await wsConnection.InvokeAsync<T>(nameof(IWsHubServer.InvokeRequest), msg);
+            var obj = await wsConnection.InvokeAsync<JObject>(nameof(IWsHubServer.InvokeRequest), msg);
+            var response = Message.MaterializeConcreteMessage<T>(obj);
+            if (response is UnhandledRequest un)
+                throw new UnhandledRequestException(un.Exception);
+            return response;
         }
 
         public async Task RegisterService(ServiceFeatures serviceFeatures)
