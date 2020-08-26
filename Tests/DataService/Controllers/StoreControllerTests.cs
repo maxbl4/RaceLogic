@@ -6,11 +6,9 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LiteDB;
-using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -8,8 +8,10 @@ using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
+using maxbl4.Infrastructure.Extensions.MessageHubExt;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
@@ -25,6 +27,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
         private readonly ISubscriptionStorage subscriptionStorage;
         private readonly IUpstreamOptionsStorage upstreamOptionsStorage;
         private readonly ICheckpointStorage checkpointStorage;
+        private readonly IMessageHub messageHub;
         private readonly ISystemClock systemClock;
         private readonly ILogger logger = Log.ForContext<SubscriptionManager>();
         private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -36,19 +39,26 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
 
         public SubscriptionManager(ISubscriptionStorage subscriptionStorage,
             IUpstreamOptionsStorage upstreamOptionsStorage,
-            ICheckpointStorage checkpointStorage,
+            ICheckpointStorage checkpointStorage, 
+            IMessageHub messageHub,
             ISystemClock systemClock = null)
         {
             this.subscriptionStorage = subscriptionStorage;
             this.upstreamOptionsStorage = upstreamOptionsStorage;
             this.checkpointStorage = checkpointStorage;
+            this.messageHub = messageHub;
             this.systemClock = systemClock ?? new DefaultSystemClock();
-            disposable.Add(wsClientDisposable = new SerialDisposable());
+            disposable = new CompositeDisposable(
+                wsClientDisposable = new SerialDisposable(),
+                messageHub.SubscribeDisposable<UpstreamOptions>(OptionsChanged),
+                messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
+                messageHub.SubscribeDisposable<RfidOptions>(OnRfidOptions),
+                messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus));
         }
 
         public async Task InitializeAsync()
         {
-            await OptionsChanged();
+            OptionsChanged(await upstreamOptionsStorage.GetUpstreamOptions());
             await subscriptionStorage.DeleteExpiredSubscriptions();
             var subs = await subscriptionStorage.GetSubscriptions();
             foreach (var sub in subs.Where(x => x.SubscriptionExpiration > systemClock.UtcNow.DateTime))
@@ -57,12 +67,12 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             }
         }
 
-        public async Task OptionsChanged()
+        private void OptionsChanged(UpstreamOptions options)
         {
-            var options = await upstreamOptionsStorage.GetUpstreamOptions();
+            options.ConnectionOptions.Features |= ServiceFeatures.CheckpointService;
             wsClientDisposable.Disposable = wsClient = new WsHubClient(options.ConnectionOptions);
             wsClient.RequestHandler = HandleRequest;
-            await wsClient.Connect();
+            _ = wsClient.Connect();
         }
 
         private async Task<Message> HandleRequest(Message arg)
@@ -98,17 +108,17 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             }
         }
 
-        private async Task OnRfidOptions(RfidOptions rfidOptions)
+        private void OnRfidOptions(RfidOptions rfidOptions)
         {
-            await BroadcastUpdate(new ChekpointsUpdate
+            _ = BroadcastUpdate(new ChekpointsUpdate
             {
                 RfidOptions = rfidOptions
             });
         }
         
-        private async Task OnReaderStatus(ReaderStatus readerStatus)
+        private void OnReaderStatus(ReaderStatus readerStatus)
         {
-            await BroadcastUpdate(new ChekpointsUpdate
+            _ = BroadcastUpdate(new ChekpointsUpdate
             {
                 ReaderStatus = readerStatus
             });

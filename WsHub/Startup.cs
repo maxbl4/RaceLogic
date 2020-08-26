@@ -1,10 +1,8 @@
 using System.Reactive.PlatformServices;
-using System.Threading.Tasks;
 using Easy.MessageHub;
 using maxbl4.Race.Logic;
 using maxbl4.Race.WsHub.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

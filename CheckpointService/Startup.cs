@@ -41,6 +41,7 @@ namespace maxbl4.Race.CheckpointService
             services.AddSingleton<IMessageHub, MessageHub>();
             services.AddSingleton<StorageService>();
             services.AddSingleton<SubscriptionManager>();
+            services.AddSingleton<IHostedService, SubscriptionService>();
             services.AddSingleton<ICheckpointStorage>(p => p.GetService<StorageService>());
             services.AddSingleton<IUpstreamOptionsStorage>(p => p.GetService<StorageService>());
             services.AddSingleton<ISubscriptionStorage>(p => p.GetService<StorageService>());

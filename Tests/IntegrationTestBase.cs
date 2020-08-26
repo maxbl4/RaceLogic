@@ -1,13 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using AutoMapper;
 using Easy.MessageHub;
-using FluentAssertions;
 using LiteDB;
-using maxbl4.Infrastructure;
-using maxbl4.Infrastructure.Extensions.TestOutputHelperExt;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;

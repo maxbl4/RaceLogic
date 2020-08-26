@@ -1,5 +1,4 @@
 using System.IO;
-using maxbl4.Race.Logic.LogManagement.EntryTypes;
 using Newtonsoft.Json;
 
 namespace maxbl4.Race.Logic.LogManagement.IO

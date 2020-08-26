@@ -22,7 +22,7 @@ namespace maxbl4.Race.WsHub
         public static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
             OutstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
 
-        public void Register(RegisterServiceMessage msg)
+        public async Task Register(RegisterServiceMessage msg)
         {
             lock(serviceRegistrations)
             {
@@ -90,7 +90,7 @@ namespace maxbl4.Race.WsHub
             {
                 TaskCompletionSource<Message> tcs;
                 OutstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
-                await target.InvokeRequest(msg);
+                _ = target.InvokeRequest(msg);
                 var result = await Task.WhenAny(Task.Delay(msg.Timeout), tcs.Task);
                 if (result is Task<Message> r)
                     return JObject.FromObject(r.Result);
@@ -102,13 +102,12 @@ namespace maxbl4.Race.WsHub
             }
         }
 
-        public void AcceptResponse(JObject obj)
+        public async Task AcceptResponse(JObject obj)
         {
             var msg = MaterializeMessage<Message>(obj);
+            logger.Debug($"AcceptResponse {obj}");
             if (OutstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
                 tcs.TrySetResult(msg);
-            else
-                tcs.TrySetCanceled();
         }
 
         IWsHubClient ResolveTarget(Message msg, [CallerMemberName] string methodName = null)

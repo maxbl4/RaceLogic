@@ -113,14 +113,14 @@ namespace maxbl4.Race.Tests.WsHub
             using var svc = CreateWsHubService();
             using (var cli = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken1)
             {
-                Features = ServiceFeatures.RfidReader | ServiceFeatures.ManualInputTerminal
+                Features = ServiceFeatures.CheckpointService | ServiceFeatures.ManualInputTerminal
             }))
             {
                 await cli.Connect();
                 var regs = await cli.Client.ListServiceRegistrations();
                 regs.Should().HaveCount(1);
                 regs[0].ServiceId.Should().Be(WsToken1);
-                regs[0].Features.Should().Be(ServiceFeatures.RfidReader | ServiceFeatures.ManualInputTerminal);
+                regs[0].Features.Should().Be(ServiceFeatures.CheckpointService | ServiceFeatures.ManualInputTerminal);
             }
 
             using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));

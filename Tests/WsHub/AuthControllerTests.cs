@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Race.Logic;

@@ -7,11 +7,11 @@ namespace maxbl4.Race.Logic.WsHub
     public interface IWsHubServer
     {
         Task SendTo(JObject msg);
-        void Register(RegisterServiceMessage msg);
+        Task Register(RegisterServiceMessage msg);
         ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request);
         Task Subscribe(TopicSubscribeMessage msg);
         Task Unsubscribe(TopicSubscribeMessage msg);
         Task<JObject> InvokeRequest(JObject obj);
-        void AcceptResponse(JObject obj);
+        Task AcceptResponse(JObject obj);
     }
 }

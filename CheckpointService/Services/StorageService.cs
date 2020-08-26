@@ -109,7 +109,9 @@ namespace maxbl4.Race.CheckpointService.Services
 
         public Task<UpstreamOptions> GetUpstreamOptions()
         {
-            var options = repo.SingleOrDefault<UpstreamOptions>(x => true) ?? new UpstreamOptions();
+            var options = repo.SingleOrDefault<UpstreamOptions>(x => true)
+                          ?? serviceOptions.Value.InitialUpstreamOptions
+                          ?? new UpstreamOptions();
             return Task.FromResult(options);
         }
         

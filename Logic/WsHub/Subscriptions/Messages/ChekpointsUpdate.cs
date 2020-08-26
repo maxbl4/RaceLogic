@@ -11,4 +11,9 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions.Messages
         public ReaderStatus ReaderStatus { get; set; }
         public IList<Checkpoint> Checkpoints { get; set; }
     }
+
+    public class ChekpointsUpdateResponse : Message
+    {
+        
+    }
 }

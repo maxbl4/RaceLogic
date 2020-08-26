@@ -19,24 +19,6 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub
 {
-    public class WsHubClientOptions
-    {
-        public string Address { get; }
-        public string AccessToken { get; }
-        public ServiceFeatures Features { get; set; } = ServiceFeatures.None;
-        public TimeSpan ReconnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
-        public TimeSpan LastSeenMessageIdsRetentionPeriod { get; set; } = TimeSpan.FromSeconds(60);
-        public TimeSpan LastSeenMessageIdsCleanupPeriod { get; set; } = TimeSpan.FromSeconds(5);
-
-        public WsHubClientOptions(string address, string accessToken)
-        {
-            if (!address.EndsWith("/"))
-                address += "/";
-            Address = address;
-            AccessToken = accessToken;
-        }
-    }
-    
     public class WsHubClient: IDisposable
     {
         private volatile bool disposed = false;
@@ -50,6 +32,8 @@ namespace maxbl4.Race.Logic.WsHub
         
         private readonly ConcurrentDictionary<Id<Message>, DateTime> lastSeenMessageIds = new ConcurrentDictionary<Id<Message>, DateTime>();
         private readonly ConcurrentDictionary<string, string> topicSubscriptions = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
+            outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
         private readonly Subject<Message> messages = new Subject<Message>();
         public IObservable<Message> Messages => messages;
         public Func<Message, Task<Message>> RequestHandler { get; set; }
@@ -90,6 +74,7 @@ namespace maxbl4.Race.Logic.WsHub
         {
             try
             {
+                logger.Debug($"HandleRequest begin {obj}");
                 var request = Message.MaterializeConcreteMessage(obj);
                 Message response;
                 try
