@@ -20,7 +20,7 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub
 {
-    public class WsHubConnection: IAsyncDisposable
+    public class WsHubConnection: IAsyncDisposable, IPingRequester
     {
         private volatile bool disposed = false;
         private readonly ILogger logger = Log.ForContext<WsHubConnection>();
@@ -36,12 +36,16 @@ namespace maxbl4.Race.Logic.WsHub
         private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
             outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
         public Func<Message, Task> MessageHandler { get; set; }
-        public Func<RequestMessage, Task<Message>> RequestHandler { get; set; }
+        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>>();
         public WsHubConnection(WsHubClientOptions options, ISystemClock systemClock = null)
         {
             this.options = options;
             this.systemClock = systemClock ?? new DefaultSystemClock();
             _ = CleanupSeenMessageIds();
+            RegisterRequestHandler<PingRequest>(ping => Task.FromResult<Message>(new PingResponse
+            {
+                SenderTimestamp = ping.Timestamp
+            }));
         }
 
         public async Task Connect()
@@ -66,7 +70,7 @@ namespace maxbl4.Race.Logic.WsHub
             await TryConnect();
         }
         
-        private async Task HandleRequest(RequestMessage request)
+        private async Task HandleRequest(IRequestMessage request, Func<IRequestMessage, Task<Message>> handler)
         {
             try
             {
@@ -74,7 +78,7 @@ namespace maxbl4.Race.Logic.WsHub
                  Message response;
                  try
                  {
-                     response = await RequestHandler(request) ?? new UnhandledRequest();
+                     response = await handler(request) ?? new UnhandledRequest();
                  }
                  catch (Exception ex)
                  {
@@ -90,7 +94,7 @@ namespace maxbl4.Race.Logic.WsHub
                 throw;
             }
         }
-
+        
         private async Task DispatchMessage(JObject obj)
         {
             try
@@ -102,9 +106,10 @@ namespace maxbl4.Race.Logic.WsHub
                     {
                         tcs.TrySetResult(msg);
                     }
-                    else if (msg is RequestMessage request)
+                    else if (msg is IRequestMessage request)
                     {
-                        await HandleRequest(request);
+                        RequestHandlers.TryGetValue(msg.GetType(), out var handler);
+                        await HandleRequest(request, handler);
                     }
                     else if (MessageHandler != null)
                     {
@@ -144,8 +149,9 @@ namespace maxbl4.Race.Logic.WsHub
             await wsConnection.InvokeAsync(nameof(IWsHubServer.SendTo), msg);
         }
 
-        public async Task<T> InvokeRequest<T>(string targetId, RequestMessage msg)
-            where T: Message
+        public async Task<TResponse> InvokeRequest<TRequest, TResponse>(string targetId, TRequest msg)
+            where TRequest: Message, IRequestMessage
+            where TResponse: Message
         {
             msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};
             msg.MessageType = msg.GetType().FullName;
@@ -155,13 +161,13 @@ namespace maxbl4.Race.Logic.WsHub
                 if (!outstandingClientRequests.TryAdd(msg.MessageId, tcs))
                     throw new DuplicateRequestException(msg.MessageId);
                 await SendToDirect(targetId, msg);
-                var operationResult = await Task.WhenAny(tcs.Task, Task.Delay(msg.Timeout));
+                var operationResult = await Task.WhenAny(tcs.Task, Task.Delay(msg.Timeout ?? TimeSpan.FromSeconds(30)));
                 if (operationResult is Task<Message> successResult)
                 {
                     var response = successResult.Result;
                     if (response is UnhandledRequest un)
                         throw new UnhandledRequestException(un.Exception);
-                    return (T) successResult.Result;
+                    return (TResponse) successResult.Result;
                 }
 
                 throw new TimeoutException($"Request {msg.MessageType} to {targetId} timed out after {msg.Timeout}");
@@ -172,6 +178,12 @@ namespace maxbl4.Race.Logic.WsHub
             }
         }
 
+        public void RegisterRequestHandler<T>(Func<T, Task<Message>> handler)
+            where T: Message, IRequestMessage
+        {
+            RequestHandlers[typeof(T)] = msg => handler((T)msg);
+        }
+        
         public IEnumerable<Id<Message>> GetOutstandingRequestIds()
         {
             return outstandingClientRequests.Keys.ToList();

@@ -20,7 +20,7 @@ namespace maxbl4.Race.WsHub
         private static readonly ConcurrentDictionary<string, WsServiceRegistration>
             serviceRegistrations = new ConcurrentDictionary<string, WsServiceRegistration>();
         
-        public async Task Register(RegisterServiceMessage msg)
+        public void Register(RegisterServiceMessage msg)
         {
             lock(serviceRegistrations)
             {
@@ -79,6 +79,11 @@ namespace maxbl4.Race.WsHub
             var target = ResolveTarget(msg);
             try
             {
+                if (msg.SenderId == msg.Target.TargetId)
+                {
+                    logger.Warning($"Loopback call detected {msg.MessageType} from {msg.SenderId}");
+                    throw new HubException($"Loopback call detected {msg.MessageType}");
+                }
                 logger.Debug($"Forwarding {msg.MessageType} from {msg.SenderId} to {msg.Target}");
                 await target.ReceiveMessage(msg);
             }

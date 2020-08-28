@@ -4,7 +4,15 @@ using Newtonsoft.Json.Linq;
 
 namespace maxbl4.Race.Logic.WsHub.Messages
 {
-    public class Message
+    public interface IMessage
+    {
+        Id<Message> MessageId { get; set; }
+        string SenderId { get; set; }
+        MessageTarget Target { get; set; }
+        string MessageType { get; set; }
+    }
+
+    public class Message : IMessage
     {
         public Id<Message> MessageId { get; set; } = Id<Message>.NewId();
         public string SenderId { get; set; }

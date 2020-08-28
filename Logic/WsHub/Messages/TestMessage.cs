@@ -1,3 +1,5 @@
+using System;
+
 namespace maxbl4.Race.Logic.WsHub.Messages
 {
     public class TestMessage : Message
@@ -5,8 +7,9 @@ namespace maxbl4.Race.Logic.WsHub.Messages
         public string Payload { get; set; }
     }
     
-    public class TestRequest : RequestMessage
+    public class TestRequest : Message, IRequestMessage
     {
         public string Payload { get; set; }
+        public TimeSpan? Timeout { get; set; }
     }
 }

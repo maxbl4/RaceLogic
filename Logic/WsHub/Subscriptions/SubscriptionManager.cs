@@ -71,11 +71,12 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             options.ConnectionOptions.Features |= ServiceFeatures.CheckpointService;
             if (wsConnection != null)
                 logger.Swallow(async () => await wsConnection.DisposeAsync()).RunSync();
-            wsConnection = new WsHubConnection(options.ConnectionOptions) {RequestHandler = HandleRequest};
+            wsConnection = new WsHubConnection(options.ConnectionOptions);
+            wsConnection.RegisterRequestHandler<SubscriptionRequest>(HandleRequest);
             _ = wsConnection.Connect();
         }
 
-        private async Task<Message> HandleRequest(Message arg)
+        private async Task<Message> HandleRequest(SubscriptionRequest arg)
         {
             switch (arg)
             {
@@ -103,7 +104,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                 await logger.Swallow(async () =>
                 {
                     logger.Information(caller);
-                    await wsConnection.InvokeRequest<Message>(client, msg);
+                    await wsConnection.InvokeRequest<ChekpointsUpdate, Message>(client, msg);
                 });
             }
         }
@@ -179,7 +180,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                             logger.Swallow(async () =>
                             {
                                 logger.Information($"Sending checkpoint {x} via WS to {targetId}");
-                                await wsConnection.InvokeRequest<Message>(targetId, new ChekpointsUpdate
+                                await wsConnection.InvokeRequest<ChekpointsUpdate, Message>(targetId, new ChekpointsUpdate
                                 {
                                     Checkpoints = x,
                                 });

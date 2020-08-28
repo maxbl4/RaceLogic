@@ -44,7 +44,7 @@ namespace maxbl4.Race.Tests.CheckpointService
             var rfidConnected = false;
             
             var client = new WsClientTestWrapper(new WsHubClientOptions(wsHub.ListenUri, WsToken2));
-            client.Connection.RequestHandler = message =>
+            client.Connection.RequestHandlers[typeof(ChekpointsUpdate)] = message =>
             {
                 switch (message)
                 {
@@ -60,7 +60,7 @@ namespace maxbl4.Race.Tests.CheckpointService
             };
             
             await client.Connect();
-            await client.Connection.InvokeRequest<SubscriptionResponse>(WsToken1, new SubscriptionRequest
+            await client.Connection.InvokeRequest<SubscriptionRequest, SubscriptionResponse>(WsToken1, new SubscriptionRequest
             {
                 FromTimestamp = DateTime.UtcNow.AddMinutes(-1),
                 Timeout = TimeSpan.FromSeconds(5)

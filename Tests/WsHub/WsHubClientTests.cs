@@ -9,6 +9,7 @@ using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
+using Microsoft.AspNetCore.SignalR;
 using Serilog;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
@@ -166,18 +167,14 @@ namespace maxbl4.Race.Tests.WsHub
             await using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));
             await cli2.Connect();
             var counter = 0;
-            cli.Connection.RequestHandler = msg =>
+            cli.Connection.RegisterRequestHandler((TestRequest msg) => Task.FromResult<Message>(new TestMessage
             {
-                var tst = (TestRequest) msg;
-                return Task.FromResult<Message>(new TestMessage
-                {
-                    Payload = tst.Payload + " " + counter++
-                });
-            };
+                Payload = msg.Payload + " " + counter++
+            }));
             var responses = new List<TestMessage>();
             for (var i = 0; i < 5; i++)
             {
-                responses.Add(await cli2.Connection.InvokeRequest<TestMessage>(WsToken1, new TestRequest {Payload = "test", Timeout = TimeSpan.FromSeconds(5)}));
+                responses.Add(await cli2.Connection.InvokeRequest<TestRequest, TestMessage>(WsToken1, new TestRequest {Payload = "test", Timeout = TimeSpan.FromSeconds(5)}));
             }
 
             responses = responses.OrderBy(x => x.Payload).ToList();
@@ -201,7 +198,7 @@ namespace maxbl4.Race.Tests.WsHub
             await cli2.Connect();
 
             await Assert.ThrowsAsync<UnhandledRequestException>(() =>
-                cli.Connection.InvokeRequest<Message>(WsToken2, new TestRequest{Timeout = TimeSpan.FromSeconds(1)}));
+                cli.Connection.InvokeRequest<TestRequest, TestMessage>(WsToken2, new TestRequest{Timeout = TimeSpan.FromSeconds(1)}));
             cli.Connection.GetOutstandingRequestIds().Should().HaveCount(0);
             cli2.Connection.GetOutstandingRequestIds().Should().HaveCount(0);
         }
@@ -214,15 +211,31 @@ namespace maxbl4.Race.Tests.WsHub
             await cli.Connect();
             await using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));
             await cli2.Connect();
-            cli.Connection.RequestHandler = async msg =>
+            cli.Connection.RegisterRequestHandler(async (TestRequest msg) =>
             {
                 await Task.Delay(3000);
                 return null;
-            };
-            await Assert.ThrowsAsync<TimeoutException>(() => cli2.Connection.InvokeRequest<TestMessage>(WsToken1,
+            });
+            await Assert.ThrowsAsync<TimeoutException>(() => cli2.Connection.InvokeRequest<TestRequest, TestMessage>(WsToken1,
                 new TestRequest {Payload = "test", Timeout = TimeSpan.FromSeconds(1)}));
             cli.Connection.GetOutstandingRequestIds().Should().HaveCount(0);
             cli2.Connection.GetOutstandingRequestIds().Should().HaveCount(0);
+        }
+        
+        [Fact]
+        public async Task Ping()
+        {
+            using var svc = CreateWsHubService();
+            await using var cli = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken1));
+            await cli.Connect();
+            await using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));
+            await cli2.Connect();
+            var ping = new PingRequest();
+            var pong = await ((IPingRequester)cli2.Connection).Invoke(WsToken1, ping);
+            pong.SenderTimestamp.Should().Be(ping.Timestamp);
+            pong.Timestamp.Should().BeAfter(ping.Timestamp);
+
+            await Assert.ThrowsAsync<HubException>(() => ((IPingRequester) cli.Connection).Invoke(WsToken1, ping));
         }
 
         [Fact]
