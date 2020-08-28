@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
@@ -19,10 +20,10 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub
 {
-    public class WsHubClient: IDisposable
+    public class WsHubConnection: IAsyncDisposable
     {
         private volatile bool disposed = false;
-        private readonly ILogger logger = Log.ForContext<WsHubClient>();
+        private readonly ILogger logger = Log.ForContext<WsHubConnection>();
         private readonly CompositeDisposable disposable = new CompositeDisposable();
         private readonly WsHubClientOptions options;
         private readonly ISystemClock systemClock;
@@ -34,11 +35,9 @@ namespace maxbl4.Race.Logic.WsHub
         private readonly ConcurrentDictionary<string, string> topicSubscriptions = new ConcurrentDictionary<string, string>();
         private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
             outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
-        private readonly Subject<Message> messages = new Subject<Message>();
-        public IObservable<Message> Messages => messages;
-        public Func<Message, Task<Message>> RequestHandler { get; set; }
-
-        public WsHubClient(WsHubClientOptions options, ISystemClock systemClock = null)
+        public Func<Message, Task> MessageHandler { get; set; }
+        public Func<RequestMessage, Task<Message>> RequestHandler { get; set; }
+        public WsHubConnection(WsHubClientOptions options, ISystemClock systemClock = null)
         {
             this.options = options;
             this.systemClock = systemClock ?? new DefaultSystemClock();
@@ -61,49 +60,57 @@ namespace maxbl4.Race.Logic.WsHub
                 return Task.CompletedTask;
             };
             
-            disposable.Add(Disposable.Create(() => logger.Swallow(() => wsConnection.DisposeAsync()).RunSync()));
             disposable.Add(wsConnection.On(nameof(IWsHubClient.ReceiveMessage), 
-                (JObject msg) => DispatchMessage(msg)));
-            disposable.Add(wsConnection.On(nameof(IWsHubClient.InvokeRequest), 
-                (JObject msg) => HandleRequest(msg)));
+                async (JObject msg) => await DispatchMessage(msg)));
 
             await TryConnect();
         }
         
-        private async Task HandleRequest(JObject obj)
+        private async Task HandleRequest(RequestMessage request)
         {
             try
             {
-                logger.Debug($"HandleRequest begin {obj}");
-                var request = Message.MaterializeConcreteMessage(obj);
-                Message response;
-                try
-                {
-                    response = await RequestHandler(request) ?? new UnhandledRequest();
-                }
-                catch (Exception ex)
-                {
-                    logger.Warning(ex, $"Error handling request {obj}");
-                    response = new UnhandledRequest{Exception = ex};
-                }
-                response.MessageId = request.MessageId;
-                response.MessageType = response.GetType().FullName;
-                await wsConnection.SendAsync(nameof(IWsHubServer.AcceptResponse), response);
+                 logger.Debug($"HandleRequest begin {request}");
+                 Message response;
+                 try
+                 {
+                     response = await RequestHandler(request) ?? new UnhandledRequest();
+                 }
+                 catch (Exception ex)
+                 {
+                     logger.Warning(ex, $"Error handling request {request}");
+                     response = new UnhandledRequest{Exception = ex};
+                 }
+                 response.MessageId = request.MessageId;
+                 await SendToDirect(request.SenderId, response);
             }
             catch (Exception ex)
             {
-                logger.Warning(ex, $"Error responding to request {obj}");
+                logger.Warning(ex, $"Error responding to request {request}");
                 throw;
             }
         }
 
-        private void DispatchMessage(JObject obj)
+        private async Task DispatchMessage(JObject obj)
         {
             try
             {
                 var msg = Message.MaterializeConcreteMessage(obj);
                 if (lastSeenMessageIds.TryAdd(msg.MessageId, systemClock.UtcNow.DateTime))
-                    messages.OnNext(msg);
+                {
+                    if (outstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
+                    {
+                        tcs.TrySetResult(msg);
+                    }
+                    else if (msg is RequestMessage request)
+                    {
+                        await HandleRequest(request);
+                    }
+                    else if (MessageHandler != null)
+                    {
+                        await MessageHandler(msg);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -118,7 +125,6 @@ namespace maxbl4.Race.Logic.WsHub
                 Type = TargetType.Direct,
                 TargetId = targetId
             };
-            msg.MessageType = msg.GetType().FullName;
             await SendCore(msg);
         }
         
@@ -129,7 +135,6 @@ namespace maxbl4.Race.Logic.WsHub
                 Type = TargetType.Topic,
                 TargetId = topicId
             };
-            msg.MessageType = msg.GetType().FullName;
             await SendCore(msg);
         }
         
@@ -138,17 +143,38 @@ namespace maxbl4.Race.Logic.WsHub
             msg.MessageType = msg.GetType().FullName;
             await wsConnection.InvokeAsync(nameof(IWsHubServer.SendTo), msg);
         }
-        
+
         public async Task<T> InvokeRequest<T>(string targetId, RequestMessage msg)
             where T: Message
         {
             msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};
             msg.MessageType = msg.GetType().FullName;
-            var obj = await wsConnection.InvokeAsync<JObject>(nameof(IWsHubServer.InvokeRequest), msg);
-            var response = Message.MaterializeConcreteMessage<T>(obj);
-            if (response is UnhandledRequest un)
-                throw new UnhandledRequestException(un.Exception);
-            return response;
+            var tcs = new TaskCompletionSource<Message>();
+            try
+            {
+                if (!outstandingClientRequests.TryAdd(msg.MessageId, tcs))
+                    throw new DuplicateRequestException(msg.MessageId);
+                await SendToDirect(targetId, msg);
+                var operationResult = await Task.WhenAny(tcs.Task, Task.Delay(msg.Timeout));
+                if (operationResult is Task<Message> successResult)
+                {
+                    var response = successResult.Result;
+                    if (response is UnhandledRequest un)
+                        throw new UnhandledRequestException(un.Exception);
+                    return (T) successResult.Result;
+                }
+
+                throw new TimeoutException($"Request {msg.MessageType} to {targetId} timed out after {msg.Timeout}");
+            }
+            finally
+            {
+                outstandingClientRequests.TryRemove(msg.MessageId, out _);
+            }
+        }
+
+        public IEnumerable<Id<Message>> GetOutstandingRequestIds()
+        {
+            return outstandingClientRequests.Keys.ToList();
         }
 
         public async Task RegisterService(ServiceFeatures serviceFeatures)
@@ -238,10 +264,11 @@ namespace maxbl4.Race.Logic.WsHub
             }
         }
         
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             disposed = true;
             disposable.DisposeSafe();
+            await logger.Swallow(() => wsConnection.DisposeAsync());
         }
     }
 }

@@ -12,6 +12,7 @@ using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Infrastructure.Extensions.MessageHubExt;
+using maxbl4.Infrastructure.Extensions.TaskExt;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
@@ -34,8 +35,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
         private readonly CompositeDisposable disposable;
         private readonly ConcurrentDictionary<string, IDisposable> clients = new ConcurrentDictionary<string, IDisposable>();
         private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
-        private readonly SerialDisposable wsClientDisposable;
-        private WsHubClient wsClient;
+        private WsHubConnection wsConnection;
 
         public SubscriptionManager(ISubscriptionStorage subscriptionStorage,
             IUpstreamOptionsStorage upstreamOptionsStorage,
@@ -49,7 +49,6 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             this.messageHub = messageHub;
             this.systemClock = systemClock ?? new DefaultSystemClock();
             disposable = new CompositeDisposable(
-                wsClientDisposable = new SerialDisposable(),
                 messageHub.SubscribeDisposable<UpstreamOptions>(OptionsChanged),
                 messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
                 messageHub.SubscribeDisposable<RfidOptions>(OnRfidOptions),
@@ -70,9 +69,10 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
         private void OptionsChanged(UpstreamOptions options)
         {
             options.ConnectionOptions.Features |= ServiceFeatures.CheckpointService;
-            wsClientDisposable.Disposable = wsClient = new WsHubClient(options.ConnectionOptions);
-            wsClient.RequestHandler = HandleRequest;
-            _ = wsClient.Connect();
+            if (wsConnection != null)
+                logger.Swallow(async () => await wsConnection.DisposeAsync()).RunSync();
+            wsConnection = new WsHubConnection(options.ConnectionOptions) {RequestHandler = HandleRequest};
+            _ = wsConnection.Connect();
         }
 
         private async Task<Message> HandleRequest(Message arg)
@@ -103,7 +103,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                 await logger.Swallow(async () =>
                 {
                     logger.Information(caller);
-                    await wsClient.InvokeRequest<Message>(client, msg);
+                    await wsConnection.InvokeRequest<Message>(client, msg);
                 });
             }
         }
@@ -179,7 +179,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                             logger.Swallow(async () =>
                             {
                                 logger.Information($"Sending checkpoint {x} via WS to {targetId}");
-                                await wsClient.InvokeRequest<Message>(targetId, new ChekpointsUpdate
+                                await wsConnection.InvokeRequest<Message>(targetId, new ChekpointsUpdate
                                 {
                                     Checkpoints = x,
                                 });
@@ -198,10 +198,10 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             }
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             disposable.DisposeSafe();
-            return default;
+            await logger.Swallow(async () => await wsConnection.DisposeAsync());
         }
     }
 }

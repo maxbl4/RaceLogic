@@ -11,7 +11,5 @@ namespace maxbl4.Race.Logic.WsHub
         ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request);
         Task Subscribe(TopicSubscribeMessage msg);
         Task Unsubscribe(TopicSubscribeMessage msg);
-        Task<JObject> InvokeRequest(JObject obj);
-        Task AcceptResponse(JObject obj);
     }
 }

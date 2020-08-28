@@ -19,9 +19,7 @@ namespace maxbl4.Race.WsHub
         private static readonly ILogger logger = Log.ForContext<WsHub>();
         private static readonly ConcurrentDictionary<string, WsServiceRegistration>
             serviceRegistrations = new ConcurrentDictionary<string, WsServiceRegistration>();
-        public static readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
-            OutstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
-
+        
         public async Task Register(RegisterServiceMessage msg)
         {
             lock(serviceRegistrations)
@@ -79,36 +77,48 @@ namespace maxbl4.Race.WsHub
         {
             var msg = MaterializeMessage<Message>(obj);
             var target = ResolveTarget(msg);
-            await target.ReceiveMessage(msg);
-        }
-        
-        public async Task<JObject> InvokeRequest(JObject obj)
-        {
-            var msg = MaterializeMessage<RequestMessage>(obj);
-            var target = ResolveTarget(msg);
             try
             {
-                TaskCompletionSource<Message> tcs;
-                OutstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
-                _ = target.InvokeRequest(msg);
-                var result = await Task.WhenAny(Task.Delay(msg.Timeout), tcs.Task);
-                if (result is Task<Message> r)
-                    return JObject.FromObject(r.Result);
-                throw new HubException($"Proxy call to {msg.Target} timed out {obj}");
+                logger.Debug($"Forwarding {msg.MessageType} from {msg.SenderId} to {msg.Target}");
+                await target.ReceiveMessage(msg);
             }
-            finally
+            catch (HubException)
             {
-                OutstandingClientRequests.TryRemove(msg.MessageId, out _);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.ToString());
             }
         }
-
-        public async Task AcceptResponse(JObject obj)
-        {
-            var msg = MaterializeMessage<Message>(obj);
-            logger.Debug($"AcceptResponse {obj}");
-            if (OutstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
-                tcs.TrySetResult(msg);
-        }
+        //
+        // public async Task<JObject> InvokeRequest(JObject obj)
+        // {
+        //     var msg = MaterializeMessage<RequestMessage>(obj);
+        //     var target = ResolveTarget(msg);
+        //     try
+        //     {
+        //         TaskCompletionSource<Message> tcs;
+        //         OutstandingClientRequests.TryAdd(msg.MessageId, tcs = new TaskCompletionSource<Message>());
+        //         _ = target.InvokeRequest(msg);
+        //         var result = await Task.WhenAny(Task.Delay(msg.Timeout), tcs.Task);
+        //         if (result is Task<Message> r)
+        //             return JObject.FromObject(r.Result);
+        //         throw new HubException($"Proxy call to {msg.Target} timed out {obj}");
+        //     }
+        //     finally
+        //     {
+        //         OutstandingClientRequests.TryRemove(msg.MessageId, out _);
+        //     }
+        // }
+        //
+        // public async Task AcceptResponse(JObject obj)
+        // {
+        //     var msg = MaterializeMessage<Message>(obj);
+        //     logger.Debug($"AcceptResponse {obj}");
+        //     if (OutstandingClientRequests.TryGetValue(msg.MessageId, out var tcs))
+        //         tcs.TrySetResult(msg);
+        // }
 
         IWsHubClient ResolveTarget(Message msg, [CallerMemberName] string methodName = null)
         {
