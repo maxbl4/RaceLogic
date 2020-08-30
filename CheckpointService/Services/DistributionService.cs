@@ -4,10 +4,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
-using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Infrastructure.Extensions.MessageHubExt;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService.Model;
@@ -31,9 +30,9 @@ namespace maxbl4.Race.CheckpointService.Services
             this.checkpointsHub = checkpointsHub;
             this.storageService = storageService;
             disposable = new CompositeDisposable(
-                messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
-                messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus),
-                messageHub.SubscribeDisposable<RfidOptions>(OnRfidOptions));
+                messageHub.Subscribe<Checkpoint>(OnCheckpoint),
+                messageHub.Subscribe<ReaderStatus>(OnReaderStatus),
+                messageHub.Subscribe<RfidOptions>(OnRfidOptions));
         }
 
         private void OnRfidOptions(RfidOptions rfidOptions)

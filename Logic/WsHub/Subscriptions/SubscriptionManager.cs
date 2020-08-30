@@ -8,11 +8,11 @@ using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Infrastructure.Extensions.MessageHubExt;
 using maxbl4.Infrastructure.Extensions.TaskExt;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
@@ -49,10 +49,10 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             this.messageHub = messageHub;
             this.systemClock = systemClock ?? new DefaultSystemClock();
             disposable = new CompositeDisposable(
-                messageHub.SubscribeDisposable<UpstreamOptions>(OptionsChanged),
-                messageHub.SubscribeDisposable<Checkpoint>(OnCheckpoint),
-                messageHub.SubscribeDisposable<RfidOptions>(OnRfidOptions),
-                messageHub.SubscribeDisposable<ReaderStatus>(OnReaderStatus));
+                messageHub.Subscribe<UpstreamOptions>(OptionsChanged),
+                messageHub.Subscribe<Checkpoint>(OnCheckpoint),
+                messageHub.Subscribe<RfidOptions>(OnRfidOptions),
+                messageHub.Subscribe<ReaderStatus>(OnReaderStatus));
         }
 
         public async Task InitializeAsync()

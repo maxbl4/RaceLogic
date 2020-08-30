@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reactive.PlatformServices;
-using Easy.MessageHub;
 using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Extensions;
 using Serilog;
 

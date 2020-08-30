@@ -1,5 +1,5 @@
 using System.Reactive.PlatformServices;
-using Easy.MessageHub;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic;
 using maxbl4.Race.WsHub.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -27,7 +27,7 @@ namespace maxbl4.Race.WsHub
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
-            services.AddSingleton<IMessageHub, MessageHub>();
+            services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<StorageService>();
             services.AddAuthentication(Constants.WsHub.Authentication.SchemeName)

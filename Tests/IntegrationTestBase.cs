@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using AutoMapper;
-using Easy.MessageHub;
 using LiteDB;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -22,7 +22,7 @@ namespace maxbl4.Race.Tests
         public const string WsToken2 = "ws-token-2";
 
         static object sync = new object();
-        private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new MessageHub());
+        private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new ChannelMessageHub());
         protected IMessageHub MessageHub => messageHub.Value;
         protected readonly string storageConnectionString;
         protected readonly FakeSystemClock SystemClock = new FakeSystemClock();

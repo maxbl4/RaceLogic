@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Reactive.PlatformServices;
 using System.Threading.Tasks;
-using Easy.MessageHub;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;

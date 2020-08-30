@@ -53,15 +53,17 @@ namespace maxbl4.Race.Tests.WsHub
             using var svc = CreateWsHubService();
             await using var cli1 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken1));
             await cli1.Connect();
+            await using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));
+            await cli2.Connect();
             var msg = new TestMessage{Payload = "Duplicate"};
             
-            await cli1.Connection.SendToDirect(WsToken1, msg);
-            await cli1.Connection.SendToDirect(WsToken1, msg);
+            await cli1.Connection.SendToDirect(WsToken2, msg);
+            await cli1.Connection.SendToDirect(WsToken2, msg);
             await new Timing()
                 .Logger(Logger)
-                .ExpectAsync(() => cli1.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "Duplicate"));
+                .ExpectAsync(() => cli2.ClientMessages.OfType<TestMessage>().Any(x => x.Payload == "Duplicate"));
             await Task.Delay(1000);
-            cli1.ClientMessages.Should().HaveCount(1);
+            cli2.ClientMessages.Should().HaveCount(1);
         }
         
         [Fact]
@@ -74,11 +76,13 @@ namespace maxbl4.Race.Tests.WsHub
                 LastSeenMessageIdsRetentionPeriod = TimeSpan.FromMilliseconds(200),
             });
             await cli1.Connect();
+            await using var cli2 = new WsClientTestWrapper(new WsHubClientOptions(GetHubAddress(svc), WsToken2));
+            await cli2.Connect();
             var msg = new TestMessage{Payload = "Duplicate"};
             
-            await cli1.Connection.SendToDirect(WsToken1, msg);
+            await cli2.Connection.SendToDirect(WsToken1, msg);
             await Task.Delay(500);
-            await cli1.Connection.SendToDirect(WsToken1, msg);
+            await cli2.Connection.SendToDirect(WsToken1, msg);
             
             await new Timing()
                 .Logger(Logger)

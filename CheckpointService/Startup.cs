@@ -2,9 +2,9 @@ using System.IO;
 using System.Reactive.PlatformServices;
 using System.Threading;
 using AutoMapper;
-using Easy.MessageHub;
 using LiteDB;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.CheckpointService;
@@ -38,7 +38,7 @@ namespace maxbl4.Race.CheckpointService
         {
             BsonMapper.Global.RegisterIdBsonMappers();
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
-            services.AddSingleton<IMessageHub, MessageHub>();
+            services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<StorageService>();
             services.AddSingleton<SubscriptionManager>();
             services.AddSingleton<IHostedService, SubscriptionService>();

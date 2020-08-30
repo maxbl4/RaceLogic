@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Reactive.PlatformServices;
-using Easy.MessageHub;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.WsHub.Model;
 using Microsoft.Extensions.Options;

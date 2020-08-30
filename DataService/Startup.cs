@@ -1,7 +1,7 @@
 using System.Reactive.PlatformServices;
 using AutoMapper;
-using Easy.MessageHub;
 using LiteDB;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -27,7 +27,7 @@ namespace maxbl4.Race.DataService
         {
             BsonMapper.Global.RegisterIdBsonMappers();
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
-            services.AddSingleton<IMessageHub, MessageHub>();
+            services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<StorageService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddControllers().AddNewtonsoftJson();

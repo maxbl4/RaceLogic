@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.PlatformServices;
-using Easy.MessageHub;
 using LiteDB;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
 using Microsoft.Extensions.Options;
 using ServiceBase;
