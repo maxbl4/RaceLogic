@@ -32,25 +32,25 @@ namespace maxbl4.Race.Logic.Scoring
 
         public static RoundScoringStrategy FromStaticScores(IEnumerable<int> staticScores, bool rateDnfs = false)
         {
-            return new RoundScoringStrategy(staticScores, 0, 0, rateDnfs);
+            return new(staticScores, 0, 0, rateDnfs);
         }
         
         public static RoundScoringStrategy FromFinishers(IEnumerable<RoundPosition> positions, 
             int substractBy = 1, IEnumerable<int> bonusScores = null)
         {
-            return new RoundScoringStrategy(bonusScores, positions.Count(x => x.Finished), substractBy, false);
+            return new(bonusScores, positions.Count(x => x.Finished), substractBy, false);
         }
         
         public static RoundScoringStrategy FromStarters(IEnumerable<RoundPosition> positions, 
             int substractBy = 1, IEnumerable<int> bonusScores = null)
         {
-            return new RoundScoringStrategy(bonusScores, positions.Count(x => x.Started), substractBy, true);
+            return new(bonusScores, positions.Count(x => x.Started), substractBy, true);
         }
         
         public static RoundScoringStrategy FromFirstPlacePoints(int firstPlacePoints, int substractBy = 1, IEnumerable<int> bonusScores = null, 
             bool rateDnfs = false)
         {
-            return new RoundScoringStrategy(bonusScores, firstPlacePoints, substractBy, rateDnfs);
+            return new(bonusScores, firstPlacePoints, substractBy, rateDnfs);
         }
 
 

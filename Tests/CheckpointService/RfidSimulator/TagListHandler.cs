@@ -11,7 +11,7 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 {
     public class TagListHandler
     {
-        readonly object sync = new object();
+        readonly object sync = new();
         private string returnOnceTags;
         TaskCompletionSource<bool> returnTask;
         private string returnContinuos;

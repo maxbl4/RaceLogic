@@ -18,16 +18,16 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
     {
         private volatile bool disposed = false;
         private readonly ILogger logger = Log.ForContext<CheckpointServiceClient>();
-        private readonly CompositeDisposable disposable = new CompositeDisposable();
+        private readonly CompositeDisposable disposable = new();
         private HubConnection wsConnection;
         
-        private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
+        private readonly Subject<Checkpoint> checkpoints = new();
         public IObservable<Checkpoint> Checkpoints => checkpoints;
         
-        private readonly BehaviorSubject<ReaderStatus> readerStatus = new BehaviorSubject<ReaderStatus>(new ReaderStatus());
+        private readonly BehaviorSubject<ReaderStatus> readerStatus = new(new ReaderStatus());
         public IObservable<ReaderStatus> ReaderStatus => readerStatus;
         
-        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new BehaviorSubject<WsConnectionStatus>(new WsConnectionStatus());
+        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new(new WsConnectionStatus());
         private readonly string address;
         private readonly DateTime @from;
         private readonly TimeSpan reconnectTimeout;

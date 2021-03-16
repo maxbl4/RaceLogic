@@ -7,7 +7,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Model
     public class RfidOptions
     {
         public const string DefaultConnectionString = "Protocol=Alien;Network=127.0.0.1:20023"; 
-        public static RfidOptions Default => new RfidOptions
+        public static RfidOptions Default => new()
         {
             ConnectionString = DefaultConnectionString,
             CheckpointAggregationWindowMs = 200

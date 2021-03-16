@@ -30,10 +30,10 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
         private readonly IMessageHub messageHub;
         private readonly ISystemClock systemClock;
         private readonly ILogger logger = Log.ForContext<SubscriptionManager>();
-        private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
         private readonly CompositeDisposable disposable;
-        private readonly ConcurrentDictionary<string, IDisposable> clients = new ConcurrentDictionary<string, IDisposable>();
-        private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
+        private readonly ConcurrentDictionary<string, IDisposable> clients = new();
+        private readonly Subject<Checkpoint> checkpoints = new();
         private WsHubConnection wsConnection;
 
         public SubscriptionManager(ISubscriptionStorage subscriptionStorage,

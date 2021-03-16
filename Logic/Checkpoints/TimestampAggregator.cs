@@ -19,13 +19,13 @@ namespace maxbl4.Race.Logic.Checkpoints
         private readonly Func<T, DateTime> timestampGetter;
         private readonly Func<T, string> keyGetter;
         private readonly Func<T, T, T> aggregator;
-        readonly Subject<T> aggregatedCheckpoints = new Subject<T>();
+        readonly Subject<T> aggregatedCheckpoints = new();
         public IObservable<T> AggregatedCheckpoints => aggregatedCheckpoints;
 
-        readonly Subject<T> checkpoints = new Subject<T>();
+        readonly Subject<T> checkpoints = new();
         public IObservable<T> Checkpoints => checkpoints;
 
-        readonly Dictionary<string, T> aggregationCache = new Dictionary<string, T>();
+        readonly Dictionary<string, T> aggregationCache = new();
 
         public TimestampAggregator(TimeSpan window, Func<T, DateTime> timestampGetter, Func<T, string> keyGetter, Func<T, T, T> aggregator)
         {
@@ -112,7 +112,7 @@ namespace maxbl4.Race.Logic.Checkpoints
     {
         public static TimestampAggregator<Checkpoint> ForCheckpoint(TimeSpan window)
         {
-            return new TimestampAggregator<Checkpoint>(window, cp => cp.Timestamp, cp => cp.RiderId, (agg, cp) => cp == null ? agg.ToAggregated() : agg.AddToAggregated(cp));
+            return new(window, cp => cp.Timestamp, cp => cp.RiderId, (agg, cp) => cp == null ? agg.ToAggregated() : agg.AddToAggregated(cp));
         }
     }
 }

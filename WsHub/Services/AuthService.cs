@@ -70,7 +70,7 @@ namespace maxbl4.Race.WsHub.Services
             
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, auth.ServiceName)
+                new(ClaimTypes.NameIdentifier, auth.ServiceName)
             };
             var roles = auth.Roles?.Split(',', StringSplitOptions.RemoveEmptyEntries);
             if (roles != null)

@@ -28,7 +28,7 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         public static FinishCriteria FromDuration(TimeSpan duration, int lapsAfterDuration = 0)
         {
-            return new FinishCriteria(duration, null, lapsAfterDuration, false);
+            return new(duration, null, lapsAfterDuration, false);
         }
         
         /// <summary>
@@ -37,12 +37,12 @@ namespace maxbl4.Race.Logic.RoundTiming
         /// <returns></returns>
         public static FinishCriteria FromForcedFinish()
         {
-            return new FinishCriteria(TimeSpan.Zero, null, 0, false, true);
+            return new(TimeSpan.Zero, null, 0, false, true);
         }
         
         public static FinishCriteria FromTotalLaps(int totalLaps, TimeSpan duration, bool skipFirstLap = false)
         {
-            return new FinishCriteria(duration, totalLaps, 0, skipFirstLap);
+            return new(duration, totalLaps, 0, skipFirstLap);
         }
         
         public bool HasFinished(RoundPosition current, IEnumerable<RoundPosition> sequence, bool finishForced)

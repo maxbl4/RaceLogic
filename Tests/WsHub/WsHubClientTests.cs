@@ -265,8 +265,8 @@ namespace maxbl4.Race.Tests.WsHub
     {
         public WsHubClientOptions Options { get; }
         private readonly WsHubConnection connection;
-        public List<Message> ClientMessages { get; } = new List<Message>();
-        public List<WsConnectionStatus> ConnectionStatuses { get; } = new List<WsConnectionStatus>();
+        public List<Message> ClientMessages { get; } = new();
+        public List<WsConnectionStatus> ConnectionStatuses { get; } = new();
 
         public WsHubConnection Connection => connection;
 

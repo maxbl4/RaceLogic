@@ -17,7 +17,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
     {
         private readonly ILogger logger = Log.ForContext<CheckpointServiceClient>();
         private readonly string address;
-        private readonly HttpClient http = new HttpClient();
+        private readonly HttpClient http = new();
         
         public CheckpointServiceClient(string address)
         {

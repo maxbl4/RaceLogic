@@ -33,7 +33,7 @@ namespace maxbl4.Race.Logic.RoundTiming
 
         public Lap CreateNext(Checkpoint checkpoint)
         {
-            return new Lap(checkpoint, this);
+            return new(checkpoint, this);
         }
     }
 }

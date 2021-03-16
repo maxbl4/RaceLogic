@@ -10,8 +10,8 @@ namespace maxbl4.Race.Logic.LogManagement
 {
     public class NameMapSerializationBinder: ISerializationBinder
     {
-        private readonly Dictionary<string, Type> nameToTypeMap = new Dictionary<string, Type>();
-        private readonly Dictionary<Type, string> typeToNameMap = new Dictionary<Type, string>();
+        private readonly Dictionary<string, Type> nameToTypeMap = new();
+        private readonly Dictionary<Type, string> typeToNameMap = new();
         public NameMapSerializationBinder(IEnumerable<KeyValuePair<string, Type>> nameToTypeMap)
         {
             foreach (var pair in nameToTypeMap)
@@ -45,7 +45,7 @@ namespace maxbl4.Race.Logic.LogManagement
 
         public static NameMapSerializationBinder CreateDefault()
         {
-            return new NameMapSerializationBinder(new Dictionary<string, Type>{
+            return new(new Dictionary<string, Type>{
                 {"cp", typeof(Checkpoint)},
                 {"drop", typeof(DropCheckpointDto)},
                 {"start", typeof(SessionStart)},

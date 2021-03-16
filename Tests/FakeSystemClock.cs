@@ -6,7 +6,7 @@ namespace maxbl4.Race.Tests
     public class FakeSystemClock : ISystemClock
     {
         private bool useRealClock;
-        private DateTime now = new DateTime(2019, 1,1, 0, 0, 0, DateTimeKind.Utc);
+        private DateTime now = new(2019, 1,1, 0, 0, 0, DateTimeKind.Utc);
         public DateTimeOffset UtcNow => Now;
 
         public DateTime Now

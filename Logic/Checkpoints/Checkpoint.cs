@@ -36,7 +36,7 @@ namespace maxbl4.Race.Logic.Checkpoints
 
         public Checkpoint ToAggregated()
         {
-            return new Checkpoint
+            return new()
             {
                 RiderId = RiderId,
                 Aggregated = true,
@@ -50,7 +50,7 @@ namespace maxbl4.Race.Logic.Checkpoints
         
         public Checkpoint WithRiderId(string riderId)
         {
-            return new Checkpoint
+            return new()
             {
                 RiderId = riderId,
                 Aggregated = Aggregated,

@@ -10,7 +10,7 @@ namespace maxbl4.Race.Logic.LogManagement.IO
     {
         public JsonSerializer Create()
         {
-            return new JsonSerializer
+            return new()
             {
                 DefaultValueHandling = DefaultValueHandling.Ignore,
                 SerializationBinder = NameMapSerializationBinder.CreateDefault(),

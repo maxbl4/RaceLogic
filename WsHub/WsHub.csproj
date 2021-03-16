@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>maxbl4.Race.WsHub</RootNamespace>
     <UserSecretsId>bc2ad8db-40a6-47df-810b-ab93ecd9149a</UserSecretsId>
   </PropertyGroup>

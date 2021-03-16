@@ -14,7 +14,7 @@ namespace maxbl4.Race.Logic.LogManagement
     public class SessionLog
     {
         private readonly IAutoMapperProvider autoMapperProvider;
-        public List<object> LogEntries { get; } = new List<object>();
+        public List<object> LogEntries { get; } = new();
         public ITrackOfCheckpoints TrackOfCheckpoints { get; private set; } = new TrackOfCheckpoints();
         public IFinishCriteria FinishCriteria { get; private set; } = null;
         public DateTime StartTime = Constants.DefaultUtcDate;

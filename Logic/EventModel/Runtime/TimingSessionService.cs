@@ -15,7 +15,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 {
     public class TimingSessionService
     {
-        private readonly SemaphoreSlim sync = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim sync = new(1);
         private readonly IEventRepository eventRepository;
         private readonly IAutoMapperProvider autoMapperProvider;
         public RecordingSessionDto ActiveRecordingSession { get; private set; }

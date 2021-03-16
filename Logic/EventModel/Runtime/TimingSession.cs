@@ -21,8 +21,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public Id<RecordingSessionDto> RecordingSessionId { get; set; }
         public DateTime StartTime { get; set; }
         public TimeSpan MinLap { get; set; } = TimeSpan.FromSeconds(15);
-        public List<Checkpoint> RawCheckpoints { get; } = new List<Checkpoint>();
-        public List<Checkpoint> AggCheckpoints { get; } = new List<Checkpoint>();
+        public List<Checkpoint> RawCheckpoints { get; } = new();
+        public List<Checkpoint> AggCheckpoints { get; } = new();
         public IFinishCriteria FinishCriteria { get; set; }
         public ITrackOfCheckpoints Track { get; private set; }
         public TimestampAggregator<Checkpoint> checkpointAggregator;

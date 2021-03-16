@@ -24,19 +24,19 @@ namespace maxbl4.Race.Logic.WsHub
     {
         private volatile bool disposed = false;
         private readonly ILogger logger = Log.ForContext<WsHubConnection>();
-        private readonly CompositeDisposable disposable = new CompositeDisposable();
+        private readonly CompositeDisposable disposable = new();
         private readonly WsHubClientOptions options;
         private readonly ISystemClock systemClock;
         private HubConnection wsConnection;
-        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new BehaviorSubject<WsConnectionStatus>(new WsConnectionStatus());
+        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new(new WsConnectionStatus());
         public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
         
-        private readonly ConcurrentDictionary<Id<Message>, DateTime> lastSeenMessageIds = new ConcurrentDictionary<Id<Message>, DateTime>();
-        private readonly ConcurrentDictionary<string, string> topicSubscriptions = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<Id<Message>, DateTime> lastSeenMessageIds = new();
+        private readonly ConcurrentDictionary<string, string> topicSubscriptions = new();
         private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
-            outstandingClientRequests = new ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>();
+            outstandingClientRequests = new();
         public Func<Message, Task> MessageHandler { get; set; }
-        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>>();
+        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new();
         public WsHubConnection(WsHubClientOptions options, ISystemClock systemClock = null)
         {
             this.options = options;

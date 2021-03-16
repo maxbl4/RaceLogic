@@ -7,7 +7,7 @@ namespace Benchmark
     public class InstanceRunner
     {
         private readonly Func<ITrackOfCheckpoints> trackFactory;
-        private readonly Random r = new Random(1);
+        private readonly Random r = new(1);
         private long timestamp = 1000000;
         public InstanceRunner(Func<ITrackOfCheckpoints> trackFactory)
         {

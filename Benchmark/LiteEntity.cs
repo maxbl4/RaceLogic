@@ -90,7 +90,7 @@ namespace Benchmark
 
         public static Lid<T> NewId()
         {
-            return new Lid<T>(Ulid.NewUlid());
+            return new(Ulid.NewUlid());
         }
             
         public Lid(Ulid value)
@@ -109,7 +109,7 @@ namespace Benchmark
             
         public static implicit operator Lid<T>(Ulid id)
         {
-            return new Lid<T>(id);
+            return new(id);
         }
     }
 }

@@ -68,10 +68,10 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
        
         public static Id<T> NewId()
         {
-            return new Id<T>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid());
+            return new(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid());
         }
 
-        public static readonly Id<T> Empty = new Id<T>(Guid.Empty);
+        public static readonly Id<T> Empty = new(Guid.Empty);
             
         public Id(Guid value)
         {
@@ -92,7 +92,7 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
             
         public static implicit operator Id<T>(Guid id)
         {
-            return new Id<T>(id);
+            return new(id);
         }
 
         public override string ToString()

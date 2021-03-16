@@ -21,9 +21,9 @@ namespace maxbl4.Race.CheckpointService.Services
         private readonly StorageService storageService;
         private readonly ILogger logger = Log.ForContext<DistributionService>();
         private readonly CompositeDisposable disposable;
-        private readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-        private readonly Dictionary<string, IDisposable> clients = new Dictionary<string, IDisposable>();
-        private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
+        private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
+        private readonly Dictionary<string, IDisposable> clients = new();
+        private readonly Subject<Checkpoint> checkpoints = new();
 
         public DistributionService(IHubContext<CheckpointsHub> checkpointsHub, IMessageHub messageHub, StorageService storageService)
         {

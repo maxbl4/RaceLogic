@@ -65,7 +65,7 @@ namespace maxbl4.Race.Logic.Scoring
 
         public AggRoundScore AddScore(RoundScore score, int roundIndex)
         {
-            return new AggRoundScore(this, score, roundIndex);
+            return new(this, score, roundIndex);
         }
 
         private List<(int Position, int Count)> orderedHistogramItems;

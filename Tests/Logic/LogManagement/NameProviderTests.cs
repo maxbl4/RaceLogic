@@ -8,7 +8,7 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
 {
     public class NameProviderTests
     {
-        private readonly DateTime sampleDate = new DateTime(2019, 07, 12, 14, 35, 57, DateTimeKind.Utc);
+        private readonly DateTime sampleDate = new(2019, 07, 12, 14, 35, 57, DateTimeKind.Utc);
         private const string sampleDateString = "2019-07-12_14-35-57Z";
         private const string sampleFilename = sampleDateString + "_some-name";
         [Fact]

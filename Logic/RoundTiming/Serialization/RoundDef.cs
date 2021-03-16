@@ -8,8 +8,8 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
 {
     public class RoundDef
     {
-        public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
-        public List<RoundPosition> Rating { get; } = new List<RoundPosition>();
+        public List<Checkpoint> Checkpoints { get; } = new();
+        public List<RoundPosition> Rating { get; } = new();
         public TimeSpan Duration { get; set; } = TimeSpan.Zero;
         public bool HasDuration => Duration > TimeSpan.Zero;
         public DateTime RoundStartTime { get; set; }

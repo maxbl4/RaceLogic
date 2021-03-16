@@ -11,9 +11,9 @@ namespace maxbl4.Race.Logic.RoundTiming
     {
         private bool finishForced;
         public IFinishCriteria FinishCriteria { get; }
-        readonly Dictionary<string, RoundPosition> positions = new Dictionary<string, RoundPosition>();
-        public List<List<Checkpoint>> Track { get; } = new List<List<Checkpoint>>();
-        public List<Checkpoint> Checkpoints { get; } = new List<Checkpoint>();
+        readonly Dictionary<string, RoundPosition> positions = new();
+        public List<List<Checkpoint>> Track { get; } = new();
+        public List<Checkpoint> Checkpoints { get; } = new();
         public DateTime RoundStartTime { get; }
         
         public TrackOfCheckpointsCyclic(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)

@@ -5,11 +5,11 @@ namespace maxbl4.Race.WsHub
 {
     public class WsServiceRegistration: ServiceRegistration
     {
-        public HashSet<string> ConnectionIds { get; set;  } = new HashSet<string>();
+        public HashSet<string> ConnectionIds { get; set;  } = new();
 
         public ServiceRegistration ToServiceRegistration()
         {
-            return new ServiceRegistration
+            return new()
             {
                 ServiceId = ServiceId,
                 Features = Features

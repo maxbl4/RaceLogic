@@ -21,11 +21,11 @@ namespace maxbl4.Race.Tests
         public const string WsToken1 = "ws-token-1";
         public const string WsToken2 = "ws-token-2";
 
-        static object sync = new object();
-        private readonly ThreadLocal<IMessageHub> messageHub = new ThreadLocal<IMessageHub>(() => new ChannelMessageHub());
+        static object sync = new();
+        private readonly ThreadLocal<IMessageHub> messageHub = new(() => new ChannelMessageHub());
         protected IMessageHub MessageHub => messageHub.Value;
         protected readonly string storageConnectionString;
-        protected readonly FakeSystemClock SystemClock = new FakeSystemClock();
+        protected readonly FakeSystemClock SystemClock = new();
         protected ILogger Logger { get; }
         protected IMapper Mapper { get; }
         

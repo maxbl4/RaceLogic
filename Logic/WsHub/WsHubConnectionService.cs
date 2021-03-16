@@ -15,7 +15,7 @@ namespace maxbl4.Race.Logic.WsHub
     {
         private readonly ILogger logger = Log.ForContext<WsHubConnectionService>();
         private WsHubConnection wsConnection;
-        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>>();
+        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new();
 
         public WsHubConnection Connection
         {

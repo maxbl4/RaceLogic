@@ -20,6 +20,6 @@ namespace maxbl4.Race.Logic.WsHub
             AccessToken = accessToken;
         }
         
-        public static WsHubClientOptions Empty => new WsHubClientOptions("", "");
+        public static WsHubClientOptions Empty => new("", "");
     }
 }

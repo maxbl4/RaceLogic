@@ -30,7 +30,7 @@ namespace maxbl4.Race.CheckpointService.Services
         private CompositeDisposable disposable;
         private CompositeDisposable aggregatorDisposable;
         private TimestampAggregator<Checkpoint> aggregator;
-        private readonly Subject<Checkpoint> checkpoints = new Subject<Checkpoint>();
+        private readonly Subject<Checkpoint> checkpoints = new();
 
         public RfidService(StorageService storageService, IMessageHub messageHub,
             ISystemClock systemClock, IMapper mapper)

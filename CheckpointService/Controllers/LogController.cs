@@ -14,8 +14,8 @@ namespace maxbl4.Race.CheckpointService.Controllers
     {
         private const string dataDirectory = "var/data";
         
-        private readonly RollingFileInfo mainLogFile = new RollingFileInfo(Path.Combine(dataDirectory, "CheckpointServiceRunner.log"));
-        private readonly RollingFileInfo errorLogFile = new RollingFileInfo(Path.Combine(dataDirectory, "CheckpointServiceRunner-errors.log"));
+        private readonly RollingFileInfo mainLogFile = new(Path.Combine(dataDirectory, "CheckpointServiceRunner.log"));
+        private readonly RollingFileInfo errorLogFile = new(Path.Combine(dataDirectory, "CheckpointServiceRunner-errors.log"));
         
         [HttpGet]
         public IActionResult Get(int? lines, string filter, bool? errors)

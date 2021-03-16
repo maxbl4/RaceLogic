@@ -10,7 +10,7 @@ namespace maxbl4.Race.Logic.LogManagement
     public class LogManager
     {
         private readonly string rootPath;
-        private readonly NameProvider nameProvider = new NameProvider();
+        private readonly NameProvider nameProvider = new();
 
         public List<Event> Events { get; set; }
 
@@ -32,7 +32,8 @@ namespace maxbl4.Race.Logic.LogManagement
 
         Event LoadEvent(LogName name)
         {
-            return new Event{
+            return new()
+            {
                 Name = name,
                 Sessions = new DirectoryInfo(Path.Combine(rootPath, name.Filename))
                     .GetFiles()
@@ -46,7 +47,7 @@ namespace maxbl4.Race.Logic.LogManagement
 
         Session LoadSession(LogName name)
         {
-            return new Session{Name = name};
+            return new() {Name = name};
         }
 
 

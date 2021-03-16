@@ -18,7 +18,7 @@ namespace maxbl4.Race.WsHub
     {
         private static readonly ILogger logger = Log.ForContext<WsHub>();
         private static readonly ConcurrentDictionary<string, WsServiceRegistration>
-            serviceRegistrations = new ConcurrentDictionary<string, WsServiceRegistration>();
+            serviceRegistrations = new();
         
         public void Register(RegisterServiceMessage msg)
         {
@@ -51,7 +51,7 @@ namespace maxbl4.Race.WsHub
 
         public ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request)
         {
-            return new ListServiceRegistrationsResponse
+            return new()
             {
                 Registrations = serviceRegistrations.Values.Select(x => x.ToServiceRegistration()).ToList()
             };
