@@ -7,12 +7,13 @@ using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.RoundTiming;
+using SequentialGuid;
 
 namespace Benchmark
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (args.Length < 1)
             {
@@ -31,7 +32,7 @@ namespace Benchmark
             }
         }
 
-        static void LiteId(string[] args)
+        private static void LiteId(string[] args)
         {
             if (args.Length < 1)
             {
@@ -43,14 +44,33 @@ namespace Benchmark
             var count = int.Parse(args[0]);
             var longId = 1L;
             var intId = 1;
-            
-            DoBenchmark("Base", () => new LiteEntityInt{ Id = intId++, Address = "some address long", Amount = 123, PersonName = "some person name"});
-            DoBenchmark("Base", () => new LiteEntityLong{ Id = longId++, Address = "some address long", Amount = 123, PersonName = "some person name"});
-            DoBenchmark("SequentialGuid", () => new LiteEntityId{ Id = new Id<LiteEntityId>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid()), Address = "some address long", Amount = 123, PersonName = "some person name"});
+
+            DoBenchmark("Base",
+                () => new LiteEntityInt
+                    {Id = intId++, Address = "some address long", Amount = 123, PersonName = "some person name"});
+            DoBenchmark("Base",
+                () => new LiteEntityLong
+                    {Id = longId++, Address = "some address long", Amount = 123, PersonName = "some person name"});
+            DoBenchmark("SequentialGuid",
+                () => new LiteEntityId
+                {
+                    Id = new Id<LiteEntityId>(SequentialGuidGenerator.Instance.NewGuid()),
+                    Address = "some address long", Amount = 123, PersonName = "some person name"
+                });
             BsonMapper.Global.RegisterType(x => x.ToString(), x => Ulid.Parse(x));
-            DoBenchmark("String Ulid", () => new LiteEntityLid{ Id = Lid<LiteEntityLid>.NewId(), Address = "some address long", Amount = 123, PersonName = "some person name"});
+            DoBenchmark("String Ulid",
+                () => new LiteEntityLid
+                {
+                    Id = Lid<LiteEntityLid>.NewId(), Address = "some address long", Amount = 123,
+                    PersonName = "some person name"
+                });
             BsonMapper.Global.RegisterIdBsonMappers(typeof(Program).Assembly);
-            DoBenchmark("String SGuid", () => new LiteEntityId{ Id = new Id<LiteEntityId>(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid()), Address = "some address long", Amount = 123, PersonName = "some person name"});
+            DoBenchmark("String SGuid",
+                () => new LiteEntityId
+                {
+                    Id = new Id<LiteEntityId>(SequentialGuidGenerator.Instance.NewGuid()),
+                    Address = "some address long", Amount = 123, PersonName = "some person name"
+                });
 
 
             void DoBenchmark<T>(string name, Func<T> faker) where T : class
@@ -60,36 +80,36 @@ namespace Benchmark
                     File.Delete(storageFile);
                 using var repo = LiteRepo.WithUtcDate(storageFile);
                 var sw = Stopwatch.StartNew();
-                for (int i = 0; i < 100; i++)
-                {
-                    repo.Insert(faker());
-                }
-                
+                for (var i = 0; i < 100; i++) repo.Insert(faker());
+
                 sw.Restart();
-                for (int i = 0; i < count; i++)
-                {
-                    repo.Insert(faker());
-                }
+                for (var i = 0; i < count; i++) repo.Insert(faker());
 
                 sw.Stop();
-                Console.WriteLine($"{name,-20} {typeof(T).Name,-20}: {sw.ElapsedMilliseconds,6} ms, {count * 1000 / sw.ElapsedMilliseconds,5} iops");
+                Console.WriteLine(
+                    $"{name,-20} {typeof(T).Name,-20}: {sw.ElapsedMilliseconds,6} ms, {count * 1000 / sw.ElapsedMilliseconds,5} iops");
             }
         }
-        
-        static void Track(string[] args)
+
+        private static void Track(string[] args)
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("TrackOfCheckpoints benchmark. Supply number of checkpoints in one cycle and number of cycles");
+                Console.WriteLine(
+                    "TrackOfCheckpoints benchmark. Supply number of checkpoints in one cycle and number of cycles");
                 Console.WriteLine("Example: benchmark.exe track 1000 100");
                 return;
             }
+
             var cps = int.Parse(args[0]);
             var cycles = int.Parse(args[1]);
             Console.WriteLine($"TrackOfCheckpoints benchmark. Append {cps} checkpoints {cycles} iterations");
-            var incrementalWithCustomSortRunner = new InstanceRunner(() => new TrackOfCheckpoints(new DateTime(1), FinishCriteria.FromForcedFinish()));
-            var cyclicRunner = new InstanceRunner(() => new TrackOfCheckpointsCyclic(new DateTime(1), FinishCriteria.FromForcedFinish()));
-            var runners = new[] {("Incremental custom sort", incrementalWithCustomSortRunner), ("cyclic", cyclicRunner)};
+            var incrementalWithCustomSortRunner = new InstanceRunner(() =>
+                new TrackOfCheckpoints(new DateTime(1), FinishCriteria.FromForcedFinish()));
+            var cyclicRunner = new InstanceRunner(() =>
+                new TrackOfCheckpointsCyclic(new DateTime(1), FinishCriteria.FromForcedFinish()));
+            var runners = new[]
+                {("Incremental custom sort", incrementalWithCustomSortRunner), ("cyclic", cyclicRunner)};
             long baseLine = 0;
             foreach (var runner in runners)
             {
@@ -98,19 +118,21 @@ namespace Benchmark
                 Console.WriteLine($"Start test: {runner.Item1}");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 var sw = Stopwatch.StartNew();
-                for (int i = 0; i < cycles; i++)
+                for (var i = 0; i < cycles; i++)
                 {
                     runner.Item2.Work(cps);
                     if (i % 10 == 0)
                         Console.Write($"{i * 100 / cycles}% ");
                 }
+
                 sw.Stop();
                 Console.WriteLine("100%");
-                
+
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 if (baseLine == 0)
                     baseLine = sw.ElapsedMilliseconds;
-                Console.WriteLine($"{runner.Item1}: Total={sw.ElapsedMilliseconds}ms, PerCycle={sw.ElapsedMilliseconds/(double)cycles:F2}ms, Relative={sw.ElapsedMilliseconds*100/baseLine}%");
+                Console.WriteLine(
+                    $"{runner.Item1}: Total={sw.ElapsedMilliseconds}ms, PerCycle={sw.ElapsedMilliseconds / (double) cycles:F2}ms, Relative={sw.ElapsedMilliseconds * 100 / baseLine}%");
             }
         }
     }

@@ -31,22 +31,22 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                 var hubContext = Substitute.For<IHubContext<CheckpointsHub>>();
                 var cps = new List<Checkpoint>();
                 hubContext.Clients.Client("con1")
-                            .SendCoreAsync("Checkpoint", Arg.Any<object[]>())
-                        .Returns(Task.CompletedTask)
-                        .AndDoes(info => cps.AddRange(info.ArgAt<object[]>(1).OfType<Checkpoint[]>().First()));
-                
+                    .SendCoreAsync("Checkpoint", Arg.Any<object[]>())
+                    .Returns(Task.CompletedTask)
+                    .AndDoes(info => cps.AddRange(info.ArgAt<object[]>(1).OfType<Checkpoint[]>().First()));
+
                 var ds = new DistributionService(hubContext, MessageHub, storageService);
                 ds.StartStream("con1", DateTime.UtcNow);
 
-                
+
                 MessageHub.Publish(new Checkpoint("r1", Constants.DefaultUtcDate));
-                
-                
+
+
                 new Timing().Logger(Logger).Expect(() => cps.Count >= 1);
                 cps[0].RiderId.Should().Be("r1");
             });
         }
-        
+
         [Fact]
         public void Should_send_to_other_clients_when_one_fails()
         {
@@ -55,7 +55,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
             {
                 var hubContext = Substitute.For<IHubContext<CheckpointsHub>>();
                 var log = new List<string>();
-                
+
                 hubContext.Clients.Client("con1")
                     .SendCoreAsync(Arg.Any<string>(), Arg.Any<object[]>())
                     .ThrowsForAnyArgs(x => new ArgumentOutOfRangeException())
@@ -66,15 +66,15 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
                     .Returns(Task.CompletedTask)
                     .AndDoes(info => log.Add(info.ArgAt<object[]>(1)
                         .OfType<Checkpoint[]>().First()[0].RiderId));
-                                
+
                 var ds = new DistributionService(hubContext, MessageHub, storageService);
                 ds.StartStream("con1", DateTime.UtcNow);
                 ds.StartStream("con2", DateTime.UtcNow);
 
-                
+
                 MessageHub.Publish(new Checkpoint("r1", Constants.DefaultUtcDate));
-                
-                
+
+
                 new Timing().Logger(Logger).Expect(() => log.Count >= 2);
                 log[0].Should().Be("thrown");
                 log[1].Should().Be("r1");

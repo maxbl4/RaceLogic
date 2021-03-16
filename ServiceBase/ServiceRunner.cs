@@ -33,6 +33,13 @@ namespace ServiceBase
             }
         }
 
+        public void Dispose()
+        {
+            cts?.Cancel();
+            cts.DisposeSafe();
+            hostBuilder?.StopAsync().Wait(5000);
+        }
+
         public async Task<int> Start(string[] args = null)
         {
             SetupLogger("appsettings");
@@ -56,8 +63,8 @@ namespace ServiceBase
                 Log.CloseAndFlush();
             }
         }
-        
-        public static void SetupLogger(string configFileBaseName,string[] args = null)
+
+        public static void SetupLogger(string configFileBaseName, string[] args = null)
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile($"{configFileBaseName}.json", true)
@@ -70,24 +77,19 @@ namespace ServiceBase
                 .CreateLogger();
         }
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
                         .UseWebRoot(Path.Combine("var", "www"))
                         .UseStartup<TStartup>()
                         .UseSerilog((builder, loggerConfig) =>
-                            {
-                                loggerConfig.ReadFrom.Configuration(builder.Configuration);
-                            });
+                        {
+                            loggerConfig.ReadFrom.Configuration(builder.Configuration);
+                        });
                 });
-
-        public void Dispose()
-        {
-            cts?.Cancel();
-            cts.DisposeSafe();
-            hostBuilder?.StopAsync().Wait(5000);
         }
     }
 }

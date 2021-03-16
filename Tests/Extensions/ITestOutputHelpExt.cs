@@ -9,13 +9,13 @@ namespace maxbl4.Race.Tests.Extensions
 {
     public static class ITestOutputHelpExt
     {
-        static string GetNameForDbFile(this ITestOutputHelper outputHelper)
+        private static string GetNameForDbFile(this ITestOutputHelper outputHelper)
         {
             Directory.CreateDirectory("var/data");
             var parts = outputHelper.GetTest().DisplayName.Split(".");
             return "var/data/" + "_" + string.Join("-", parts.Skip(Math.Max(parts.Length - 2, 0))) + ".litedb";
         }
-        
+
         public static string GetEmptyLiteDbForTest(this ITestOutputHelper outputHelper)
         {
             var fileName = GetNameForDbFile(outputHelper);

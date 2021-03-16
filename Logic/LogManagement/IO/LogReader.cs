@@ -10,10 +10,13 @@ namespace maxbl4.Race.Logic.LogManagement.IO
 
         public IEnumerable<object> Read(string filename)
         {
-            using (var sr = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (var sr =
+                new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            {
                 return Read(sr);
+            }
         }
-        
+
         public IEnumerable<object> Read(TextReader tr)
         {
             string s;

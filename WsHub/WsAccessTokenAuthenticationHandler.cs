@@ -8,13 +8,13 @@ using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.WsHub
 {
-    public class WsAccessTokenAuthenticationHandler: AuthenticationHandler<AuthenticationSchemeOptions>
+    public class WsAccessTokenAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IAuthService authService;
-        
-        public WsAccessTokenAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, 
-            ILoggerFactory logger, 
-            UrlEncoder encoder, 
+
+        public WsAccessTokenAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
             ISystemClock clock, IAuthService authService) : base(options, logger, encoder, clock)
         {
             this.authService = authService;
@@ -23,7 +23,7 @@ namespace maxbl4.Race.WsHub
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (!AuthenticationHeaderValue.TryParse(Request.Headers["Authorization"],
-                out AuthenticationHeaderValue headerValue))
+                out var headerValue))
                 return Task.FromResult(AuthenticateResult.Fail("Missing or bad authorization header"));
             if (string.IsNullOrWhiteSpace(headerValue.Parameter))
                 return Task.FromResult(AuthenticateResult.Fail("Empty user id"));

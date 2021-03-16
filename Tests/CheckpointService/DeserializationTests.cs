@@ -11,9 +11,10 @@ namespace maxbl4.Race.Tests.CheckpointService
 {
     public class DeserializationTests
     {
-        string str = @"[{'timestamp':'2019-11-04T18:37:34.773Z','riderId':'stored1','id':'08d79b60-0191-f7da-9d44-2371e4be9b71'},{'timestamp':'2019-11-04T18:39:14.773Z','riderId':'stored2', 'id':'sdfsdf'}]"
-            .Replace('\'', '"');
-        
+        private readonly string str =
+            @"[{'timestamp':'2019-11-04T18:37:34.773Z','riderId':'stored1','id':'08d79b60-0191-f7da-9d44-2371e4be9b71'},{'timestamp':'2019-11-04T18:39:14.773Z','riderId':'stored2', 'id':'sdfsdf'}]"
+                .Replace('\'', '"');
+
         [Fact]
         public void System_Json_should_fail_to_deserialize_checkpoints_array()
         {
@@ -25,7 +26,7 @@ namespace maxbl4.Race.Tests.CheckpointService
 //            result[0].Sequence.Should().Be(1);
 //            result[0].Timestamp.Should().Be(new DateTime(2019, 11, 04, 18, 37, 34, 773, DateTimeKind.Utc));
         }
-        
+
         [Fact]
         public void Newtonsoft_Json_should_deserialize_checkpoints_array()
         {

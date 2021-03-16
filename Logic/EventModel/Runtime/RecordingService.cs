@@ -22,9 +22,9 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             if (dto != null)
                 actionSession = new RecordingSession(null, storage, dto);
         }
-        
+
         /// <summary>
-        /// Start new session. Returns currently active session if createNew == false
+        ///     Start new session. Returns currently active session if createNew == false
         /// </summary>
         /// <returns></returns>
         public async Task<RecordingSession> StartRecordingSession(bool createNew = false)
@@ -36,12 +36,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 await actionSession.DisposeAsync();
                 actionSession = null;
             }
+
             actionSession = new RecordingSession(null, storage, new RecordingSessionDto());
             return actionSession;
         }
 
         /// <summary>
-        /// Load and continue previous session or return e
+        ///     Load and continue previous session or return e
         /// </summary>
         /// <param name="recordingSessionId"></param>
         /// <returns></returns>
@@ -54,39 +55,40 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         }
     }
 
-    public class RecordingSession: IAsyncDisposable
+    public class RecordingSession : IAsyncDisposable
     {
         private readonly ICheckpointServiceClientFactory cpFactory;
         private readonly IRecordingServiceStorage storage;
-        
-        public Id<RecordingSessionDto> SessionId { get; } 
 
-        public RecordingSession(ICheckpointServiceClientFactory cpFactory, IRecordingServiceStorage storage, RecordingSessionDto dto)
+        public RecordingSession(ICheckpointServiceClientFactory cpFactory, IRecordingServiceStorage storage,
+            RecordingSessionDto dto)
         {
             this.cpFactory = cpFactory;
             this.storage = storage;
             SessionId = dto.Id;
         }
-        
-        public async Task Start()
-        {
-            // TODO: Subscribe to checkpoints from each enabled CheckpointService
-            // Call OnCheckpoint
-            await Task.Delay(1);
-        }
-        
-        public async Task Stop()
-        {
-            // TODO: dispose subscription
-            await Task.Delay(1);
-        }
+
+        public Id<RecordingSessionDto> SessionId { get; }
 
         public ValueTask DisposeAsync()
         {
             return default;
         }
 
-        void OnCheckpoint(Checkpoint checkpoint)
+        public async Task Start()
+        {
+            // TODO: Subscribe to checkpoints from each enabled CheckpointService
+            // Call OnCheckpoint
+            await Task.Delay(1);
+        }
+
+        public async Task Stop()
+        {
+            // TODO: dispose subscription
+            await Task.Delay(1);
+        }
+
+        private void OnCheckpoint(Checkpoint checkpoint)
         {
             // TODO: store checkpoint and signal we have updates
         }
@@ -94,7 +96,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
     public interface ICheckpointServiceClient
     {
-        
     }
 
     public interface ICheckpointServiceClientFactory

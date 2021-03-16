@@ -3,9 +3,9 @@ using maxbl4.Race.Logic.WsHub.Messages;
 
 namespace maxbl4.Race.Logic.WsHub
 {
-    public interface IRequestImpl<in TRequest,TResponse>
-        where TRequest: Message, IRequestMessage
-        where TResponse: Message
+    public interface IRequestImpl<in TRequest, TResponse>
+        where TRequest : Message, IRequestMessage
+        where TResponse : Message
     {
         private WsHubConnection Connection => this as WsHubConnection;
 
@@ -17,6 +17,5 @@ namespace maxbl4.Race.Logic.WsHub
 
     public interface IPingRequester : IRequestImpl<PingRequest, PingResponse>
     {
-        
     }
 }

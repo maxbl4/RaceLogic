@@ -22,7 +22,7 @@ namespace maxbl4.Race.CheckpointService.Controllers
         {
             return storageService.GetRfidOptions();
         }
-        
+
         [HttpGet("{property}")]
         public object Get(string property)
         {
@@ -36,10 +36,10 @@ namespace maxbl4.Race.CheckpointService.Controllers
                 return $"\"{value}\"";
             return value;
         }
-        
+
         [HttpPost("{property}")]
         [HttpPut("{property}")]
-        public object Put(string property, [FromBody]object newValue)
+        public object Put(string property, [FromBody] object newValue)
         {
             var opts = storageService.GetRfidOptions();
             var prop = opts.GetType().GetProperties()
@@ -50,14 +50,14 @@ namespace maxbl4.Race.CheckpointService.Controllers
             storageService.SetRfidOptions(opts);
             return Ok();
         }
-        
+
         [HttpPost]
         [HttpPut]
-        public void Put([FromBody]RfidOptions options)
+        public void Put([FromBody] RfidOptions options)
         {
             storageService.SetRfidOptions(options);
         }
-        
+
         [HttpDelete]
         public void Delete()
         {

@@ -14,39 +14,40 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.CheckpointService.Client
 {
-    public class CheckpointSubscription: ICheckpointSubscription
+    public class CheckpointSubscription : ICheckpointSubscription
     {
-        private volatile bool disposed = false;
-        private readonly ILogger logger = Log.ForContext<CheckpointServiceClient>();
-        private readonly CompositeDisposable disposable = new();
-        private HubConnection wsConnection;
-        
-        private readonly Subject<Checkpoint> checkpoints = new();
-        public IObservable<Checkpoint> Checkpoints => checkpoints;
-        
-        private readonly BehaviorSubject<ReaderStatus> readerStatus = new(new ReaderStatus());
-        public IObservable<ReaderStatus> ReaderStatus => readerStatus;
-        
-        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new(new WsConnectionStatus());
         private readonly string address;
-        private readonly DateTime @from;
+
+        private readonly Subject<Checkpoint> checkpoints = new();
+        private readonly CompositeDisposable disposable = new();
+        private readonly DateTime from;
+        private readonly ILogger logger = Log.ForContext<CheckpointServiceClient>();
+
+        private readonly BehaviorSubject<ReaderStatus> readerStatus = new(new ReaderStatus());
         private readonly TimeSpan reconnectTimeout;
-        public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
+
+        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new(new WsConnectionStatus());
+        private volatile bool disposed;
+        private HubConnection wsConnection;
 
         public CheckpointSubscription(string address, DateTime from, TimeSpan? reconnectTimeout)
         {
             if (!address.EndsWith("/"))
                 address += "/";
             this.address = address;
-            this.@from = @from;
+            this.from = from;
             this.reconnectTimeout = reconnectTimeout ?? TimeSpan.FromMilliseconds(5000);
             disposable.Add(checkpoints);
             disposable.Add(readerStatus);
             disposable.Add(webSocketConnected);
         }
-        
+
+        public IObservable<Checkpoint> Checkpoints => checkpoints;
+        public IObservable<ReaderStatus> ReaderStatus => readerStatus;
+        public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
+
         public void Start()
-        {   
+        {
             logger.Information("Connect");
 
             wsConnection = new HubConnectionBuilder()
@@ -61,32 +62,41 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
             };
 
             disposable.Add(Disposable.Create(() => logger.Swallow(() => wsConnection.DisposeAsync()).RunSync()));
-            disposable.Add(wsConnection.On("Checkpoint", (Checkpoint[] cps) => cps.ForAll(cp => checkpoints.OnNext(cp))));
+            disposable.Add(
+                wsConnection.On("Checkpoint", (Checkpoint[] cps) => cps.ForAll(cp => checkpoints.OnNext(cp))));
             disposable.Add(wsConnection.On("ReaderStatus", (ReaderStatus s) => readerStatus.OnNext(s)));
 
             _ = TryConnect();
         }
-        
-        async Task HandleDisconnect(Exception ex)
+
+        public void Dispose()
         {
-            webSocketConnected.OnNext(new WsConnectionStatus{Exception = ex});
+            disposed = true;
+            disposable.DisposeSafe();
+        }
+
+        private async Task HandleDisconnect(Exception ex)
+        {
+            webSocketConnected.OnNext(new WsConnectionStatus {Exception = ex});
             await Task.Delay(reconnectTimeout);
             _ = TryConnect();
         }
-        
-        async Task TryConnect()
+
+        private async Task TryConnect()
         {
             try
             {
                 logger.Warning("TryConnect");
-                if (wsConnection.State != HubConnectionState.Connected && wsConnection.State != HubConnectionState.Connecting
-                    && !disposed)
+                if (wsConnection.State != HubConnectionState.Connected && wsConnection.State !=
+                                                                       HubConnectionState.Connecting
+                                                                       && !disposed)
                 {
                     await wsConnection.StartAsync();
                     await Subscribe(from);
                     logger.Warning("TryConnect success");
                 }
-                webSocketConnected.OnNext(new WsConnectionStatus{IsConnected = true});
+
+                webSocketConnected.OnNext(new WsConnectionStatus {IsConnected = true});
             }
             catch (Exception ex)
             {
@@ -94,17 +104,11 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
                 HandleDisconnect(ex).Wait(0);
             }
         }
-        
+
         private async Task Subscribe(DateTime from)
         {
             logger.Information("Subscribe {from}", from);
-            await wsConnection.SendCoreAsync("Subscribe", new object[]{from});
-        }
-
-        public void Dispose()
-        {
-            disposed = true;
-            disposable.DisposeSafe();
+            await wsConnection.SendCoreAsync("Subscribe", new object[] {from});
         }
     }
 }

@@ -9,14 +9,10 @@ using maxbl4.Race.Logic.RoundTiming;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
-    public class TimingSession: IHasName, IHasTimestamp, IHasSeed
+    public class TimingSession : IHasName, IHasTimestamp, IHasSeed
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsSeed { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime Updated { get; set; }
-     
+        public TimestampAggregator<Checkpoint> checkpointAggregator;
+
         public Id<SessionDto> SessionId { get; set; }
         public Id<RecordingSessionDto> RecordingSessionId { get; set; }
         public DateTime StartTime { get; set; }
@@ -25,9 +21,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public List<Checkpoint> AggCheckpoints { get; } = new();
         public IFinishCriteria FinishCriteria { get; set; }
         public ITrackOfCheckpoints Track { get; private set; }
-        public TimestampAggregator<Checkpoint> checkpointAggregator;
         public ConcurrentDictionary<string, List<Id<RiderProfileDto>>> RiderIdMap { get; set; }
-        
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool IsSeed { get; set; }
+        public DateTime Created { get; set; }
+        public DateTime Updated { get; set; }
+
         public void Initialize(IEnumerable<Checkpoint> initialCheckpoints = null)
         {
             Track = new TrackOfCheckpoints(StartTime, FinishCriteria);
@@ -36,10 +36,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(MinLap);
             checkpointAggregator.Subscribe(Track.Append);
             checkpointAggregator.AggregatedCheckpoints.Subscribe(AggCheckpoints.Add);
-            foreach (var checkpoint in initialCheckpoints)
-            {
-                checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
-            }
+            foreach (var checkpoint in initialCheckpoints) checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
         }
 
         public void AppendCheckpoint(Checkpoint checkpoint)
@@ -50,7 +47,9 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         private Checkpoint ResolveRiderId(Checkpoint rawCheckpoint)
         {
-            var resolvedId = RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderId) ? riderId.ToString() : rawCheckpoint.RiderId;
+            var resolvedId = RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderId)
+                ? riderId.ToString()
+                : rawCheckpoint.RiderId;
             return rawCheckpoint.WithRiderId(resolvedId);
         }
     }

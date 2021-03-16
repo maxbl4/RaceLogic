@@ -2,32 +2,29 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Infrastructure.Extensions.TaskExt;
 using maxbl4.Race.Logic.WsHub.Messages;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
-using maxbl4.Race.Logic.WsHub.Subscriptions.Messages;
 using Serilog;
-using Serilog.Core;
 
 namespace maxbl4.Race.Logic.WsHub
 {
-    public class WsHubConnectionService: IAsyncInitialize, IAsyncDisposable
+    public class WsHubConnectionService : IAsyncInitialize, IAsyncDisposable
     {
         private readonly ILogger logger = Log.ForContext<WsHubConnectionService>();
-        private WsHubConnection wsConnection;
         public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new();
 
-        public WsHubConnection Connection
+        public WsHubConnection Connection { get; set; }
+
+        public ValueTask DisposeAsync()
         {
-            get => wsConnection;
-            set => wsConnection = value;
+            return default;
         }
 
         public Task InitializeAsync()
         {
             return null;
         }
-        
+
         private async Task OptionsChanged(UpstreamOptions options)
         {
             options.ConnectionOptions.Features |= ServiceFeatures.CheckpointService;
@@ -35,22 +32,15 @@ namespace maxbl4.Race.Logic.WsHub
                 await logger.Swallow(async () => await Connection.DisposeAsync());
             Connection = new WsHubConnection(options.ConnectionOptions);
             foreach (var requestHandler in RequestHandlers)
-            {
-                Connection.RequestHandlers[requestHandler.Key] = requestHandler.Value;    
-            }
-            
+                Connection.RequestHandlers[requestHandler.Key] = requestHandler.Value;
+
             _ = Connection.Connect();
         }
-        
-        public void RegisterRequestHandler<T>(Func<T, Task<Message>> handler)
-            where T: Message, IRequestMessage
-        {
-            RequestHandlers[typeof(T)] = msg => handler((T)msg);
-        }
 
-        public ValueTask DisposeAsync()
+        public void RegisterRequestHandler<T>(Func<T, Task<Message>> handler)
+            where T : Message, IRequestMessage
         {
-            return default;
+            RequestHandlers[typeof(T)] = msg => handler((T) msg);
         }
     }
 }

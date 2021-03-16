@@ -12,11 +12,11 @@ namespace maxbl4.Race.Tests.Extensions
         {
             return GetBsonAsync<T>(http, uri.ToString());
         }
-        
+
         public static async Task<T> GetBsonAsync<T>(this HttpClient http, string uri)
         {
             if (typeof(T).IsSubclassOf(typeof(BsonValue)))
-                return (T)(object)JsonSerializer.Deserialize(await http.GetStringAsync(uri));
+                return (T) (object) JsonSerializer.Deserialize(await http.GetStringAsync(uri));
             return BsonMapper.Global.Deserialize<T>(JsonSerializer.Deserialize(await http.GetStringAsync(uri)));
         }
 
@@ -24,7 +24,7 @@ namespace maxbl4.Race.Tests.Extensions
         {
             return await http.PostBsonAsync(uri.ToString(), value);
         }
-        
+
         public static async Task<HttpResponseMessage> PostBsonAsync(this HttpClient http, string uri, object value)
         {
             return await http.PostAsync(uri,

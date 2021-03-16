@@ -7,7 +7,7 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
 {'$type':'cp','Timestamp':'0001-01-01T00:00:00.11','RiderId':'xxxx','Id':2,'Count':1}
 {'$type':'drop','Timestamp':'0001-01-01T00:00:00.12','Id':3}
 ".Replace('\'', '"');
-        
+
         // [Fact]
         // public void Should_write_logs()
         // {

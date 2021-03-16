@@ -7,17 +7,13 @@ namespace maxbl4.Race.Logic.RoundTiming
 {
     public class FinishCriteria : IFinishCriteria
     {
-        public TimeSpan Duration { get; }
-        public int? TotalLaps { get; }
-        public int LapsAfterDuration { get; }
-        public bool SkipStartingCheckpoint { get; }
-        public bool ForceFinishOnly { get; }
-
-        public FinishCriteria(FinishCriteriaDto dto): 
+        public FinishCriteria(FinishCriteriaDto dto) :
             this(dto.Duration, dto.TotalLaps, dto.LapsAfterDuration, dto.SkipStartingCheckpoint, dto.ForceFinishOnly)
-        { }
-        
-        public FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint, bool forceFinishOnly = false)
+        {
+        }
+
+        public FinishCriteria(TimeSpan duration, int? totalLaps, int lapsAfterDuration, bool skipStartingCheckpoint,
+            bool forceFinishOnly = false)
         {
             Duration = duration;
             TotalLaps = totalLaps;
@@ -26,25 +22,12 @@ namespace maxbl4.Race.Logic.RoundTiming
             ForceFinishOnly = forceFinishOnly;
         }
 
-        public static FinishCriteria FromDuration(TimeSpan duration, int lapsAfterDuration = 0)
-        {
-            return new(duration, null, lapsAfterDuration, false);
-        }
-        
-        /// <summary>
-        /// Sets finished only with finishForced. Used for calculation without timestamps
-        /// </summary>
-        /// <returns></returns>
-        public static FinishCriteria FromForcedFinish()
-        {
-            return new(TimeSpan.Zero, null, 0, false, true);
-        }
-        
-        public static FinishCriteria FromTotalLaps(int totalLaps, TimeSpan duration, bool skipFirstLap = false)
-        {
-            return new(duration, totalLaps, 0, skipFirstLap);
-        }
-        
+        public TimeSpan Duration { get; }
+        public int? TotalLaps { get; }
+        public int LapsAfterDuration { get; }
+        public bool SkipStartingCheckpoint { get; }
+        public bool ForceFinishOnly { get; }
+
         public bool HasFinished(RoundPosition current, IEnumerable<RoundPosition> sequence, bool finishForced)
         {
             if (ForceFinishOnly && !finishForced) return false;
@@ -61,13 +44,34 @@ namespace maxbl4.Race.Logic.RoundTiming
                 }
 
                 var mainDurationComplete = current.Duration >= Duration;
-                var additionalLapsComplete = LapsAfterDuration == 0 || current.Laps.Count(x => x.AggDuration >= Duration) > LapsAfterDuration;
+                var additionalLapsComplete = LapsAfterDuration == 0 ||
+                                             current.Laps.Count(x => x.AggDuration >= Duration) > LapsAfterDuration;
                 return mainDurationComplete && additionalLapsComplete;
             }
+
             if (!leader.Finished) return false;
             return current.EndSequence > leader.EndSequence;
         }
-        
+
+        public static FinishCriteria FromDuration(TimeSpan duration, int lapsAfterDuration = 0)
+        {
+            return new(duration, null, lapsAfterDuration, false);
+        }
+
+        /// <summary>
+        ///     Sets finished only with finishForced. Used for calculation without timestamps
+        /// </summary>
+        /// <returns></returns>
+        public static FinishCriteria FromForcedFinish()
+        {
+            return new(TimeSpan.Zero, null, 0, false, true);
+        }
+
+        public static FinishCriteria FromTotalLaps(int totalLaps, TimeSpan duration, bool skipFirstLap = false)
+        {
+            return new(duration, totalLaps, 0, skipFirstLap);
+        }
+
         public RoundPosition GetLeader(IEnumerable<RoundPosition> sequence, bool finishForced)
         {
             RoundPosition first = null;
@@ -84,6 +88,7 @@ namespace maxbl4.Race.Logic.RoundTiming
                 if (position.Duration >= Duration)
                     return position;
             }
+
             return first;
         }
     }

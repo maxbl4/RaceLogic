@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
 using Microsoft.AspNetCore.Authorization;
@@ -14,22 +13,67 @@ using Serilog;
 namespace maxbl4.Race.WsHub
 {
     [Authorize]
-    public class WsHub: Hub<IWsHubClient>, IWsHubServer
+    public class WsHub : Hub<IWsHubClient>, IWsHubServer
     {
         private static readonly ILogger logger = Log.ForContext<WsHub>();
+
         private static readonly ConcurrentDictionary<string, WsServiceRegistration>
             serviceRegistrations = new();
-        
+
         public void Register(RegisterServiceMessage msg)
         {
-            lock(serviceRegistrations)
+            lock (serviceRegistrations)
             {
                 var reg = serviceRegistrations.GetOrAdd(Context.UserIdentifier, new WsServiceRegistration());
                 reg.ServiceId = Context.UserIdentifier;
                 reg.Features = msg.Features;
                 reg.ConnectionIds.Add(Context.ConnectionId);
-                logger.Information($"Service {Context.UserIdentifier} registered on {Context.ConnectionId} with features {msg.Features}" +
-                                   $". Has {reg.ConnectionIds.Count} connections");
+                logger.Information(
+                    $"Service {Context.UserIdentifier} registered on {Context.ConnectionId} with features {msg.Features}" +
+                    $". Has {reg.ConnectionIds.Count} connections");
+            }
+        }
+
+        public ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request)
+        {
+            return new()
+            {
+                Registrations = serviceRegistrations.Values.Select(x => x.ToServiceRegistration()).ToList()
+            };
+        }
+
+        public async Task Subscribe(TopicSubscribeMessage msg)
+        {
+            foreach (var topic in msg.TopicIds) await Groups.AddToGroupAsync(Context.ConnectionId, topic);
+        }
+
+        public async Task Unsubscribe(TopicSubscribeMessage msg)
+        {
+            foreach (var topic in msg.TopicIds) await Groups.RemoveFromGroupAsync(Context.ConnectionId, topic);
+        }
+
+        public async Task SendTo(JObject obj)
+        {
+            var msg = MaterializeMessage<Message>(obj);
+            var target = ResolveTarget(msg);
+            try
+            {
+                if (msg.SenderId == msg.Target.TargetId)
+                {
+                    logger.Warning($"Loopback call detected {msg.MessageType} from {msg.SenderId}");
+                    throw new HubException($"Loopback call detected {msg.MessageType}");
+                }
+
+                logger.Debug($"Forwarding {msg.MessageType} from {msg.SenderId} to {msg.Target}");
+                await target.ReceiveMessage(msg);
+            }
+            catch (HubException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.ToString());
             }
         }
 
@@ -46,55 +90,8 @@ namespace maxbl4.Race.WsHub
                         serviceRegistrations.TryRemove(Context.UserIdentifier, out _);
                 }
             }
+
             return base.OnDisconnectedAsync(exception);
-        }
-
-        public ListServiceRegistrationsResponse ListServiceRegistrations(ListServiceRegistrationsRequest request)
-        {
-            return new()
-            {
-                Registrations = serviceRegistrations.Values.Select(x => x.ToServiceRegistration()).ToList()
-            };
-        }
-
-        public async Task Subscribe(TopicSubscribeMessage msg)
-        {
-            foreach (var topic in msg.TopicIds)
-            {
-                await Groups.AddToGroupAsync(Context.ConnectionId, topic);
-            }
-        }
-        
-        public async Task Unsubscribe(TopicSubscribeMessage msg)
-        {
-            foreach (var topic in msg.TopicIds)
-            {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, topic);
-            }
-        }
-
-        public async Task SendTo(JObject obj)
-        {
-            var msg = MaterializeMessage<Message>(obj);
-            var target = ResolveTarget(msg);
-            try
-            {
-                if (msg.SenderId == msg.Target.TargetId)
-                {
-                    logger.Warning($"Loopback call detected {msg.MessageType} from {msg.SenderId}");
-                    throw new HubException($"Loopback call detected {msg.MessageType}");
-                }
-                logger.Debug($"Forwarding {msg.MessageType} from {msg.SenderId} to {msg.Target}");
-                await target.ReceiveMessage(msg);
-            }
-            catch (HubException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new HubException(ex.ToString());
-            }
         }
         //
         // public async Task<JObject> InvokeRequest(JObject obj)
@@ -125,7 +122,7 @@ namespace maxbl4.Race.WsHub
         //         tcs.TrySetResult(msg);
         // }
 
-        IWsHubClient ResolveTarget(Message msg, [CallerMemberName] string methodName = null)
+        private IWsHubClient ResolveTarget(Message msg, [CallerMemberName] string methodName = null)
         {
             IWsHubClient client = null;
             switch (msg.Target.Type)
@@ -143,14 +140,15 @@ namespace maxbl4.Race.WsHub
             return client;
         }
 
-        T MaterializeMessage<T>(JObject obj, [CallerMemberName]string methodName = null)
-            where T: Message
+        private T MaterializeMessage<T>(JObject obj, [CallerMemberName] string methodName = null)
+            where T : Message
         {
             try
             {
                 var msg = Message.MaterializeConcreteMessage<T>(obj);
                 msg.SenderId = Context.UserIdentifier;
-                logger.Debug($"{methodName} materialized {msg.GetType().Name} from {Context.UserIdentifier} to {msg.Target}");
+                logger.Debug(
+                    $"{methodName} materialized {msg.GetType().Name} from {Context.UserIdentifier} to {msg.Target}");
                 return msg;
             }
             catch (Exception ex)

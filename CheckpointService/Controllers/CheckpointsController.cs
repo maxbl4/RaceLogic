@@ -10,8 +10,8 @@ namespace maxbl4.Race.CheckpointService.Controllers
     [Route("cp")]
     public class CheckpointsController : ControllerBase
     {
-        private readonly StorageService storageService;
         private readonly IRfidService rfidService;
+        private readonly StorageService storageService;
 
         public CheckpointsController(StorageService storageService, IRfidService rfidService)
         {
@@ -24,23 +24,23 @@ namespace maxbl4.Race.CheckpointService.Controllers
         {
             return storageService.ListCheckpoints(start, end);
         }
-        
+
         [HttpPut]
         [HttpPost]
-        public IActionResult Put([FromBody]string riderId)
+        public IActionResult Put([FromBody] string riderId)
         {
             if (string.IsNullOrWhiteSpace(riderId))
                 return NoContent();
             rfidService.AppendRiderId(riderId);
             return Accepted();
         }
-        
+
         [HttpDelete("{id}")]
         public int Delete(Guid id)
         {
             return storageService.DeleteCheckpoint(id);
         }
-        
+
         [HttpDelete]
         public int Delete(DateTime? start, DateTime? end)
         {

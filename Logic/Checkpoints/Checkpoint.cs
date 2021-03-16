@@ -8,19 +8,14 @@ namespace maxbl4.Race.Logic.Checkpoints
 {
     public class Checkpoint : ICheckpoint, IHasId<Checkpoint>
     {
-        public Id<Checkpoint> Id { get; set; } = Id<Checkpoint>.NewId();
-        public DateTime Timestamp { get; set; } = Constants.DefaultUtcDate;
-        public string RiderId { get; set; }
-        public DateTime LastSeen { get; set; } = Constants.DefaultUtcDate;
-        public int Count { get; set; } = 1;
-        public bool Aggregated { get; set; }
-        public bool IsManual { get; set; }
-        public int Rps { get; set; }
+        public Checkpoint()
+        {
+        }
 
-        public Checkpoint() {}
+        public Checkpoint(string riderId, int count = 1) : this(riderId, Constants.DefaultUtcDate, count)
+        {
+        }
 
-        public Checkpoint(string riderId, int count = 1) : this(riderId, Constants.DefaultUtcDate, count) { }
-        
         public Checkpoint(string riderId, DateTime timestamp, int count = 1)
         {
             RiderId = riderId;
@@ -28,6 +23,16 @@ namespace maxbl4.Race.Logic.Checkpoints
             Count = count;
             UpdateRps();
         }
+
+        public static IComparer<Checkpoint> TimestampComparer { get; } = new TimestampRelationalComparer();
+        public DateTime Timestamp { get; set; } = Constants.DefaultUtcDate;
+        public string RiderId { get; set; }
+        public DateTime LastSeen { get; set; } = Constants.DefaultUtcDate;
+        public int Count { get; set; } = 1;
+        public bool Aggregated { get; set; }
+        public bool IsManual { get; set; }
+        public int Rps { get; set; }
+        public Id<Checkpoint> Id { get; set; } = Id<Checkpoint>.NewId();
 
         public override string ToString()
         {
@@ -47,7 +52,7 @@ namespace maxbl4.Race.Logic.Checkpoints
                 LastSeen = LastSeen
             };
         }
-        
+
         public Checkpoint WithRiderId(string riderId)
         {
             return new()
@@ -62,13 +67,14 @@ namespace maxbl4.Race.Logic.Checkpoints
                 LastSeen = LastSeen
             };
         }
-        
+
         public Checkpoint AddToAggregated(Checkpoint cp)
         {
             if (!Aggregated)
                 throw new InvalidOperationException("This checkpoint is not aggregated");
             if (RiderId != cp.RiderId)
-                throw new ArgumentException($"Found checkpoints with different RiderIds {RiderId} {cp.RiderId}", nameof(cp));
+                throw new ArgumentException($"Found checkpoints with different RiderIds {RiderId} {cp.RiderId}",
+                    nameof(cp));
             Timestamp = Timestamp.TakeSmaller(cp.Timestamp);
             LastSeen = LastSeen.TakeLarger(cp.Timestamp);
             Count += cp.Count;
@@ -83,13 +89,11 @@ namespace maxbl4.Race.Logic.Checkpoints
             if (interval < 1)
                 Rps = Count;
             else
-            {
-                Rps = (int)Math.Ceiling(Count * 1000 / interval);
-            }
+                Rps = (int) Math.Ceiling(Count * 1000 / interval);
 
             return Rps;
         }
-        
+
         private sealed class TimestampRelationalComparer : IComparer<Checkpoint>
         {
             public int Compare(Checkpoint x, Checkpoint y)
@@ -100,7 +104,5 @@ namespace maxbl4.Race.Logic.Checkpoints
                 return x.Timestamp.CompareTo(y.Timestamp);
             }
         }
-        
-        public static IComparer<Checkpoint> TimestampComparer { get; } = new TimestampRelationalComparer();
     }
 }

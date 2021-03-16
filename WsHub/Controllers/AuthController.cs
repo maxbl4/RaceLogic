@@ -10,7 +10,7 @@ namespace maxbl4.Race.WsHub.Controllers
     [ApiController]
     [Authorize(Roles = Constants.WsHub.Roles.Admin)]
     [Route("tokens")]
-    public class AuthController: ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly IAuthService authService;
 
@@ -24,14 +24,14 @@ namespace maxbl4.Race.WsHub.Controllers
         {
             return authService.GetTokens();
         }
-        
+
         [HttpPut]
         [HttpPost]
         public bool Post(AuthToken token)
         {
             return authService.UpsertToken(token);
         }
-        
+
         [HttpDelete("{token}")]
         public bool Delete(string token)
         {

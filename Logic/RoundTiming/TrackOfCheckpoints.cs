@@ -8,19 +8,20 @@ namespace maxbl4.Race.Logic.RoundTiming
 {
     public class TrackOfCheckpoints : ITrackOfCheckpoints
     {
+        private readonly Dictionary<string, RoundPosition> positions = new();
         private bool finishForced;
+
+        public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
+        {
+            FinishCriteria = finishCriteria;
+            RoundStartTime = roundStartTime ?? default;
+        }
+
         public IFinishCriteria FinishCriteria { get; }
-        readonly Dictionary<string, RoundPosition> positions = new();
         public List<List<Checkpoint>> Track { get; } = new();
         public List<Checkpoint> Checkpoints { get; } = new();
         public DateTime RoundStartTime { get; }
 
-        public TrackOfCheckpoints(DateTime? roundStartTime = null, IFinishCriteria finishCriteria = null)
-        {
-            this.FinishCriteria = finishCriteria;
-            RoundStartTime = roundStartTime ?? default;
-        }
-        
         public void Append(Checkpoint cp)
         {
             Checkpoints.Add(cp);
@@ -43,13 +44,12 @@ namespace maxbl4.Race.Logic.RoundTiming
         public void ForceFinish()
         {
             foreach (var position in Rating.Where(x => !x.Finished).ToList())
-            {
                 if (FinishCriteria?.HasFinished(position, Rating, true) == true)
                 {
                     position.Finish();
                     UpdateSequence(position);
                 }
-            }
+
             finishForced = true;
         }
 

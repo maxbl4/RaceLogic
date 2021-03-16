@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace maxbl4.Race.CheckpointService.Services
 {
-    public class SubscriptionService: IHostedService
+    public class SubscriptionService : IHostedService
     {
         private readonly SubscriptionManager subscriptionManager;
 
@@ -13,7 +13,7 @@ namespace maxbl4.Race.CheckpointService.Services
         {
             this.subscriptionManager = subscriptionManager;
         }
-        
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await subscriptionManager.InitializeAsync();

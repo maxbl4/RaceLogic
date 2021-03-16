@@ -15,11 +15,12 @@ namespace maxbl4.Race.Tests.Infrastructure
     public class EntityIdTests
     {
         private readonly string dbFileName;
+
         public EntityIdTests(ITestOutputHelper outputHelper)
         {
             dbFileName = outputHelper.GetEmptyLiteDbForTest();
         }
-        
+
         [Fact]
         public void Should_support_custom_ids()
         {
@@ -36,8 +37,8 @@ namespace maxbl4.Race.Tests.Infrastructure
         public void Should_serialize_and_deserialize_to_litedb()
         {
             using var repo = new LiteRepository(dbFileName).WithUtcDate();
-            var cls = new Class{ Id = Id<Class>.NewId(), Name = "Class1" }; 
-            var rider = new Rider{ Id = Id<Rider>.NewId(), Name = "Rider1", ClassId = cls.Id };
+            var cls = new Class {Id = Id<Class>.NewId(), Name = "Class1"};
+            var rider = new Rider {Id = Id<Rider>.NewId(), Name = "Rider1", ClassId = cls.Id};
             repo.Insert(cls);
             repo.Upsert(rider);
             repo.Upsert(rider);
@@ -48,29 +49,29 @@ namespace maxbl4.Race.Tests.Infrastructure
             var persistedClass = repo.Query<Class>().Where(x => x.Id == persistedRider.ClassId).First();
             persistedClass.Name.Should().Be("Class1");
         }
-        
+
         [Fact]
         public void Should_generate_default_value_for_id()
         {
             using var repo = new LiteRepository(dbFileName).WithUtcDate();
-            repo.Insert(new Rider{ Name = "Rider1" });
-            repo.Insert(new Rider{ Name = "Rider2" });
+            repo.Insert(new Rider {Name = "Rider1"});
+            repo.Insert(new Rider {Name = "Rider2"});
             repo.Query<Rider>().Count().Should().Be(2);
         }
-        
+
         [Fact]
         public void Should_use_custom_id_serializer()
         {
             BsonMapper.Global.RegisterType(x => x.Value.ToString("N"), x => new Id<Rider>(Guid.Parse(x)));
             using var repo = new LiteRepository(dbFileName).WithUtcDate();
-            repo.Insert(new Rider{ Name = "Rider1" });
-            repo.Insert(new Rider{ Name = "Rider2" });
+            repo.Insert(new Rider {Name = "Rider1"});
+            repo.Insert(new Rider {Name = "Rider2"});
             repo.Query<Rider>().Count().Should().Be(2);
             var rider = repo.Database.GetCollection("Rider").FindAll().First();
             rider["_id"].Type.Should().Be(BsonType.String);
             Guid.Parse(rider["_id"]).Should().NotBeEmpty();
         }
-        
+
         [Fact]
         public void Should_use_dynamically_registered_id_mappings()
         {
@@ -78,7 +79,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             using var repo = new LiteRepository(dbFileName).WithUtcDate();
             var r1 = new Rider {Name = "Rider1"};
             repo.Insert(r1);
-            repo.Insert(new Rider{ Name = "Rider2" });
+            repo.Insert(new Rider {Name = "Rider2"});
             repo.Query<Rider>().Count().Should().Be(2);
             var rider = repo.Database.GetCollection("Rider").FindAll().First();
             rider["_id"].Type.Should().Be(BsonType.String);
@@ -86,15 +87,18 @@ namespace maxbl4.Race.Tests.Infrastructure
             repo.Query<Rider>().Where(x => x.Id == r1.Id).First().Should().NotBeNull();
             repo.Delete<Rider>(r1.Id).Should().BeTrue();
         }
-        
+
         [Fact]
         public void Should_convert_to_json()
         {
             var id = new Guid("cbc9da11e6214d6196a7fb6ba9ddcba4");
             var rider = new Rider {Id = id, Name = "Rider1"};
-            JsonConvert.SerializeObject(rider).Should().Be(@"{'Id':'cbc9da11e6214d6196a7fb6ba9ddcba4','Name':'Rider1','ClassId':'00000000000000000000000000000000'}".Replace('\'', '"'));
+            JsonConvert.SerializeObject(rider).Should()
+                .Be(
+                    @"{'Id':'cbc9da11e6214d6196a7fb6ba9ddcba4','Name':'Rider1','ClassId':'00000000000000000000000000000000'}"
+                        .Replace('\'', '"'));
         }
-        
+
         [Fact]
         public void New_ids_should_be_sequential()
         {
@@ -106,18 +110,18 @@ namespace maxbl4.Race.Tests.Infrastructure
                 id = next;
             }
         }
-        
-        class Rider: IHasId<Rider>
+
+        private class Rider : IHasId<Rider>
         {
-            public Id<Rider> Id { get; set; } = Id<Rider>.NewId();
             public string Name { get; set; }
             public Id<Class> ClassId { get; set; }
+            public Id<Rider> Id { get; set; } = Id<Rider>.NewId();
         }
-        
-        class Class: IHasId<Class>
+
+        private class Class : IHasId<Class>
         {
-            public Id<Class> Id { get; set; }
             public string Name { get; set; }
+            public Id<Class> Id { get; set; }
         }
     }
 }

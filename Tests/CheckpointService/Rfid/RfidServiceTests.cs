@@ -35,7 +35,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
                     .Expect(() => storageService.ListCheckpoints().Count(y => !y.Aggregated) == 2);
             });
         }
-        
+
         [Fact]
         public void Should_persist_tags_and_checkpoints()
         {
@@ -53,7 +53,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
                 new Timing()
                     .FailureDetails(() => storageService.ListCheckpoints().Count.ToString())
                     .Expect(() => storageService.ListCheckpoints().Count(y => !y.Aggregated) == 2);
-                
+
                 new Timing()
                     .FailureDetails(() => storageService.ListTags().Count.ToString())
                     .Expect(() => storageService.ListTags().Count == 2);
@@ -68,15 +68,15 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
                 var tagListHandler = new SimulatorBuilder(storageService).Build();
                 List<Checkpoint> cps = null;
                 MessageHub.Subscribe<Checkpoint>(x => cps = storageService.ListCheckpoints());
-                
+
                 tagListHandler.ReturnOnce(new Tag {TagId = "1"});
-                
+
                 new Timing().Logger(Logger).Expect(() => cps != null);
                 cps.Count.Should().Be(1);
                 cps[0].RiderId.Should().Be("1");
             });
         }
-        
+
         [Fact]
         public void Should_observe_rfid_options_changes()
         {
@@ -91,10 +91,10 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
 
                 // Disable Rfid, wait for requests to stop for a second
                 storageService.UpdateRfidOptions(o => o.Enabled = false);
-                new Timing().Logger(Logger).Context("Did not stop rfid query").Expect(() => 
+                new Timing().Logger(Logger).Context("Did not stop rfid query").Expect(() =>
                     tagListHandler.TimeSinceLastRequest > TimeSpan.FromSeconds(1));
                 cps.Clear();
-                
+
                 // Now return checkpoints with '2', enable rfid and wait for them
                 tagListHandler.ReturnContinuos(new Tag {TagId = "2"});
                 storageService.UpdateRfidOptions(o => o.Enabled = true);
@@ -114,17 +114,14 @@ namespace maxbl4.Race.Tests.CheckpointService.Rfid
                 tagListHandler.ReturnContinuos(new Tag {TagId = "1"});
                 new Timing().Logger(Logger)
                     .Expect(() => cps.Any(x => x.RiderId == "1"
-                            && x.Aggregated && x.Count > 1));
+                                               && x.Aggregated && x.Count > 1));
             });
         }
 
         [Fact]
         public void Should_disable_stale_rfid()
         {
-            WithCheckpointStorageService(s =>
-            {
-                s.UpdateRfidOptions(o => o.Enabled = true);
-            });
+            WithCheckpointStorageService(s => { s.UpdateRfidOptions(o => o.Enabled = true); });
             SystemClock.Advance(TimeSpan.FromDays(1.2));
             WithRfidService((s, r) =>
             {

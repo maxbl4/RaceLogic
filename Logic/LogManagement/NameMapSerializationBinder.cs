@@ -8,10 +8,11 @@ using Newtonsoft.Json.Serialization;
 
 namespace maxbl4.Race.Logic.LogManagement
 {
-    public class NameMapSerializationBinder: ISerializationBinder
+    public class NameMapSerializationBinder : ISerializationBinder
     {
         private readonly Dictionary<string, Type> nameToTypeMap = new();
         private readonly Dictionary<Type, string> typeToNameMap = new();
+
         public NameMapSerializationBinder(IEnumerable<KeyValuePair<string, Type>> nameToTypeMap)
         {
             foreach (var pair in nameToTypeMap)
@@ -39,13 +40,15 @@ namespace maxbl4.Race.Logic.LogManagement
                     return;
                 }
             }
+
             if (typeToNameMap.TryGetValue(serializedType, out typeName)) return;
             throw new NotSupportedException($"No mapping defined for type {serializedType}");
         }
 
         public static NameMapSerializationBinder CreateDefault()
         {
-            return new(new Dictionary<string, Type>{
+            return new(new Dictionary<string, Type>
+            {
                 {"cp", typeof(Checkpoint)},
                 {"drop", typeof(DropCheckpointDto)},
                 {"start", typeof(SessionStart)},

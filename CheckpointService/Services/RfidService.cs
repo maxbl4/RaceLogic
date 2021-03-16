@@ -20,17 +20,17 @@ namespace maxbl4.Race.CheckpointService.Services
 {
     public class RfidService : IRfidService
     {
-        private readonly StorageService storageService;
-        private readonly IMessageHub messageHub;
-        private readonly ISystemClock systemClock;
-        private readonly IMapper mapper;
-        private readonly ILogger logger = Log.ForContext<RfidService>();
-        private readonly UniversalTagStreamFactory factory;
-        private IUniversalTagStream stream;
-        private CompositeDisposable disposable;
-        private CompositeDisposable aggregatorDisposable;
-        private TimestampAggregator<Checkpoint> aggregator;
         private readonly Subject<Checkpoint> checkpoints = new();
+        private readonly UniversalTagStreamFactory factory;
+        private readonly ILogger logger = Log.ForContext<RfidService>();
+        private readonly IMapper mapper;
+        private readonly IMessageHub messageHub;
+        private readonly StorageService storageService;
+        private readonly ISystemClock systemClock;
+        private TimestampAggregator<Checkpoint> aggregator;
+        private CompositeDisposable aggregatorDisposable;
+        private CompositeDisposable disposable;
+        private IUniversalTagStream stream;
 
         public RfidService(StorageService storageService, IMessageHub messageHub,
             ISystemClock systemClock, IMapper mapper)
@@ -44,6 +44,17 @@ namespace maxbl4.Race.CheckpointService.Services
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
             RfidOptionsChanged(storageService.GetRfidOptions());
+        }
+
+        public void AppendRiderId(string riderId)
+        {
+            logger.Debug($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
+            checkpoints.OnNext(new Checkpoint(riderId, systemClock.UtcNow.UtcDateTime));
+        }
+
+        public void Dispose()
+        {
+            disposable.DisposeSafe();
         }
 
         private void RfidOptionsChanged(RfidOptions options)
@@ -60,7 +71,8 @@ namespace maxbl4.Race.CheckpointService.Services
         {
             aggregatorDisposable.DisposeSafe();
             aggregator =
-                TimestampAggregatorConfigurations.ForCheckpoint(TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
+                TimestampAggregatorConfigurations.ForCheckpoint(
+                    TimeSpan.FromMilliseconds(options.CheckpointAggregationWindowMs));
             aggregatorDisposable = new CompositeDisposable
             {
                 checkpoints.Subscribe(aggregator),
@@ -82,23 +94,23 @@ namespace maxbl4.Race.CheckpointService.Services
             return options.Enabled;
         }
 
-        void OnCheckpoint(Checkpoint cp)
+        private void OnCheckpoint(Checkpoint cp)
         {
             logger.Debug("OnCheckpoint {cp}", cp);
             logger.SwallowError(() => storageService.AppendCheckpoint(cp));
             logger.Swallow(() => messageHub.Publish(cp));
         }
 
-        void OnReaderStatus(ReaderStatus status)
+        private void OnReaderStatus(ReaderStatus status)
         {
             logger.Debug("OnReaderStatus {status}", status);
             logger.Swallow(() => messageHub.Publish(status));
         }
-        
+
         private async Task EnableRfid(RfidOptions options)
         {
             logger.Information("Starting RFID");
-            
+
             stream = factory.CreateStream(options.GetConnectionString());
             disposable = new CompositeDisposable
             {
@@ -116,18 +128,7 @@ namespace maxbl4.Race.CheckpointService.Services
             await stream.Start();
         }
 
-        public void AppendRiderId(string riderId)
-        {
-            logger.Debug($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
-            checkpoints.OnNext(new Checkpoint(riderId, systemClock.UtcNow.UtcDateTime));
-        }
-
-        void DisableRfid()
-        {
-            disposable.DisposeSafe();
-        }
-
-        public void Dispose()
+        private void DisableRfid()
         {
             disposable.DisposeSafe();
         }

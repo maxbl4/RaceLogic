@@ -6,9 +6,10 @@ namespace Benchmark
 {
     public class InstanceRunner
     {
-        private readonly Func<ITrackOfCheckpoints> trackFactory;
         private readonly Random r = new(1);
+        private readonly Func<ITrackOfCheckpoints> trackFactory;
         private long timestamp = 1000000;
+
         public InstanceRunner(Func<ITrackOfCheckpoints> trackFactory)
         {
             this.trackFactory = trackFactory;
@@ -17,16 +18,13 @@ namespace Benchmark
         public void Work(int n)
         {
             var track = trackFactory();
-            for (var i = 0; i < n; i++)
-            {
-                Next(track);
-            }
+            for (var i = 0; i < n; i++) Next(track);
         }
 
-        void Next(ITrackOfCheckpoints track)
+        private void Next(ITrackOfCheckpoints track)
         {
             track.Append(new Checkpoint(r.Next(1, 100).ToString(), new DateTime(timestamp += 10000)));
             var t = track.Rating;
         }
-    } 
+    }
 }

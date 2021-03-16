@@ -5,7 +5,7 @@ namespace maxbl4.Race.CheckpointService.Controllers
 {
     [ApiController]
     [Route("restart")]
-    public class RestartController: ControllerBase
+    public class RestartController : ControllerBase
     {
         [HttpPost]
         public IActionResult Post()

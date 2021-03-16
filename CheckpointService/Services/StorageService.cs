@@ -21,10 +21,61 @@ namespace maxbl4.Race.CheckpointService.Services
         private readonly IOptions<ServiceOptions> serviceOptions;
 
         public StorageService(IOptions<ServiceOptions> serviceOptions,
-            IMessageHub messageHub, ISystemClock systemClock): 
+            IMessageHub messageHub, ISystemClock systemClock) :
             base(serviceOptions.Value.StorageConnectionString, messageHub, systemClock)
         {
             this.serviceOptions = serviceOptions;
+        }
+
+        public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
+        {
+            var query = repo.Query<Checkpoint>();
+            return query.Where(x =>
+                    (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value))
+                .ToList();
+        }
+
+        public Task AddSubscription(string senderId, DateTime fromTimestamp, DateTime subscriptionExpiration)
+        {
+            var existing = repo.FirstOrDefault<SubscriptionDto>(x => x.SenderId == senderId)
+                           ?? new SubscriptionDto {SenderId = senderId};
+            existing.FromTimestamp = fromTimestamp;
+            existing.SubscriptionExpiration = subscriptionExpiration;
+            repo.Upsert(existing);
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteSubscription(string senderId)
+        {
+            repo.DeleteMany<SubscriptionDto>(x => x.SenderId == senderId);
+            return Task.CompletedTask;
+        }
+
+        public Task<List<SubscriptionDto>> GetSubscriptions()
+        {
+            return Task.FromResult(repo.Query<SubscriptionDto>().ToList());
+        }
+
+        public Task DeleteExpiredSubscriptions()
+        {
+            repo.DeleteMany<SubscriptionDto>(x => x.SubscriptionExpiration <= systemClock.UtcNow.DateTime);
+            return Task.CompletedTask;
+        }
+
+        public Task<UpstreamOptions> GetUpstreamOptions()
+        {
+            var options = repo.SingleOrDefault<UpstreamOptions>(x => true)
+                          ?? serviceOptions.Value.InitialUpstreamOptions
+                          ?? new UpstreamOptions();
+            return Task.FromResult(options);
+        }
+
+        public Task SetUpstreamOptions(UpstreamOptions options)
+        {
+            options.Timestamp = systemClock.UtcNow.UtcDateTime;
+            repo.Upsert(options);
+            logger.Swallow(() => messageHub.Publish(options));
+            return Task.CompletedTask;
         }
 
         protected override void ValidateDatabase()
@@ -46,24 +97,17 @@ namespace maxbl4.Race.CheckpointService.Services
             repo.Insert(cp);
         }
 
-        public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
-        {
-            var query = repo.Query<Checkpoint>();
-            return query.Where(x => (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value))
-                .ToList();
-        }
-
         public int DeleteCheckpoint(Id<Checkpoint> id)
         {
             return repo.Delete<Checkpoint>(id) ? 1 : 0;
         }
-        
+
         public int DeleteCheckpoints(DateTime? start = null, DateTime? end = null)
         {
             return repo.Database.GetCollection<Checkpoint>().DeleteMany(x =>
                 (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value));
         }
-        
+
         public void AppendTag(Tag tag)
         {
             if (tag == null) throw new ArgumentNullException(nameof(tag));
@@ -73,12 +117,13 @@ namespace maxbl4.Race.CheckpointService.Services
         public List<Tag> ListTags(DateTime? start = null, DateTime? end = null, int? count = null)
         {
             var query = repo.Query<Tag>();
-            return query.Where(x => (start == null || x.DiscoveryTime >= start.Value) && (end == null || x.DiscoveryTime < end.Value))
+            return query.Where(x =>
+                    (start == null || x.DiscoveryTime >= start.Value) && (end == null || x.DiscoveryTime < end.Value))
                 .OrderByDescending(x => x.DiscoveryTime)
                 .Limit(count ?? int.MaxValue)
                 .ToList();
         }
-        
+
         public int DeleteTags(DateTime? start = null, DateTime? end = null)
         {
             return repo.Database.GetCollection<Tag>().DeleteMany(x =>
@@ -88,14 +133,14 @@ namespace maxbl4.Race.CheckpointService.Services
         public RfidOptions GetRfidOptions()
         {
             return repo.Query<RfidOptions>().FirstOrDefault()
-                ?? serviceOptions.Value.InitialRfidOptions 
-                ?? RfidOptions.Default;
+                   ?? serviceOptions.Value.InitialRfidOptions
+                   ?? RfidOptions.Default;
         }
-        
+
         public void SetRfidOptions(RfidOptions rfidOptions, bool publishUpdate = true)
         {
             logger.Information($"Persisting RfidOptions {rfidOptions}");
-            rfidOptions.Timestamp = systemClock.UtcNow.UtcDateTime; 
+            rfidOptions.Timestamp = systemClock.UtcNow.UtcDateTime;
             repo.Upsert(rfidOptions);
             logger.Swallow(() => messageHub.Publish(rfidOptions));
         }
@@ -105,49 +150,6 @@ namespace maxbl4.Race.CheckpointService.Services
             var opts = GetRfidOptions();
             modifier(opts);
             SetRfidOptions(opts);
-        }
-
-        public Task<UpstreamOptions> GetUpstreamOptions()
-        {
-            var options = repo.SingleOrDefault<UpstreamOptions>(x => true)
-                          ?? serviceOptions.Value.InitialUpstreamOptions
-                          ?? new UpstreamOptions();
-            return Task.FromResult(options);
-        }
-        
-        public Task SetUpstreamOptions(UpstreamOptions options)
-        {
-            options.Timestamp = systemClock.UtcNow.UtcDateTime; 
-            repo.Upsert(options);
-            logger.Swallow(() => messageHub.Publish(options));
-            return Task.CompletedTask;
-        }
-
-        public Task AddSubscription(string senderId, DateTime fromTimestamp, DateTime subscriptionExpiration)
-        {
-            var existing = repo.FirstOrDefault<SubscriptionDto>(x => x.SenderId == senderId)
-                ?? new SubscriptionDto{SenderId = senderId};
-            existing.FromTimestamp = fromTimestamp;
-            existing.SubscriptionExpiration = subscriptionExpiration;
-            repo.Upsert(existing);
-            return Task.CompletedTask;
-        }
-        
-        public Task DeleteSubscription(string senderId)
-        {
-            repo.DeleteMany<SubscriptionDto>(x => x.SenderId == senderId);
-            return Task.CompletedTask;
-        }
-
-        public Task<List<SubscriptionDto>> GetSubscriptions()
-        {
-            return Task.FromResult(repo.Query<SubscriptionDto>().ToList());
-        }
-        
-        public Task DeleteExpiredSubscriptions()
-        {
-            repo.DeleteMany<SubscriptionDto>(x => x.SubscriptionExpiration <= systemClock.UtcNow.DateTime);
-            return Task.CompletedTask;
         }
     }
 }

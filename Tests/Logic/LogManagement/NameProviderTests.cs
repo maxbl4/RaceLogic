@@ -8,9 +8,10 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
 {
     public class NameProviderTests
     {
-        private readonly DateTime sampleDate = new(2019, 07, 12, 14, 35, 57, DateTimeKind.Utc);
         private const string sampleDateString = "2019-07-12_14-35-57Z";
         private const string sampleFilename = sampleDateString + "_some-name";
+        private readonly DateTime sampleDate = new(2019, 07, 12, 14, 35, 57, DateTimeKind.Utc);
+
         [Fact]
         public void Should_parse_name()
         {
@@ -46,7 +47,7 @@ namespace maxbl4.Race.Tests.Logic.LogManagement
         public void Should_encode_decode_all_chars_string()
         {
             var str = new string(Enumerable.Range(0, ushort.MaxValue + 1)
-                .Select(x => (char)x).ToArray());
+                .Select(x => (char) x).ToArray());
             var encoded = new NameProvider().PathEncode(str);
             var decoded = new NameProvider().PathDecode(encoded);
             decoded.Should().Be(str);

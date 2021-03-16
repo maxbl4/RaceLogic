@@ -8,28 +8,26 @@ namespace maxbl4.Race.Logic.Scoring
 {
     public class AggRoundScore : RoundScore, IComparable<AggRoundScore>, IComparable
     {
-        public int AggPoints { get; }
-        public int MaxRoundIndex { get; }
-        public int PositionInLastRound { get; }
-        public int PointsInLastRound { get; }
-        public ReadOnlyDictionary<int, int> PositionHistogram { get; }
-        public ReadOnlyCollection<RoundScore> OriginalScores { get; }
-        
-        private AggRoundScore(RoundScore score) 
-            : base(score.RiderId, 0, score.Points) { }
+        private List<(int Position, int Count)> orderedHistogramItems;
 
-        public AggRoundScore(string riderId) 
-            : base(riderId, 0, 0) 
-        { 
+        private AggRoundScore(RoundScore score)
+            : base(score.RiderId, 0, score.Points)
+        {
+        }
+
+        public AggRoundScore(string riderId)
+            : base(riderId, 0, 0)
+        {
             OriginalScores = new ReadOnlyCollection<RoundScore>(new RoundScore[0]);
             PositionHistogram = new ReadOnlyDictionary<int, int>(new Dictionary<int, int>());
         }
-        
-        public AggRoundScore(AggRoundScore baseScore, RoundScore score, int roundIndex) 
-            : base(baseScore.RiderId, 0, baseScore.Points + score.Points) 
-        { 
+
+        public AggRoundScore(AggRoundScore baseScore, RoundScore score, int roundIndex)
+            : base(baseScore.RiderId, 0, baseScore.Points + score.Points)
+        {
             if (baseScore.RiderId != score.RiderId)
-                throw new ArgumentException($"RiderId should be same as initial ({RiderId}), but was ({score.RiderId})", nameof(score));
+                throw new ArgumentException($"RiderId should be same as initial ({RiderId}), but was ({score.RiderId})",
+                    nameof(score));
             if (score.Points > 0) // Ignore positions with 0 points
             {
                 var scores = baseScore.OriginalScores.ToList();
@@ -44,6 +42,7 @@ namespace maxbl4.Race.Logic.Scoring
                 OriginalScores = baseScore.OriginalScores;
                 PositionHistogram = baseScore.PositionHistogram;
             }
+
             if (MaxRoundIndex <= roundIndex)
             {
                 MaxRoundIndex = roundIndex;
@@ -63,18 +62,16 @@ namespace maxbl4.Race.Logic.Scoring
             AggPoints = aggPoints;
         }
 
-        public AggRoundScore AddScore(RoundScore score, int roundIndex)
-        {
-            return new(this, score, roundIndex);
-        }
+        public int AggPoints { get; }
+        public int MaxRoundIndex { get; }
+        public int PositionInLastRound { get; }
+        public int PointsInLastRound { get; }
+        public ReadOnlyDictionary<int, int> PositionHistogram { get; }
+        public ReadOnlyCollection<RoundScore> OriginalScores { get; }
 
-        private List<(int Position, int Count)> orderedHistogramItems;
-        List<(int Position, int Count)> GetOrderedHistogramItems(bool cached = true)
+        public int CompareTo(object obj)
         {
-            if (cached && orderedHistogramItems != null) return orderedHistogramItems;
-            return orderedHistogramItems = PositionHistogram
-                .Select(x => (Position: x.Key, Count: x.Value))
-                .OrderBy(x => x.Position).ToList();
+            return CompareTo(obj as AggRoundScore);
         }
 
         public int CompareTo(AggRoundScore other)
@@ -92,6 +89,19 @@ namespace maxbl4.Race.Logic.Scoring
             var pointsHistogram = ComparePointsHistogram(other);
             if (pointsHistogram != 0) return pointsHistogram;
             return CompareLastRound(other);
+        }
+
+        public AggRoundScore AddScore(RoundScore score, int roundIndex)
+        {
+            return new(this, score, roundIndex);
+        }
+
+        private List<(int Position, int Count)> GetOrderedHistogramItems(bool cached = true)
+        {
+            if (cached && orderedHistogramItems != null) return orderedHistogramItems;
+            return orderedHistogramItems = PositionHistogram
+                .Select(x => (Position: x.Key, Count: x.Value))
+                .OrderBy(x => x.Position).ToList();
         }
 
         public int ComparePointsHistogram(AggRoundScore other)
@@ -116,17 +126,12 @@ namespace maxbl4.Race.Logic.Scoring
         {
             if (other.MaxRoundIndex < MaxRoundIndex) return -1;
             if (other.MaxRoundIndex > MaxRoundIndex) return 1;
-            
+
             // Lower is better, but check for points
             if (PointsInLastRound > 0 && other.PointsInLastRound > 0)
                 return PositionInLastRound.CompareTo(other.PositionInLastRound);
             // If one does not have points, the other will be better
             return other.PointsInLastRound.CompareTo(PointsInLastRound);
-        }
-
-        public int CompareTo(object obj)
-        {
-            return CompareTo(obj as AggRoundScore);
         }
     }
 }

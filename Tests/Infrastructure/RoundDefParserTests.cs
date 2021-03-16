@@ -27,7 +27,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             cp.RiderId.Should().Be("11");
             cp.Timestamp.Should().Be(default);
         }
-        
+
         [Fact]
         public void Can_parse_checkpoint_with_timestamp()
         {
@@ -35,7 +35,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             cp.RiderId.Should().Be("11");
             cp.Timestamp.Should().Be(Constants.DefaultUtcDate + new TimeSpan(0, 4, 50));
         }
-        
+
         [Fact]
         public void Can_parse_checkpoints_line_without_timestamps()
         {
@@ -45,7 +45,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             cps[1].RiderId.Should().Be("12");
             cps[2].RiderId.Should().Be("13");
         }
-        
+
         [Fact]
         public void Can_parse_checkpoints_line_with_timestamps()
         {
@@ -94,7 +94,7 @@ F11 L2 [1 31]
             rd.Rating[2].LapCount.Should().Be(2);
             rd.Rating[2].Laps.Count.Should().Be(2);
         }
-        
+
         [Fact]
         public void Can_parse_round_def_of_checkpoints_with_duration()
         {
@@ -124,12 +124,12 @@ F13 L1 [4     ]");
             rd.Rating[0].Laps[1].SequentialNumber.Should().Be(2);
             rd.Rating[0].Laps[1].Start.Should().Be(new DateTime(1, 1, 1, 0, 0, 2));
             rd.Rating[0].Laps[1].End.Should().Be(new DateTime(1, 1, 1, 0, 45, 2));
-            
+
             rd.Rating[2].RiderId.Should().Be("13");
             rd.Rating[2].LapCount.Should().Be(1);
             rd.Rating[2].Laps.Count.Should().Be(1);
         }
-        
+
         [Fact]
         public void Can_parse_round_def_of_checkpoints_with_start_time_and_duration()
         {
@@ -162,7 +162,7 @@ F13 L1 [4     ]");
             pos.LapCount.Should().Be(0);
 
             Assert.Throws<FormatException>(() => RoundDefParser.ParseRating("11 3", new DateTime(5000)));
-            
+
             pos = RoundDefParser.ParseRating("F11 2 [1 2]", new DateTime(5000));
             pos.RiderId.Should().Be("11");
             pos.Start.Should().Be(new DateTime(5000));

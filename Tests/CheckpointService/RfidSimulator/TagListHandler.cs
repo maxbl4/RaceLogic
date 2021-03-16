@@ -11,10 +11,13 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 {
     public class TagListHandler
     {
-        readonly object sync = new();
-        private string returnOnceTags;
-        TaskCompletionSource<bool> returnTask;
+        private readonly object sync = new();
         private string returnContinuos;
+        private string returnOnceTags;
+        private TaskCompletionSource<bool> returnTask;
+
+        public DateTime LastRequestTime { get; private set; }
+        public TimeSpan TimeSinceLastRequest => DateTime.UtcNow - LastRequestTime;
 
         public string Handle()
         {
@@ -43,9 +46,9 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 
         public void ReturnContinuos(params Tag[] tags)
         {
-            ReturnContinuos((IEnumerable<Tag>)tags);
+            ReturnContinuos((IEnumerable<Tag>) tags);
         }
-        
+
         public void ReturnContinuos(IEnumerable<Tag> tags)
         {
             lock (sync)
@@ -56,9 +59,9 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 
         public void ReturnOnce(params Tag[] tags)
         {
-            ReturnOnce((IEnumerable<Tag>)tags);
+            ReturnOnce((IEnumerable<Tag>) tags);
         }
-        
+
         public void ReturnOnce(IEnumerable<Tag> tags)
         {
             lock (sync)
@@ -69,8 +72,5 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 
             returnTask.Task.Wait(5000).Should().BeTrue();
         }
-        
-        public DateTime LastRequestTime { get; private set; }
-        public TimeSpan TimeSinceLastRequest => DateTime.UtcNow - LastRequestTime;
     }
 }

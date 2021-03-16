@@ -5,11 +5,9 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Infrastructure.Extensions.TaskExt;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.WsHub.Messages;
@@ -20,23 +18,23 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub
 {
-    public class WsHubConnection: IAsyncDisposable, IPingRequester
+    public class WsHubConnection : IAsyncDisposable, IPingRequester
     {
-        private volatile bool disposed = false;
-        private readonly ILogger logger = Log.ForContext<WsHubConnection>();
         private readonly CompositeDisposable disposable = new();
-        private readonly WsHubClientOptions options;
-        private readonly ISystemClock systemClock;
-        private HubConnection wsConnection;
-        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new(new WsConnectionStatus());
-        public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
-        
+
         private readonly ConcurrentDictionary<Id<Message>, DateTime> lastSeenMessageIds = new();
-        private readonly ConcurrentDictionary<string, string> topicSubscriptions = new();
-        private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>> 
+        private readonly ILogger logger = Log.ForContext<WsHubConnection>();
+        private readonly WsHubClientOptions options;
+
+        private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>
             outstandingClientRequests = new();
-        public Func<Message, Task> MessageHandler { get; set; }
-        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new();
+
+        private readonly ISystemClock systemClock;
+        private readonly ConcurrentDictionary<string, string> topicSubscriptions = new();
+        private readonly BehaviorSubject<WsConnectionStatus> webSocketConnected = new(new WsConnectionStatus());
+        private volatile bool disposed;
+        private HubConnection wsConnection;
+
         public WsHubConnection(WsHubClientOptions options, ISystemClock systemClock = null)
         {
             this.options = options;
@@ -48,14 +46,23 @@ namespace maxbl4.Race.Logic.WsHub
             }));
         }
 
+        public IObservable<WsConnectionStatus> WebSocketConnected => webSocketConnected;
+        public Func<Message, Task> MessageHandler { get; set; }
+        public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new();
+
+        public async ValueTask DisposeAsync()
+        {
+            disposed = true;
+            disposable.DisposeSafe();
+            await logger.Swallow(() => wsConnection.DisposeAsync());
+        }
+
         public async Task Connect()
         {
             wsConnection = new HubConnectionBuilder()
                 .AddNewtonsoftJsonProtocol()
-                .WithUrl($"{this.options.Address}_ws/hub", options =>
-                {
-                    options.AccessTokenProvider = () => Task.FromResult(this.options.AccessToken);
-                })
+                .WithUrl($"{this.options.Address}_ws/hub",
+                    options => { options.AccessTokenProvider = () => Task.FromResult(this.options.AccessToken); })
                 .Build();
             wsConnection.Closed += exception =>
             {
@@ -63,30 +70,31 @@ namespace maxbl4.Race.Logic.WsHub
                 _ = TryConnect();
                 return Task.CompletedTask;
             };
-            
-            disposable.Add(wsConnection.On(nameof(IWsHubClient.ReceiveMessage), 
+
+            disposable.Add(wsConnection.On(nameof(IWsHubClient.ReceiveMessage),
                 async (JObject msg) => await DispatchMessage(msg)));
 
             await TryConnect();
         }
-        
+
         private async Task HandleRequest(IRequestMessage request, Func<IRequestMessage, Task<Message>> handler)
         {
             try
             {
-                 logger.Debug($"HandleRequest begin {request}");
-                 Message response;
-                 try
-                 {
-                     response = await handler(request) ?? new UnhandledRequest();
-                 }
-                 catch (Exception ex)
-                 {
-                     logger.Warning(ex, $"Error handling request {request}");
-                     response = new UnhandledRequest{Exception = ex};
-                 }
-                 response.MessageId = request.MessageId;
-                 await SendToDirect(request.SenderId, response);
+                logger.Debug($"HandleRequest begin {request}");
+                Message response;
+                try
+                {
+                    response = await handler(request) ?? new UnhandledRequest();
+                }
+                catch (Exception ex)
+                {
+                    logger.Warning(ex, $"Error handling request {request}");
+                    response = new UnhandledRequest {Exception = ex};
+                }
+
+                response.MessageId = request.MessageId;
+                await SendToDirect(request.SenderId, response);
             }
             catch (Exception ex)
             {
@@ -94,7 +102,7 @@ namespace maxbl4.Race.Logic.WsHub
                 throw;
             }
         }
-        
+
         private async Task DispatchMessage(JObject obj)
         {
             try
@@ -132,7 +140,7 @@ namespace maxbl4.Race.Logic.WsHub
             };
             await SendCore(msg);
         }
-        
+
         public async Task SendToTopic(string topicId, Message msg)
         {
             msg.Target = new MessageTarget
@@ -142,7 +150,7 @@ namespace maxbl4.Race.Logic.WsHub
             };
             await SendCore(msg);
         }
-        
+
         public async Task SendCore(Message msg)
         {
             msg.MessageType = msg.GetType().FullName;
@@ -150,10 +158,10 @@ namespace maxbl4.Race.Logic.WsHub
         }
 
         public async Task<TResponse> InvokeRequest<TRequest, TResponse>(string targetId, TRequest msg)
-            where TRequest: Message, IRequestMessage
-            where TResponse: Message
+            where TRequest : Message, IRequestMessage
+            where TResponse : Message
         {
-            msg.Target = new MessageTarget{Type = TargetType.Direct, TargetId = targetId};
+            msg.Target = new MessageTarget {Type = TargetType.Direct, TargetId = targetId};
             msg.MessageType = msg.GetType().FullName;
             var tcs = new TaskCompletionSource<Message>();
             try
@@ -179,11 +187,11 @@ namespace maxbl4.Race.Logic.WsHub
         }
 
         public void RegisterRequestHandler<T>(Func<T, Task<Message>> handler)
-            where T: Message, IRequestMessage
+            where T : Message, IRequestMessage
         {
-            RequestHandlers[typeof(T)] = msg => handler((T)msg);
+            RequestHandlers[typeof(T)] = msg => handler((T) msg);
         }
-        
+
         public IEnumerable<Id<Message>> GetOutstandingRequestIds()
         {
             return outstandingClientRequests.Keys.ToList();
@@ -197,54 +205,49 @@ namespace maxbl4.Race.Logic.WsHub
             });
             logger.Information($"Registered as {options.Features}");
         }
-        
+
         public async Task<List<ServiceRegistration>> ListServiceRegistrations()
         {
             var response = await wsConnection
                 .InvokeAsync<ListServiceRegistrationsResponse>(
-                    nameof(IWsHubServer.ListServiceRegistrations), 
+                    nameof(IWsHubServer.ListServiceRegistrations),
                     new ListServiceRegistrationsRequest());
             return response.Registrations;
         }
 
         public async Task Subscribe(params string[] topicIds)
         {
-            foreach (var topicId in topicIds)
-            {
-                topicSubscriptions.TryAdd(topicId, topicId);
-            }
+            foreach (var topicId in topicIds) topicSubscriptions.TryAdd(topicId, topicId);
             await wsConnection.InvokeAsync(nameof(IWsHubServer.Subscribe),
                 new TopicSubscribeMessage
                 {
                     TopicIds = topicIds
                 });
         }
-        
+
         public async Task Unsubscribe(params string[] topicIds)
         {
-            foreach (var topicId in topicIds)
-            {
-                topicSubscriptions.TryRemove(topicId, out _);
-            }
+            foreach (var topicId in topicIds) topicSubscriptions.TryRemove(topicId, out _);
             await wsConnection.InvokeAsync(nameof(IWsHubServer.Unsubscribe),
                 new TopicSubscribeMessage
                 {
                     TopicIds = topicIds
                 });
         }
-        
-        async Task HandleDisconnect(Exception ex)
+
+        private async Task HandleDisconnect(Exception ex)
         {
-            webSocketConnected.OnNext(new WsConnectionStatus{Exception = ex});
+            webSocketConnected.OnNext(new WsConnectionStatus {Exception = ex});
             await Task.Delay(options.ReconnectTimeout);
             _ = TryConnect();
         }
-        
-        async Task TryConnect()
+
+        private async Task TryConnect()
         {
             try
             {
-                if (wsConnection.State != HubConnectionState.Connected && wsConnection.State != HubConnectionState.Connecting
+                if (wsConnection.State != HubConnectionState.Connected && wsConnection.State !=
+                                                                       HubConnectionState.Connecting
                                                                        && !disposed)
                 {
                     await wsConnection.StartAsync();
@@ -252,7 +255,8 @@ namespace maxbl4.Race.Logic.WsHub
                     await RegisterService(options.Features);
                     await Subscribe(topicSubscriptions.Keys.ToArray());
                 }
-                webSocketConnected.OnNext(new WsConnectionStatus{IsConnected = true});
+
+                webSocketConnected.OnNext(new WsConnectionStatus {IsConnected = true});
             }
             catch (Exception ex)
             {
@@ -260,27 +264,17 @@ namespace maxbl4.Race.Logic.WsHub
                 HandleDisconnect(ex).Wait(0);
             }
         }
-        
+
         private async Task CleanupSeenMessageIds()
         {
             while (!disposed)
             {
                 var oldMessageIds = lastSeenMessageIds
-                    .Where(x => (systemClock.UtcNow.DateTime - x.Value) 
+                    .Where(x => systemClock.UtcNow.DateTime - x.Value
                                 > options.LastSeenMessageIdsRetentionPeriod).ToList();
-                foreach (var oldMessageId in oldMessageIds)
-                {
-                    lastSeenMessageIds.TryRemove(oldMessageId.Key, out _);
-                }
+                foreach (var oldMessageId in oldMessageIds) lastSeenMessageIds.TryRemove(oldMessageId.Key, out _);
                 await Task.Delay(options.LastSeenMessageIdsCleanupPeriod);
             }
-        }
-        
-        public async ValueTask DisposeAsync()
-        {
-            disposed = true;
-            disposable.DisposeSafe();
-            await logger.Swallow(() => wsConnection.DisposeAsync());
         }
     }
 }

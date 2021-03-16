@@ -33,7 +33,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             opts.RpsThreshold.Should().Be(123);
             opts.CheckpointAggregationWindowMs.Should().Be(234);
         }
-        
+
         [Fact]
         public async Task Should_set_rfid_options()
         {
@@ -77,7 +77,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             (await client.GetRfidOptionsValue<int>(nameof(RfidOptions.CheckpointAggregationWindowMs)))
                 .Should().Be(234);
         }
-        
+
         [Fact]
         public async Task Should_set_individual_option_property_values()
         {
@@ -97,11 +97,11 @@ namespace maxbl4.Race.Tests.CheckpointService.Controllers
             await client.SetRfidOptionsValue(nameof(RfidOptions.RpsThreshold), 555);
             (await client.GetRfidOptionsValue<int>(nameof(RfidOptions.RpsThreshold)))
                 .Should().Be(555);
-            
+
             await client.SetRfidOptionsValue(nameof(RfidOptions.Enabled), true);
             (await client.GetRfidOptionsValue<bool>(nameof(RfidOptions.Enabled)))
                 .Should().Be(true);
-            
+
             await client.SetRfidOptionsValue(nameof(RfidOptions.ConnectionString), "true");
             (await client.GetRfidOptionsValue<string>(nameof(RfidOptions.ConnectionString)))
                 .Should().Be("true");

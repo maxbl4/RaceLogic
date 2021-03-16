@@ -13,10 +13,11 @@ namespace maxbl4.Race.Tests.Logic.Model
     public class TrackOfCheckpointsTests
     {
         private const string KnownDefsDirectory = @"Logic/Model/KnownRoundDefs";
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Serialize_track_of_checkpoints(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Serialize_track_of_checkpoints(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var str = @"Track 30
 11[5]  12[10] 13[15]
@@ -29,7 +30,7 @@ F13 2 [15 33]";
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ToRoundDefString().Should().Be(def.ToString(), name);
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
         public void Simple_start_and_finish(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
@@ -45,10 +46,11 @@ F13 2 [15 33]");
             def.VerifyTrack(track, name);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void In_lack_of_timestamps_should_set_finish_to_leader(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void In_lack_of_timestamps_should_set_finish_to_leader(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track
 11 12 13
@@ -63,10 +65,11 @@ F11 2 [0 0]
             def.VerifyTrack(track, name, false);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Force_finish_when_lap_leader_is_down(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Force_finish_when_lap_leader_is_down(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[1] 11[2] 11[3] 12[4]
@@ -80,10 +83,11 @@ F12 2 [4 34]
             def.VerifyTrack(track, name);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Dnf_should_be_last_in_the_rating(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Dnf_should_be_last_in_the_rating(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 2018-01-15 30
 11[1]  11[2] 11[3] 12[4] 12[5] 13[6]
@@ -104,10 +108,11 @@ F13 2 [6 32]
             def.VerifyTrack(track, name);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Dnf_should_be_last_in_the_rating_2(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Dnf_should_be_last_in_the_rating_2(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[1] 12[2] 11[3] 12[4] 11[5] 12[6]
@@ -121,10 +126,11 @@ F13 2 [7 32]
             def.VerifyTrack(track, name);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Sequence_of_checkpoints_should_prevail_over_timestamps(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Sequence_of_checkpoints_should_prevail_over_timestamps(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[10] 12[8]
@@ -137,10 +143,11 @@ F12 2 [8 32]");
             def.VerifyTrack(track, name);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Force_finish_should_not_affect_rating_with_normal_finish(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Force_finish_should_not_affect_rating_with_normal_finish(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[5]  12[10] 13[15]
@@ -154,10 +161,11 @@ F12 2 [10 32]
             def.VerifyTrack(track, name);
             track.ToRoundDefString().Should().Be(def.ToString());
         }
-        
+
         [Theory]
         [MemberData(nameof(TrackVersionsObj))]
-        public void Checkpoints_after_finish_should_be_ignored(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Checkpoints_after_finish_should_be_ignored(string name,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(@"Track 30
 11[5]  12[10]
@@ -170,17 +178,18 @@ F12 2 [10 32]");
             track.ForceFinish();
             def.VerifyTrack(track, name);
         }
-        
+
         [Theory]
         [MemberData(nameof(KnownTracksObj))]
-        public void Known_results(string name, string defFile, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
+        public void Known_results(string name, string defFile,
+            Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)
         {
             var def = RoundDef.Parse(File.ReadAllText(Path.Combine(KnownDefsDirectory, defFile)));
             var track = def.CreateTrack(factory, FinishCriteria.FromDuration(def.Duration));
             track.ForceFinish();
             track.ToRoundDefString().Should().Be(def.ToString(), name);
         }
-        
+
         public static IEnumerable<object[]> TrackVersionsObj()
         {
             return TrackVersions().Select(x => new object[]
@@ -189,12 +198,13 @@ F12 2 [10 32]");
             });
         }
 
-        private static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> TrackVersions()
+        private static IEnumerable<(string name, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)>
+            TrackVersions()
         {
             yield return ("Cyclic", (d, f) => new TrackOfCheckpointsCyclic(d, f));
             yield return ("Incremental Custom Sort", (d, f) => new TrackOfCheckpoints(d, f));
         }
-        
+
         public static IEnumerable<object[]> KnownTracksObj()
         {
             return KnownTracks().Select(x => new object[]
@@ -203,15 +213,13 @@ F12 2 [10 32]");
             });
         }
 
-        private static IEnumerable<(string implName, string roundDef, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory)> KnownTracks()
+        private static
+            IEnumerable<(string implName, string roundDef, Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> factory
+                )> KnownTracks()
         {
             foreach (var def in Directory.GetFiles(KnownDefsDirectory))
-            {
-                foreach (var trackVersion in TrackVersions())
-                {
-                    yield return (trackVersion.name, Path.GetFileName(def), trackVersion.factory);
-                }
-            }
+            foreach (var trackVersion in TrackVersions())
+                yield return (trackVersion.name, Path.GetFileName(def), trackVersion.factory);
         }
     }
 }

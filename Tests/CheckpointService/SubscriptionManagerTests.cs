@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using maxbl4.Infrastructure;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
@@ -17,12 +15,12 @@ using Xunit.Abstractions;
 
 namespace maxbl4.Race.Tests.CheckpointService
 {
-    public class SubscriptionManagerTests: IntegrationTestBase
+    public class SubscriptionManagerTests : IntegrationTestBase
     {
         public SubscriptionManagerTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
         }
-    
+
         [Fact]
         public async Task Subscribe_and_stream_tags()
         {
@@ -36,13 +34,13 @@ namespace maxbl4.Race.Tests.CheckpointService
                 });
                 return new SimulatorBuilder(storageService).Build();
             });
-            
+
             using var svc = CreateCheckpointService();
-            tagListHandler.ReturnOnce(new Tag{TagId = "1"});
-            tagListHandler.ReturnOnce(new Tag{TagId = "2"});
+            tagListHandler.ReturnOnce(new Tag {TagId = "1"});
+            tagListHandler.ReturnOnce(new Tag {TagId = "2"});
             var checkpoints = new List<Checkpoint>();
             var rfidConnected = false;
-            
+
             var client = new WsClientTestWrapper(new WsHubClientOptions(wsHub.ListenUri, WsToken2));
             client.Connection.RequestHandlers[typeof(ChekpointsUpdate)] = message =>
             {
@@ -58,20 +56,21 @@ namespace maxbl4.Race.Tests.CheckpointService
 
                 return null;
             };
-            
+
             await client.Connect();
-            await client.Connection.InvokeRequest<SubscriptionRequest, SubscriptionResponse>(WsToken1, new SubscriptionRequest
-            {
-                FromTimestamp = DateTime.UtcNow.AddMinutes(-1),
-                Timeout = TimeSpan.FromSeconds(5)
-            });
-            
+            await client.Connection.InvokeRequest<SubscriptionRequest, SubscriptionResponse>(WsToken1,
+                new SubscriptionRequest
+                {
+                    FromTimestamp = DateTime.UtcNow.AddMinutes(-1),
+                    Timeout = TimeSpan.FromSeconds(5)
+                });
+
             await new Timing()
                 .Logger(Logger)
                 .ExpectAsync(() => rfidConnected);
-            
-            tagListHandler.ReturnOnce(new Tag{TagId = "3"});
-            tagListHandler.ReturnOnce(new Tag{TagId = "4"});
+
+            tagListHandler.ReturnOnce(new Tag {TagId = "3"});
+            tagListHandler.ReturnOnce(new Tag {TagId = "4"});
             await new Timing()
                 .Logger(Logger)
                 .FailureDetails(() => $"checkpoints.Count = {checkpoints.Count}, {string.Join(";", checkpoints)}")

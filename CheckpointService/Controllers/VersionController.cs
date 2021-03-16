@@ -5,7 +5,7 @@ namespace maxbl4.Race.CheckpointService.Controllers
 {
     [ApiController]
     [Route("version")]
-    public class VersionController: ControllerBase
+    public class VersionController : ControllerBase
     {
         [HttpGet]
         [Produces("text/plain")]

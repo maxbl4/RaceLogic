@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace maxbl4.Race.Tests.WsHub
 {
-    public class AuthControllerTests: IntegrationTestBase
+    public class AuthControllerTests : IntegrationTestBase
     {
         public AuthControllerTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
@@ -22,7 +22,7 @@ namespace maxbl4.Race.Tests.WsHub
             var tokens = await cli.GetTokens();
             tokens.Should().Contain(x => x.Token == TestAdminWsToken);
         }
-        
+
         [Fact]
         public async Task Delete_token()
         {
@@ -34,7 +34,7 @@ namespace maxbl4.Race.Tests.WsHub
             var tokens = await cli.GetTokens();
             tokens.Should().NotContain(x => x.Token == TestAdminWsToken);
         }
-        
+
         [Fact]
         public async Task Upsert_token()
         {
@@ -46,7 +46,7 @@ namespace maxbl4.Race.Tests.WsHub
                 Roles = "Service",
                 ServiceName = "Test Service"
             });
-            (await cli.GetTokens()).Should().Contain(x => 
+            (await cli.GetTokens()).Should().Contain(x =>
                 x.Token == "service-token" && x.Roles == "Service" && x.ServiceName == "Test Service");
             await cli.UpsertToken(new AuthToken
             {

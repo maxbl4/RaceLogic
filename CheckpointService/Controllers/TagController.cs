@@ -24,7 +24,7 @@ namespace maxbl4.Race.CheckpointService.Controllers
                 count = 100;
             return storageService.ListTags(start, end, count);
         }
-        
+
         [HttpDelete]
         public int Delete(DateTime? start, DateTime? end)
         {

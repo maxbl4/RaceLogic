@@ -1,5 +1,7 @@
 ﻿using System;
+using LiteDB;
 using Newtonsoft.Json;
+using SequentialGuid;
 
 namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
 {
@@ -41,7 +43,9 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
         public int CompareTo(object obj)
         {
             if (ReferenceEquals(null, obj)) return 1;
-            return obj is Id<T> other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(Id<T>)}");
+            return obj is Id<T> other
+                ? CompareTo(other)
+                : throw new ArgumentException($"Object must be of type {nameof(Id<T>)}");
         }
 
         public static bool operator <(Id<T> left, Id<T> right)
@@ -65,31 +69,31 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
         }
 
         #endregion
-       
+
         public static Id<T> NewId()
         {
-            return new(SequentialGuid.SequentialGuidGenerator.Instance.NewGuid());
+            return new(SequentialGuidGenerator.Instance.NewGuid());
         }
 
         public static readonly Id<T> Empty = new(Guid.Empty);
-            
+
         public Id(Guid value)
         {
             Value = value;
         }
-            
+
         public Guid Value { get; }
-            
+
         public static implicit operator Guid(Id<T> id)
         {
             return id.Value;
         }
-        
-        public static implicit operator LiteDB.BsonValue(Id<T> id)
+
+        public static implicit operator BsonValue(Id<T> id)
         {
             return id.ToString();
         }
-            
+
         public static implicit operator Id<T>(Guid id)
         {
             return new(id);

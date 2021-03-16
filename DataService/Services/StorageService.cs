@@ -29,12 +29,12 @@ namespace maxbl4.Race.DataService.Services
         {
             return repo.Database.GetCollection<T>(collectionName).FindById(key);
         }
-        
+
         public bool Delete<T>(BsonValue key, string collectionName = null)
         {
             return repo.Database.GetCollection<T>(collectionName).Delete(key);
         }
-        
+
         public IEnumerable<BsonDocument> Search(string collectionName, string where, string order, int limit)
         {
             var query = repo.Query<BsonDocument>(collectionName)
@@ -46,14 +46,15 @@ namespace maxbl4.Race.DataService.Services
                 else
                     query = query.OrderBy(BsonExpression.Create(ord.field));
             }
+
             return query.Limit(limit).ToDocuments();
         }
-        
+
         public long Count(string collectionName, string query)
         {
             return repo.Query<BsonDocument>(collectionName).Where(query).LongCount();
         }
-        
+
         public bool Upsert(string collectionName, BsonDocument document)
         {
             var col = repo.Database.GetCollection(collectionName, GetAutoId(document, out var isDefault));
@@ -69,6 +70,7 @@ namespace maxbl4.Race.DataService.Services
                 isDefault = true;
                 return BsonAutoId.Guid;
             }
+
             switch (id.Type)
             {
                 case BsonType.Int32:
@@ -86,7 +88,9 @@ namespace maxbl4.Race.DataService.Services
                 default:
                     isDefault = false;
                     return 0;
-            };
+            }
+
+            ;
         }
 
         public static bool TryParseOrder(string order, out (string field, bool desc) result)

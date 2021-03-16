@@ -11,6 +11,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
     {
         public const string Track = "Track";
         public const string Rating = "Rating";
+
         public static RoundDef ParseRoundDef(string src)
         {
             var lines = src.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
@@ -31,9 +32,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                         if (line.StartsWith(Rating))
                             mode = Rating;
                         else
-                        {
                             rd.Checkpoints.AddRange(ParseCheckpoints(line, rd.RoundStartTime));
-                        }
                         break;
                     case Rating:
                         rd.Rating.Add(ParseRating(line, rd.RoundStartTime));
@@ -53,8 +52,9 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                 return RoundPosition.FromLaps(riderId, new Lap[0], false);
             var lapCount = int.Parse(parts[1]);
             if (parts.Length - lapCount < 2)
-                throw new FormatException($"Input should be in format: <rider_number> <number_of_laps> [<lap_time1> ... <lap_time_number_of_laps]. Found lapCount={lapCount} but {parts.Length-2} lap times");
-                
+                throw new FormatException(
+                    $"Input should be in format: <rider_number> <number_of_laps> [<lap_time1> ... <lap_time_number_of_laps]. Found lapCount={lapCount} but {parts.Length - 2} lap times");
+
             Lap prevLap = null;
             var laps = parts.Skip(2)
                 .Select((x, i) =>
@@ -64,7 +64,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                     prevLap = l;
                     return l;
                 });
-            
+
             return RoundPosition.FromLaps(riderId, laps, finished);
         }
 
@@ -77,14 +77,11 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                 return (DateTime.Parse(parts[1]), TimeSpanExt.Parse(parts[2]));
             return (DateTime.MinValue, TimeSpan.Zero);
         }
-        
+
         public static IEnumerable<Checkpoint> ParseCheckpoints(string line, DateTime roundStartTime)
         {
             var stringCps = line.Split(new[] {' ', '\t', ','}, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var stringCp in stringCps)
-            {
-                yield return ParseCheckpoint(stringCp, roundStartTime);
-            }
+            foreach (var stringCp in stringCps) yield return ParseCheckpoint(stringCp, roundStartTime);
         }
 
         public static Checkpoint ParseCheckpoint(string stringCp, DateTime roundStartTime)
@@ -101,7 +98,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             if (cp.Timestamp == default) return cp.RiderId;
             return $"{cp.RiderId}[{(cp.Timestamp - roundStartTime).ToShortString()}]";
         }
-        
+
         public static string ToDefString(this RoundPosition rp)
         {
             if (rp == null) return "";
@@ -109,9 +106,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
             if (rp.Finished) sb.Append("F");
             sb.Append($"{rp.RiderId} {rp.LapCount}");
             if (rp.Laps.Count > 0)
-            {
                 sb.Append($" [{string.Join(" ", rp.Laps.Select(x => (x.End - rp.Start).ToShortString()))}]");
-            }
             return sb.ToString();
         }
 
@@ -119,7 +114,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
         {
             return FormatCheckpoints(rd.Checkpoints, rd.RoundStartTime);
         }
-        
+
         public static string FormatCheckpoints(IEnumerable<Checkpoint> checkpoints, DateTime roundStartTime)
         {
             var sb = new StringBuilder();
@@ -134,8 +129,10 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
                     maxLaps = laps;
                 }
                 else
+                {
                     sb.Append(' ');
-                
+                }
+
                 sb.Append(ToDefString(cp, roundStartTime));
             }
 

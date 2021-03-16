@@ -15,11 +15,9 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 {
     public class TimingSessionService
     {
-        private readonly SemaphoreSlim sync = new(1);
-        private readonly IEventRepository eventRepository;
         private readonly IAutoMapperProvider autoMapperProvider;
-        public RecordingSessionDto ActiveRecordingSession { get; private set; }
-        public TimingSession ActiveTimingSession { get; private set; }
+        private readonly IEventRepository eventRepository;
+        private readonly SemaphoreSlim sync = new(1);
 
         public TimingSessionService(IEventRepository eventRepository, IAutoMapperProvider autoMapperProvider)
         {
@@ -27,9 +25,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.autoMapperProvider = autoMapperProvider;
         }
 
+        public RecordingSessionDto ActiveRecordingSession { get; private set; }
+        public TimingSession ActiveTimingSession { get; private set; }
+
         public TimingSession StartSession(Id<SessionDto> sessionDtoId, string name)
         {
-            var recordingSessionDto = ActiveRecordingSession = new RecordingSessionDto {Name = name, SessionId = sessionDtoId};
+            var recordingSessionDto = ActiveRecordingSession = new RecordingSessionDto
+                {Name = name, SessionId = sessionDtoId};
             eventRepository.Save(recordingSessionDto);
             return ActiveTimingSession = CreateTimingSession(recordingSessionDto);
         }
@@ -57,10 +59,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             timingSession.StartTime = recordingSessionDto.Created;
             timingSession.MinLap = staticData.MinLap;
             timingSession.FinishCriteria = staticData.FinishCriteria;
-            timingSession.Initialize(autoMapperProvider.Map<List<Checkpoint>>(eventRepository.GetRawDtos<CheckpointDto>(x => x.RecordingSessionId == recordingSessionDto.Id)));
+            timingSession.Initialize(autoMapperProvider.Map<List<Checkpoint>>(
+                eventRepository.GetRawDtos<CheckpointDto>(x => x.RecordingSessionId == recordingSessionDto.Id)));
             return timingSession;
         }
-        
+
         private TimingSessionStaticData LoadTimingSessionStaticData(Id<SessionDto> sessionId)
         {
             var session = eventRepository.GetRawDtoById(sessionId);
@@ -78,9 +81,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             var riderIdentifiers = eventRepository.GetRiderIdentifiers(sessionId);
             var riderIdMap = new ConcurrentDictionary<string, List<Id<RiderProfileDto>>>();
             foreach (var idGroup in riderIdentifiers.GroupBy(x => x.Identifier))
-            {
                 riderIdMap[idGroup.Key] = idGroup.Select(x => x.RiderProfileId).ToList();
-            }
             return riderIdMap;
         }
     }

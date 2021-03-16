@@ -6,7 +6,8 @@ namespace maxbl4.Race.Logic.CheckpointService.Model
 {
     public class RfidOptions
     {
-        public const string DefaultConnectionString = "Protocol=Alien;Network=127.0.0.1:20023"; 
+        public const string DefaultConnectionString = "Protocol=Alien;Network=127.0.0.1:20023";
+
         public static RfidOptions Default => new()
         {
             ConnectionString = DefaultConnectionString,
@@ -14,31 +15,39 @@ namespace maxbl4.Race.Logic.CheckpointService.Model
         };
 
         public int Id => 1;
-        
+
         /// <summary>
-        /// RfidDotnet connection string
+        ///     RfidDotnet connection string
         /// </summary>
         public string ConnectionString { get; set; }
+
         /// <summary>
-        /// Is Rfid reading enabled
+        ///     Is Rfid reading enabled
         /// </summary>
         public bool Enabled { get; set; }
+
         /// <summary>
-        /// In addition to checkpoints, persis the raw Tag objects streamed from the reader 
+        ///     In addition to checkpoints, persis the raw Tag objects streamed from the reader
         /// </summary>
         public bool PersistTags { get; set; }
+
         /// <summary>
-        /// Windows in milliseconds for tag deduplication
+        ///     Windows in milliseconds for tag deduplication
         /// </summary>
         public int CheckpointAggregationWindowMs { get; set; }
+
         /// <summary>
-        /// Reads per second threshold below which a tag would be reported as bad 
+        ///     Reads per second threshold below which a tag would be reported as bad
         /// </summary>
         public int RpsThreshold { get; set; }
+
         public DateTime Timestamp { get; set; }
-        
-        public ConnectionString GetConnectionString() => RfidDotNet.ConnectionString.Parse(ConnectionString);
-        
+
+        public ConnectionString GetConnectionString()
+        {
+            return RfidDotNet.ConnectionString.Parse(ConnectionString);
+        }
+
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);

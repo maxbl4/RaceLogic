@@ -21,10 +21,10 @@ namespace maxbl4.Race.CheckpointService.Controllers
         {
             return upstreamOptionsStorage.GetUpstreamOptions();
         }
-        
+
         [HttpPost]
         [HttpPut]
-        public async Task Put([FromBody]UpstreamOptions options)
+        public async Task Put([FromBody] UpstreamOptions options)
         {
             await upstreamOptionsStorage.SetUpstreamOptions(options);
         }

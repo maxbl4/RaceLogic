@@ -19,15 +19,17 @@ namespace maxbl4.Race.Tests
             subject.Subscribe(x => throw new ArgumentException());
             Assert.Throws<ArgumentException>(() => subject.OnNext(1));
             Assert.Throws<ArgumentException>(() => subject.OnNext(1));
-            
+
             subject = new Subject<int>();
 
-            string s = "";
+            var s = "";
             var errors = 0;
 
             subject.Catch((Exception err) =>
             {
-                errors++; return subject; }).Subscribe(x =>
+                errors++;
+                return subject;
+            }).Subscribe(x =>
             {
                 s += x;
                 throw new ArgumentException();
@@ -37,7 +39,7 @@ namespace maxbl4.Race.Tests
             subject.OnNext(2);
             s.Should().Be("1");
         }
-        
+
         [Fact]
         public void Should_continue_observable_after_many_exceptions()
         {
@@ -46,7 +48,8 @@ namespace maxbl4.Race.Tests
 
             var s = "";
             subject.Subscribe(x =>
-                logger.instance.Swallow(() =>{
+                logger.instance.Swallow(() =>
+                {
                     s += x;
                     throw new ArgumentException();
                 }));
@@ -55,19 +58,19 @@ namespace maxbl4.Race.Tests
             subject.OnNext(2);
             s.Should().Be("12");
             logger.messages.Count.Should().Be(2);
-            
         }
 
         [Fact]
         public void Should_concat_timer_with_list()
         {
-            var list = new List<long>(Enumerable.Range(0, 5).Select(x => (long)x));
+            var list = new List<long>(Enumerable.Range(0, 5).Select(x => (long) x));
             var counter = 5L;
-            var timer = Observable.Timer(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100)).Select(x => counter++);
+            var timer = Observable.Timer(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100))
+                .Select(x => counter++);
             var result = new List<long>();
             list.ToObservable().Concat(timer).Subscribe(x => result.Add(x));
             new Timing().Expect(() => result.Count >= 8);
-            result.SequenceEqual(new long[] { 0, 1, 2, 3, 4 ,5 ,6 ,7 });
+            result.SequenceEqual(new long[] {0, 1, 2, 3, 4, 5, 6, 7});
         }
     }
 }

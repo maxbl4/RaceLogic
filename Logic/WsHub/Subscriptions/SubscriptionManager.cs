@@ -22,23 +22,23 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.WsHub.Subscriptions
 {
-    public class SubscriptionManager: IAsyncInitialize, IAsyncDisposable
+    public class SubscriptionManager : IAsyncInitialize, IAsyncDisposable
     {
-        private readonly ISubscriptionStorage subscriptionStorage;
-        private readonly IUpstreamOptionsStorage upstreamOptionsStorage;
-        private readonly ICheckpointStorage checkpointStorage;
-        private readonly IMessageHub messageHub;
-        private readonly ISystemClock systemClock;
-        private readonly ILogger logger = Log.ForContext<SubscriptionManager>();
-        private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
-        private readonly CompositeDisposable disposable;
-        private readonly ConcurrentDictionary<string, IDisposable> clients = new();
         private readonly Subject<Checkpoint> checkpoints = new();
+        private readonly ICheckpointStorage checkpointStorage;
+        private readonly ConcurrentDictionary<string, IDisposable> clients = new();
+        private readonly CompositeDisposable disposable;
+        private readonly ILogger logger = Log.ForContext<SubscriptionManager>();
+        private readonly IMessageHub messageHub;
+        private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
+        private readonly ISubscriptionStorage subscriptionStorage;
+        private readonly ISystemClock systemClock;
+        private readonly IUpstreamOptionsStorage upstreamOptionsStorage;
         private WsHubConnection wsConnection;
 
         public SubscriptionManager(ISubscriptionStorage subscriptionStorage,
             IUpstreamOptionsStorage upstreamOptionsStorage,
-            ICheckpointStorage checkpointStorage, 
+            ICheckpointStorage checkpointStorage,
             IMessageHub messageHub,
             ISystemClock systemClock = null)
         {
@@ -54,15 +54,19 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                 messageHub.Subscribe<ReaderStatus>(OnReaderStatus));
         }
 
+        public async ValueTask DisposeAsync()
+        {
+            disposable.DisposeSafe();
+            await logger.Swallow(async () => await wsConnection.DisposeAsync());
+        }
+
         public async Task InitializeAsync()
         {
             OptionsChanged(await upstreamOptionsStorage.GetUpstreamOptions());
             await subscriptionStorage.DeleteExpiredSubscriptions();
             var subs = await subscriptionStorage.GetSubscriptions();
             foreach (var sub in subs.Where(x => x.SubscriptionExpiration > systemClock.UtcNow.DateTime))
-            {
                 StartStream(sub.SenderId, sub.FromTimestamp);
-            }
         }
 
         private void OptionsChanged(UpstreamOptions options)
@@ -83,7 +87,8 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                     switch (sub.RequestType)
                     {
                         case SubscriptionRequestTypes.Subscribe:
-                            await subscriptionStorage.AddSubscription(sub.SenderId, sub.FromTimestamp, sub.SubscriptionExpiration);
+                            await subscriptionStorage.AddSubscription(sub.SenderId, sub.FromTimestamp,
+                                sub.SubscriptionExpiration);
                             StartStream(sub.SenderId, sub.FromTimestamp);
                             return new SubscriptionResponse();
                         case SubscriptionRequestTypes.Unsubscribe:
@@ -91,21 +96,21 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                             StopStream(sub.SenderId);
                             return new SubscriptionResponse();
                     }
+
                     break;
             }
+
             return null;
         }
-        
-        private async Task BroadcastUpdate(ChekpointsUpdate msg, [CallerMemberName]string caller = null)
+
+        private async Task BroadcastUpdate(ChekpointsUpdate msg, [CallerMemberName] string caller = null)
         {
             foreach (var client in clients.Keys.ToList())
-            {
                 await logger.Swallow(async () =>
                 {
                     logger.Information(caller);
                     await wsConnection.InvokeRequest<ChekpointsUpdate, Message>(client, msg);
                 });
-            }
         }
 
         private void OnRfidOptions(RfidOptions rfidOptions)
@@ -115,7 +120,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                 RfidOptions = rfidOptions
             });
         }
-        
+
         private void OnReaderStatus(ReaderStatus readerStatus)
         {
             _ = BroadcastUpdate(new ChekpointsUpdate
@@ -124,7 +129,7 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             });
         }
 
-        void OnCheckpoint(Checkpoint checkpoint)
+        private void OnCheckpoint(Checkpoint checkpoint)
         {
             try
             {
@@ -179,10 +184,11 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
                             logger.Swallow(async () =>
                             {
                                 logger.Information($"Sending checkpoint {x} via WS to {targetId}");
-                                await wsConnection.InvokeRequest<ChekpointsUpdate, Message>(targetId, new ChekpointsUpdate
-                                {
-                                    Checkpoints = x,
-                                });
+                                await wsConnection.InvokeRequest<ChekpointsUpdate, Message>(targetId,
+                                    new ChekpointsUpdate
+                                    {
+                                        Checkpoints = x
+                                    });
                             })))
                     .Concat()
                     .Subscribe();
@@ -196,12 +202,6 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions
             {
                 rwlock.ExitWriteLock();
             }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            disposable.DisposeSafe();
-            await logger.Swallow(async () => await wsConnection.DisposeAsync());
         }
     }
 }

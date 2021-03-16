@@ -17,7 +17,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             var p2 = RoundPosition.FromLaps("12", MakeLaps("11", 4), false);
             RoundPosition.LapsCountFinishedComparer.Compare(p2, p1).Should().BeNegative();
         }
-        
+
         [Fact]
         public void Should_compare_finished()
         {
@@ -25,7 +25,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             var p2 = RoundPosition.FromLaps("12", MakeLaps("11", 4), true);
             RoundPosition.LapsCountFinishedComparer.Compare(p2, p1).Should().BeNegative();
         }
-        
+
         [Fact]
         public void Should_compare_finished_should_be_smaller()
         {
@@ -33,7 +33,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             var p2 = RoundPosition.FromLaps("12", MakeLaps("11", 1), true);
             RoundPosition.LapsCountFinishedComparer.Compare(p2, p1).Should().BeNegative();
         }
-        
+
         [Fact]
         public void Should_compare_finished_should_be_smaller_with_less_laps()
         {
@@ -57,14 +57,13 @@ namespace maxbl4.Race.Tests.Logic.Model
                 x => x.SequentialNumber.Should().Be(1),
                 x => x.SequentialNumber.Should().Be(2),
                 x => x.SequentialNumber.Should().Be(3)
-                );
+            );
         }
 
-        IEnumerable<Lap> MakeLaps(string riderId, int count)
+        private IEnumerable<Lap> MakeLaps(string riderId, int count)
         {
             Lap lap = null;
-            for (int i = 0; i < count; i++)
-            {
+            for (var i = 0; i < count; i++)
                 if (i == 0)
                 {
                     lap = new Lap(new Checkpoint(riderId, new DateTime(1000 + i * 100)), new DateTime(1000));
@@ -75,7 +74,6 @@ namespace maxbl4.Race.Tests.Logic.Model
                     lap = lap.CreateNext(new Checkpoint(riderId, new DateTime(1000 + i * 100)));
                     yield return lap;
                 }
-            }
         }
     }
 }

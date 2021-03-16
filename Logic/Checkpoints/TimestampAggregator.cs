@@ -7,41 +7,40 @@ using maxbl4.Infrastructure.Extensions.DictionaryExt;
 namespace maxbl4.Race.Logic.Checkpoints
 {
     public interface ITimestampAggregator<T> : IObserver<T>, IObservable<T>
-        where T: class
+        where T : class
     {
         IObservable<T> AggregatedCheckpoints { get; }
     }
 
     public class TimestampAggregator<T> : ITimestampAggregator<T>
-        where T: class
+        where T : class
     {
-        private readonly TimeSpan window;
-        private readonly Func<T, DateTime> timestampGetter;
-        private readonly Func<T, string> keyGetter;
+        private readonly Subject<T> aggregatedCheckpoints = new();
+
+        private readonly Dictionary<string, T> aggregationCache = new();
         private readonly Func<T, T, T> aggregator;
-        readonly Subject<T> aggregatedCheckpoints = new();
-        public IObservable<T> AggregatedCheckpoints => aggregatedCheckpoints;
 
-        readonly Subject<T> checkpoints = new();
-        public IObservable<T> Checkpoints => checkpoints;
+        private readonly Subject<T> checkpoints = new();
+        private readonly Func<T, string> keyGetter;
+        private readonly Func<T, DateTime> timestampGetter;
+        private readonly TimeSpan window;
 
-        readonly Dictionary<string, T> aggregationCache = new();
-
-        public TimestampAggregator(TimeSpan window, Func<T, DateTime> timestampGetter, Func<T, string> keyGetter, Func<T, T, T> aggregator)
+        public TimestampAggregator(TimeSpan window, Func<T, DateTime> timestampGetter, Func<T, string> keyGetter,
+            Func<T, T, T> aggregator)
         {
             this.window = window;
             this.timestampGetter = timestampGetter;
             this.keyGetter = keyGetter;
             this.aggregator = aggregator;
         }
-        
+
+        public IObservable<T> Checkpoints => checkpoints;
+        public IObservable<T> AggregatedCheckpoints => aggregatedCheckpoints;
+
         public void OnCompleted()
         {
             checkpoints.OnCompleted();
-            foreach (var agg in aggregationCache.Values.OrderBy(timestampGetter))
-            {
-                aggregatedCheckpoints.OnNext(agg);
-            }
+            foreach (var agg in aggregationCache.Values.OrderBy(timestampGetter)) aggregatedCheckpoints.OnNext(agg);
             aggregatedCheckpoints.OnCompleted();
         }
 
@@ -54,18 +53,21 @@ namespace maxbl4.Race.Logic.Checkpoints
         public void OnNext(T cp)
         {
             foreach (var c in ApplyWindow(cp, window, aggregationCache))
-            {
                 if (c.aggregated)
                     aggregatedCheckpoints.OnNext(c.item);
                 else
                     checkpoints.OnNext(c.item);
-            }
         }
-        
+
+        public IDisposable Subscribe(IObserver<T> observer)
+        {
+            return checkpoints.Subscribe(observer);
+        }
+
         /// <summary>
-        /// Will apply sliding time window to checkpoints list
-        /// and aggregate by taking the first occurrence.
-        /// Assumes, that input has full information, will the sort the list before aggregation
+        ///     Will apply sliding time window to checkpoints list
+        ///     and aggregate by taking the first occurrence.
+        ///     Assumes, that input has full information, will the sort the list before aggregation
         /// </summary>
         /// <param name="items">All checkpoints should have Timestamp set</param>
         /// <param name="window"></param>
@@ -77,15 +79,14 @@ namespace maxbl4.Race.Logic.Checkpoints
             var result = new List<T>();
             var aggregationCache = new Dictionary<string, T>();
             foreach (var cp in items)
-            {
                 result.AddRange(ApplyWindow(cp, window, aggregationCache).Where(x => x.aggregated).Select(x => x.item));
-            }
             result.AddRange(aggregationCache.Values);
             result.Sort(comparer);
             return result;
         }
 
-        IEnumerable<(T item, bool aggregated)> ApplyWindow(T itm, TimeSpan window, Dictionary<string, T> aggregationCache)
+        private IEnumerable<(T item, bool aggregated)> ApplyWindow(T itm, TimeSpan window,
+            Dictionary<string, T> aggregationCache)
         {
             var key = keyGetter(itm);
             var agg = aggregationCache.Get(key);
@@ -101,18 +102,14 @@ namespace maxbl4.Race.Logic.Checkpoints
                 aggregationCache[key] = aggregator(agg, itm);
             }
         }
-
-        public IDisposable Subscribe(IObserver<T> observer)
-        {
-            return checkpoints.Subscribe(observer);
-        }
     }
 
     public static class TimestampAggregatorConfigurations
     {
         public static TimestampAggregator<Checkpoint> ForCheckpoint(TimeSpan window)
         {
-            return new(window, cp => cp.Timestamp, cp => cp.RiderId, (agg, cp) => cp == null ? agg.ToAggregated() : agg.AddToAggregated(cp));
+            return new(window, cp => cp.Timestamp, cp => cp.RiderId,
+                (agg, cp) => cp == null ? agg.ToAggregated() : agg.AddToAggregated(cp));
         }
     }
 }

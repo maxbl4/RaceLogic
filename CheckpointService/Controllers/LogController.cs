@@ -13,10 +13,12 @@ namespace maxbl4.Race.CheckpointService.Controllers
     public class LogController : ControllerBase
     {
         private const string dataDirectory = "var/data";
-        
+
+        private readonly RollingFileInfo errorLogFile =
+            new(Path.Combine(dataDirectory, "CheckpointServiceRunner-errors.log"));
+
         private readonly RollingFileInfo mainLogFile = new(Path.Combine(dataDirectory, "CheckpointServiceRunner.log"));
-        private readonly RollingFileInfo errorLogFile = new(Path.Combine(dataDirectory, "CheckpointServiceRunner-errors.log"));
-        
+
         [HttpGet]
         public IActionResult Get(int? lines, string filter, bool? errors)
         {
@@ -27,9 +29,11 @@ namespace maxbl4.Race.CheckpointService.Controllers
             if (lines == null)
                 lines = 50;
             if (lines < 0)
-                lines = Int32.MaxValue;
-            var logText = new StreamReader(new FileStream(logfile.CurrentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).ReadToEnd();
-            return Content(string.Join("\r\n", logText.Split(new[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
+                lines = int.MaxValue;
+            var logText =
+                new StreamReader(new FileStream(logfile.CurrentFile, FileMode.Open, FileAccess.Read,
+                    FileShare.ReadWrite)).ReadToEnd();
+            return Content(string.Join("\r\n", logText.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Contains(filter))
                 .TakeLast(lines.Value)), "text/plain");
         }

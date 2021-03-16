@@ -19,12 +19,12 @@ namespace maxbl4.Race.Logic.LogManagement.IO
                 CheckAdditionalContent = true
             };
         }
-        
-        class WritablePropertiesOnlyResolver : DefaultContractResolver
+
+        private class WritablePropertiesOnlyResolver : DefaultContractResolver
         {
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
-                IList<JsonProperty> props = base.CreateProperties(type, memberSerialization);
+                var props = base.CreateProperties(type, memberSerialization);
                 return props.Where(p => p.Writable).ToList();
             }
         }

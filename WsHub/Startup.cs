@@ -17,6 +17,7 @@ namespace maxbl4.Race.WsHub
     public class Startup
     {
         private static readonly ILogger logger = Log.ForContext<Startup>();
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -32,12 +33,11 @@ namespace maxbl4.Race.WsHub
             services.AddSingleton<StorageService>();
             services.AddAuthentication(Constants.WsHub.Authentication.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, WsAccessTokenAuthenticationHandler>(
-                    Constants.WsHub.Authentication.SchemeName, options =>
-                    {
-                    });
+                    Constants.WsHub.Authentication.SchemeName, options => { });
 
             services.AddControllers().AddNewtonsoftJson();
-            services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024).AddNewtonsoftJsonProtocol();
+            services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024)
+                .AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
         }
 
@@ -52,10 +52,7 @@ namespace maxbl4.Race.WsHub
                     return LogEventLevel.Information;
                 };
             });
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseRouting();
             app.UseAuthentication();

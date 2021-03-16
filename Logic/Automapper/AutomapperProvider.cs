@@ -13,20 +13,20 @@ namespace maxbl4.Race.Logic.AutoMapper
 
     public class AutoMapperProvider : IAutoMapperProvider
     {
-        public IMapper Mapper { get; }
-
         public AutoMapperProvider()
         {
             var config = new MapperConfiguration(ConfigureMappings);
             Mapper = config.CreateMapper();
         }
 
+        public IMapper Mapper { get; }
+
         public T Map<T>(object obj)
         {
             return Mapper.Map<T>(obj);
         }
 
-        void ConfigureMappings(IMapperConfigurationExpression cfg)
+        private void ConfigureMappings(IMapperConfigurationExpression cfg)
         {
             cfg.CreateMap<Checkpoint, CheckpointDto>();
             cfg.CreateMap<RecordingSessionDto, TimingSession>();

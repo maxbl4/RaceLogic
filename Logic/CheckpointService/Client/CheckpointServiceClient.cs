@@ -15,10 +15,10 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
 {
     public class CheckpointServiceClient
     {
-        private readonly ILogger logger = Log.ForContext<CheckpointServiceClient>();
         private readonly string address;
         private readonly HttpClient http = new();
-        
+        private readonly ILogger logger = Log.ForContext<CheckpointServiceClient>();
+
         public CheckpointServiceClient(string address)
         {
             if (!address.EndsWith("/"))
@@ -40,8 +40,9 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
         public async Task AppendCheckpoint(string riderId)
         {
             logger.Information("PutRiderId {riderId}", riderId);
-            (await http.PutAsync($"{address}cp", 
-                new StringContent(JsonConvert.SerializeObject(riderId), Encoding.UTF8, "application/json"))).EnsureSuccessStatusCode();
+            (await http.PutAsync($"{address}cp",
+                    new StringContent(JsonConvert.SerializeObject(riderId), Encoding.UTF8, "application/json")))
+                .EnsureSuccessStatusCode();
         }
 
         public async Task<int> DeleteCheckpoint(Id<Checkpoint> id)
@@ -50,7 +51,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAs<int>();
         }
-        
+
         public async Task<int> DeleteCheckpoints(DateTime? start = null, DateTime? end = null)
         {
             var response = await http.DeleteAsync($"{address}cp?start={start:u}&end={end:u}");
@@ -62,14 +63,14 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
         {
             return await http.GetAsync<RfidOptions>($"{address}options");
         }
-        
+
         public async Task SetRfidOptions(RfidOptions options)
         {
             (await http.PutAsync($"{address}options",
                     new StringContent(JsonConvert.SerializeObject(options), Encoding.UTF8, "application/json")))
                 .EnsureSuccessStatusCode();
         }
-        
+
         public async Task<T> GetRfidOptionsValue<T>(string property)
         {
             return await http.GetAsync<T>($"{address}options/{property}");
@@ -77,7 +78,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
 
         public async Task SetRfidOptionsValue<T>(string property, T value)
         {
-            (await http.PutAsync($"{address}options/{property}", 
+            (await http.PutAsync($"{address}options/{property}",
                     new StringContent(JsonConvert.SerializeObject(value), Encoding.UTF8, "application/json")))
                 .EnsureSuccessStatusCode();
         }
@@ -86,7 +87,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
         {
             return await GetRfidOptionsValue<bool>(nameof(RfidOptions.Enabled));
         }
-        
+
         public async Task SetRfidStatus(bool enabled)
         {
             await SetRfidOptionsValue(nameof(RfidOptions.Enabled), enabled);

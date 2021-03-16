@@ -9,13 +9,11 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
     public static class TraitsExt
     {
         public static T ApplyTraits<T>(this T obj)
-            where T: IHasTraits
+            where T : IHasTraits
         {
             if (obj is IHasId<T> hasIdentifiers)
-            {
                 if (hasIdentifiers.Id == Id<T>.Empty)
                     hasIdentifiers.Id = Id<T>.NewId();
-            }
 
             if (obj is IHasTimestamp timestamp)
             {
@@ -40,11 +38,12 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
             foreach (var type in types)
             {
                 var idClosed = idType.MakeGenericType(type.type);
-                mapper.RegisterType(idClosed, obj => ((IGuidValue)obj).Value.ToString("N"), value => Activator.CreateInstance(idClosed, new Guid(value.AsString)));
+                mapper.RegisterType(idClosed, obj => ((IGuidValue) obj).Value.ToString("N"),
+                    value => Activator.CreateInstance(idClosed, new Guid(value.AsString)));
             }
         }
 
-        static bool HasId((Type type, Type[] interfaces) def)
+        private static bool HasId((Type type, Type[] interfaces) def)
         {
             var hasIdType = typeof(IHasId<>).MakeGenericType(def.type);
             return def.interfaces.Contains(hasIdType);

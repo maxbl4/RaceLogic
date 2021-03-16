@@ -9,6 +9,7 @@ namespace maxbl4.Race.Logic.WsHub.Messages
         CheckpointService = 1,
         RaceSession = 2,
         ManualInputTerminal = 4,
+
         LedScreen = 8
         /// etc
     }

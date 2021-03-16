@@ -16,7 +16,7 @@ namespace maxbl4.Race.Tests.DataService.Services
             BsonIdUrlEncoder.Encode(id).Should().Be("123");
             BsonIdUrlEncoder.Decode("123e").Type.Should().Be(BsonType.String);
         }
-        
+
         [Fact]
         public void Should_support_long()
         {
@@ -26,7 +26,7 @@ namespace maxbl4.Race.Tests.DataService.Services
             BsonIdUrlEncoder.Encode(id).Should().Be("123L");
             BsonIdUrlEncoder.Decode("123l").Should().Be(id);
         }
-        
+
         [Fact]
         public void Should_support_guid()
         {
@@ -37,7 +37,7 @@ namespace maxbl4.Race.Tests.DataService.Services
             BsonIdUrlEncoder.Encode(id).Should().Be(guid.ToString("N") + "g");
             BsonIdUrlEncoder.Decode(guid.ToString("N") + "G").Should().Be(id);
         }
-        
+
         [Fact]
         public void Should_support_objectId()
         {

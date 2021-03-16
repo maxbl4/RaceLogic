@@ -12,7 +12,7 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
         {
             this.storageService = storageService;
         }
-        
+
         public TagListHandler Build(bool enableRfid = true)
         {
             var readerEndpoint = IPEndPoint.Parse("127.0.0.1:0");

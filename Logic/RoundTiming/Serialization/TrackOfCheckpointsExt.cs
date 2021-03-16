@@ -9,7 +9,7 @@ namespace maxbl4.Race.Logic.RoundTiming.Serialization
         public static string ToRoundDefString(this ITrackOfCheckpoints track)
         {
             var sb = new StringBuilder();
-            sb.Append($"Track");
+            sb.Append("Track");
             if (track.FinishCriteria.Duration > TimeSpan.Zero)
                 sb.Append($" {track.FinishCriteria.Duration.ToShortString()}");
             sb.AppendLine(RoundDefParser.FormatCheckpoints(track.Checkpoints, track.RoundStartTime));

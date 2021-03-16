@@ -49,7 +49,8 @@ namespace maxbl4.Race.CheckpointService
             services.RegisterHostedService<IRfidService, RfidService>();
             services.RegisterHostedService<DistributionService>();
             services.AddControllers().AddNewtonsoftJson();
-            services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024).AddNewtonsoftJsonProtocol();
+            services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024)
+                .AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
             var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();
             if (options?.PauseInStartupMs > 0)
@@ -68,10 +69,7 @@ namespace maxbl4.Race.CheckpointService
                     return LogEventLevel.Information;
                 };
             });
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseRouting();
             app.UseDefaultFiles();

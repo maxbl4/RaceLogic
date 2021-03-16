@@ -19,7 +19,7 @@ namespace maxbl4.Race.Tests.Logic.Model
             l.Duration.Should().Be(TimeSpan.FromTicks(1000));
             l.AggDuration.Should().Be(TimeSpan.FromTicks(1000));
             l.Checkpoint.Should().BeSameAs(cp);
-            
+
             var cp2 = new Checkpoint("11", new DateTime(3500));
             var l2 = l.CreateNext(cp2);
             l2.SequentialNumber.Should().Be(2);

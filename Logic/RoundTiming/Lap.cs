@@ -5,13 +5,6 @@ namespace maxbl4.Race.Logic.RoundTiming
 {
     public class Lap
     {
-        public Checkpoint Checkpoint { get; }
-        public DateTime Start { get; }
-        public DateTime End { get; }
-        public TimeSpan Duration { get; }
-        public TimeSpan AggDuration { get; }
-        public int SequentialNumber { get; }
-
         public Lap(Checkpoint checkpoint, DateTime roundStartTime)
         {
             Checkpoint = checkpoint;
@@ -20,7 +13,7 @@ namespace maxbl4.Race.Logic.RoundTiming
             Duration = AggDuration = End - Start;
             SequentialNumber = 1;
         }
-        
+
         public Lap(Checkpoint checkpoint, Lap previousLap)
         {
             Checkpoint = checkpoint;
@@ -30,6 +23,13 @@ namespace maxbl4.Race.Logic.RoundTiming
             AggDuration = previousLap.AggDuration + Duration;
             SequentialNumber = previousLap.SequentialNumber + 1;
         }
+
+        public Checkpoint Checkpoint { get; }
+        public DateTime Start { get; }
+        public DateTime End { get; }
+        public TimeSpan Duration { get; }
+        public TimeSpan AggDuration { get; }
+        public int SequentialNumber { get; }
 
         public Lap CreateNext(Checkpoint checkpoint)
         {

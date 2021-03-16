@@ -4,7 +4,7 @@ namespace maxbl4.Race.Logic.RoundTiming
 {
     public static class TrackOfCheckpointsFactory
     {
-        public static Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> Create = 
+        public static Func<DateTime?, IFinishCriteria, ITrackOfCheckpoints> Create =
             (roundStartTime, finishCriteria) => new TrackOfCheckpoints(roundStartTime, finishCriteria);
     }
 }

@@ -3,7 +3,7 @@ using maxbl4.Race.Logic.WsHub.Messages;
 
 namespace maxbl4.Race.Logic.WsHub.Subscriptions.Messages
 {
-    public class SubscriptionRequest: Message, IRequestMessage
+    public class SubscriptionRequest : Message, IRequestMessage
     {
         public SubscriptionRequestTypes RequestType { get; set; } = SubscriptionRequestTypes.Subscribe;
         public DateTime FromTimestamp { get; set; }

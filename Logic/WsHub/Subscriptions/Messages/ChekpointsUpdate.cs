@@ -6,7 +6,7 @@ using maxbl4.Race.Logic.WsHub.Messages;
 
 namespace maxbl4.Race.Logic.WsHub.Subscriptions.Messages
 {
-    public class ChekpointsUpdate: Message, IRequestMessage
+    public class ChekpointsUpdate : Message, IRequestMessage
     {
         public RfidOptions RfidOptions { get; set; }
         public ReaderStatus ReaderStatus { get; set; }
@@ -16,6 +16,5 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions.Messages
 
     public class ChekpointsUpdateResponse : Message
     {
-        
     }
 }

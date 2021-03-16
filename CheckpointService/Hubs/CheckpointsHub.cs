@@ -25,7 +25,7 @@ namespace maxbl4.Race.CheckpointService.Hubs
 
         public void Subscribe(DateTime from)
         {
-            logger.Information( $"Subscribe request {Context.ConnectionId}");
+            logger.Information($"Subscribe request {Context.ConnectionId}");
             distributionService.StartStream(Context.ConnectionId, from);
         }
     }

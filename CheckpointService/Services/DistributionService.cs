@@ -17,15 +17,16 @@ namespace maxbl4.Race.CheckpointService.Services
 {
     public class DistributionService : IDisposable
     {
-        private readonly IHubContext<CheckpointsHub> checkpointsHub;
-        private readonly StorageService storageService;
-        private readonly ILogger logger = Log.ForContext<DistributionService>();
-        private readonly CompositeDisposable disposable;
-        private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
-        private readonly Dictionary<string, IDisposable> clients = new();
         private readonly Subject<Checkpoint> checkpoints = new();
+        private readonly IHubContext<CheckpointsHub> checkpointsHub;
+        private readonly Dictionary<string, IDisposable> clients = new();
+        private readonly CompositeDisposable disposable;
+        private readonly ILogger logger = Log.ForContext<DistributionService>();
+        private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
+        private readonly StorageService storageService;
 
-        public DistributionService(IHubContext<CheckpointsHub> checkpointsHub, IMessageHub messageHub, StorageService storageService)
+        public DistributionService(IHubContext<CheckpointsHub> checkpointsHub, IMessageHub messageHub,
+            StorageService storageService)
         {
             this.checkpointsHub = checkpointsHub;
             this.storageService = storageService;
@@ -33,6 +34,11 @@ namespace maxbl4.Race.CheckpointService.Services
                 messageHub.Subscribe<Checkpoint>(OnCheckpoint),
                 messageHub.Subscribe<ReaderStatus>(OnReaderStatus),
                 messageHub.Subscribe<RfidOptions>(OnRfidOptions));
+        }
+
+        public void Dispose()
+        {
+            disposable.DisposeSafe();
         }
 
         private void OnRfidOptions(RfidOptions rfidOptions)
@@ -44,7 +50,7 @@ namespace maxbl4.Race.CheckpointService.Services
                     .SendCoreAsync("RfidOptions", new[] {rfidOptions});
             }).Wait(0);
         }
-        
+
         private void OnReaderStatus(ReaderStatus readerStatus)
         {
             logger.Swallow(async () =>
@@ -55,7 +61,7 @@ namespace maxbl4.Race.CheckpointService.Services
             }).Wait(0);
         }
 
-        void OnCheckpoint(Checkpoint checkpoint)
+        private void OnCheckpoint(Checkpoint checkpoint)
         {
             try
             {
@@ -71,11 +77,6 @@ namespace maxbl4.Race.CheckpointService.Services
             {
                 rwlock.ExitReadLock();
             }
-        }
-
-        public void Dispose()
-        {
-            disposable.DisposeSafe();
         }
 
         public void StopStream(string contextConnectionId)
@@ -109,10 +110,10 @@ namespace maxbl4.Race.CheckpointService.Services
                 clients[contextConnectionId] = storageService.ListCheckpoints(from)
                     .ToObservable()
                     .Buffer(TimeSpan.FromMilliseconds(100), 100)
-                    .Concat(checkpoints.Select(x => new []{x}))
+                    .Concat(checkpoints.Select(x => new[] {x}))
                     .Where(x => x.Count > 0)
-                    .Select(x => 
-                        Observable.FromAsync(() => 
+                    .Select(x =>
+                        Observable.FromAsync(() =>
                             logger.Swallow(async () =>
                             {
                                 logger.Information($"Sending checkpoint {x} via WS to {contextConnectionId}");

@@ -4,14 +4,14 @@ using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace Benchmark
 {
-    public class LiteEntityId: IHasId<LiteEntityId>
+    public class LiteEntityId : IHasId<LiteEntityId>
     {
-        public Id<LiteEntityId> Id { get; set; }
         public string PersonName { get; set; }
         public string Address { get; set; }
         public int Amount { get; set; }
+        public Id<LiteEntityId> Id { get; set; }
     }
-    
+
     public class LiteEntityLid
     {
         public Lid<LiteEntityLid> Id { get; set; }
@@ -19,7 +19,7 @@ namespace Benchmark
         public string Address { get; set; }
         public int Amount { get; set; }
     }
-    
+
     public class LiteEntityGuid
     {
         public Guid Id { get; set; }
@@ -27,7 +27,7 @@ namespace Benchmark
         public string Address { get; set; }
         public int Amount { get; set; }
     }
-    
+
     public class LiteEntityUlid
     {
         public Ulid Id { get; set; }
@@ -35,7 +35,7 @@ namespace Benchmark
         public string Address { get; set; }
         public int Amount { get; set; }
     }
-    
+
     public class LiteEntityInt
     {
         public int Id { get; set; }
@@ -43,7 +43,7 @@ namespace Benchmark
         public string Address { get; set; }
         public int Amount { get; set; }
     }
-    
+
     public class LiteEntityLong
     {
         public long Id { get; set; }
@@ -51,12 +51,12 @@ namespace Benchmark
         public string Address { get; set; }
         public int Amount { get; set; }
     }
-    
+
     public interface IHasUlidValue
     {
         public Ulid Value { get; }
     }
-    
+
     public struct Lid<T> : IEquatable<Lid<T>>, IHasUlidValue
     {
         #region Equality
@@ -92,21 +92,21 @@ namespace Benchmark
         {
             return new(Ulid.NewUlid());
         }
-            
+
         public Lid(Ulid value)
         {
             Value = value;
         }
-            
+
         public Ulid Value { get; }
 
         public bool IsEmpty => Value == Ulid.Empty;
-            
+
         public static implicit operator Ulid(Lid<T> id)
         {
             return id.Value;
         }
-            
+
         public static implicit operator Lid<T>(Ulid id)
         {
             return new(id);

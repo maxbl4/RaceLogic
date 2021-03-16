@@ -13,9 +13,9 @@ namespace ServiceBase
     public abstract class StorageServiceBase : IDisposable
     {
         protected readonly string connectionString;
+        protected readonly ILogger logger;
         protected readonly IMessageHub messageHub;
         protected readonly ISystemClock systemClock;
-        protected readonly ILogger logger;
         protected LiteRepository repo;
 
         protected StorageServiceBase(string connectionString, IMessageHub messageHub, ISystemClock systemClock)
@@ -31,6 +31,11 @@ namespace ServiceBase
                 cs = TryRotateDatabase(cs);
                 Initialize(cs);
             });
+        }
+
+        public void Dispose()
+        {
+            repo.DisposeSafe();
         }
 
         private void Initialize(ConnectionString connectionString)
@@ -51,10 +56,5 @@ namespace ServiceBase
         protected abstract void ValidateDatabase();
 
         protected abstract void SetupIndexes();
-        
-        public void Dispose()
-        {
-            repo.DisposeSafe();
-        }
     }
 }

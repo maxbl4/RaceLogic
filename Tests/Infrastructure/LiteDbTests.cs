@@ -11,14 +11,14 @@ namespace maxbl4.Race.Tests.Infrastructure
 {
     public class LiteDbTests
     {
-        const string dbFile = nameof(LiteDbTests) + ".litedb";
-        
+        private const string dbFile = nameof(LiteDbTests) + ".litedb";
+
         public LiteDbTests()
         {
             if (File.Exists(dbFile))
                 File.Delete(dbFile);
         }
-        
+
         [Fact]
         public void Should_generate_guid_id()
         {
@@ -29,7 +29,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             e.Data.Should().Be("123");
             e.Id.Should().NotBe(Guid.Empty);
         }
-        
+
         [Fact]
         public void Should_generate_long_id()
         {
@@ -40,7 +40,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             e.Data.Should().Be("123");
             e.Id.Should().NotBe(0);
         }
-        
+
         [Fact]
         public void Should_generate_long_id_for_bson_document()
         {
@@ -55,36 +55,36 @@ namespace maxbl4.Race.Tests.Infrastructure
             var e = col.FindById(id);
             e["Some"].Should().Be("123");
         }
-        
+
         [Fact]
         public void Should_query_by_literal_guid()
         {
             var g = new Guid("CFF4EF1C-A0DB-4F0C-B1DE-FCFEC7028CFF");
             using var repo = new LiteRepository(dbFile).WithUtcDate();
-            repo.Insert(new Entity { Id = g, Data = "123"});
+            repo.Insert(new Entity {Id = g, Data = "123"});
             var e = repo.Query<Entity>().Where($"_id = GUID('{g}')").First();
             e.Data.Should().Be("123");
         }
-        
+
         [Fact]
         public void Should_query_bson_document()
         {
             var g = new Guid("CFF4EF1C-A0DB-4F0C-B1DE-FCFEC7028CFF");
             using var repo = new LiteRepository(dbFile).WithUtcDate();
-            repo.Insert(new Entity { Id = g, Data = "123"});
+            repo.Insert(new Entity {Id = g, Data = "123"});
             var doc = repo.Query<BsonDocument>("Entity").Where($"_id = GUID('{g}')").First();
             doc["Data"].AsString.Should().Be("123");
         }
-        
+
         [Fact]
         public void Should_filter_by_literal_date()
         {
             using var repo = new LiteRepository(dbFile).WithUtcDate();
-            repo.Insert(new Entity { Data = "555"});
+            repo.Insert(new Entity {Data = "555"});
             var e = repo.Query<Entity>().Where($"Date < DATE('{DateTime.UtcNow:u}')").First();
             e.Data.Should().Be("555");
         }
-        
+
         [Fact]
         public void Should_insert_new_bson_document_with_guid_id()
         {
@@ -92,7 +92,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             var collection = repo.Database.GetCollection("Entity", BsonAutoId.Guid);
             var doc = new BsonDocument {["Data"] = "666"};
             collection.Upsert(doc);
-            repo.Insert(new Entity { Data = "555"});
+            repo.Insert(new Entity {Data = "555"});
             var docs = repo.Query<Entity>().ToList();
             docs.Should().OnlyContain(x => x.Id != Guid.Empty);
         }
@@ -107,7 +107,7 @@ namespace maxbl4.Race.Tests.Infrastructure
                 repo.Insert(new EntityInt {Id = 7});
                 repo.Insert(new EntityInt {Id = 3});
             }
-            
+
             using (var repo = new LiteRepository(dbFile).WithUtcDate())
             {
                 var docs = repo.Query<EntityInt>().ToList();
@@ -117,7 +117,7 @@ namespace maxbl4.Race.Tests.Infrastructure
                 docs[3].Id.Should().Be(7);
             }
         }
-        
+
         [Fact]
         public void Should_store_documents_with_guid_key_in_sorted_order()
         {
@@ -126,14 +126,14 @@ namespace maxbl4.Race.Tests.Infrastructure
                 repo.Insert(new Entity {Id = new Guid("5B8E621A-CBC4-4052-B58C-4ACAFC3A6864")});
                 repo.Insert(new Entity {Id = new Guid("1B8E621A-CBC4-4052-B58C-4ACAFC3A6864")});
             }
-            
+
             using (var repo = new LiteRepository(dbFile).WithUtcDate())
             {
                 var docs = repo.Query<Entity>().ToList();
                 docs[0].Id.Should().Be(new Guid("1B8E621A-CBC4-4052-B58C-4ACAFC3A6864"));
             }
         }
-        
+
         [Theory]
         [InlineData(1000)]
         public void Should_insert_many_documents(int count)
@@ -151,20 +151,20 @@ namespace maxbl4.Race.Tests.Infrastructure
             }
         }
 
-        class Entity
+        private class Entity
         {
             public Guid Id { get; set; }
             public string Data { get; set; }
             public DateTime Date { get; set; } = DateTime.UtcNow.AddSeconds(-10);
         }
-        
-        class EntityInt
+
+        private class EntityInt
         {
             public int Id { get; set; }
             public string Data { get; set; }
         }
-        
-        class EntityLong
+
+        private class EntityLong
         {
             public long Id { get; set; }
             public string Data { get; set; }

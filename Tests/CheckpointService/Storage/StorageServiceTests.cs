@@ -58,7 +58,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 settings.ConnectionString.Should().Be(RfidOptions.DefaultConnectionString);
             });
         }
-        
+
         [Fact]
         public void Should_return_initial_rfid_options()
         {
@@ -69,11 +69,11 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                     StorageConnectionString = storageConnectionString,
                     InitialRfidOptions = opts
                 }), MessageHub, SystemClock);
-            
+
             var settings = storageService.GetRfidOptions();
             settings.Should().BeSameAs(opts);
         }
-        
+
         [Fact]
         public void Should_support_date_filter()
         {
@@ -92,7 +92,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 secondCp[0].RiderId.Should().Be("2");
             });
         }
-        
+
         [Fact]
         public void Should_update_timestamp()
         {
@@ -104,7 +104,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 storageService.GetRfidOptions().Timestamp.Should().Be(SystemClock.UtcNow.UtcDateTime);
             });
         }
-        
+
         [Fact]
         public void Should_support_tag_operations()
         {
@@ -112,9 +112,11 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             {
                 var ts = DateTime.UtcNow;
                 for (var i = 1; i <= 10; i++)
-                {
-                    storageService.AppendTag(new Tag{Antenna = i, Rssi = i, DiscoveryTime = ts.AddSeconds(i), LastSeenTime = ts.AddSeconds(i + 1), ReadCount = i, TagId = i.ToString()});
-                }
+                    storageService.AppendTag(new Tag
+                    {
+                        Antenna = i, Rssi = i, DiscoveryTime = ts.AddSeconds(i), LastSeenTime = ts.AddSeconds(i + 1),
+                        ReadCount = i, TagId = i.ToString()
+                    });
                 var list = storageService.ListTags();
                 list.Count.Should().Be(10);
                 for (var i = 1; i <= 10; i++)
@@ -129,7 +131,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 }
 
                 storageService.DeleteTags(ts.AddSeconds(-1), ts.AddSeconds(7.7)).Should().Be(7);
-                
+
                 list = storageService.ListTags();
                 list.Count.Should().Be(3);
                 for (var i = 8; i <= 10; i++)
@@ -144,15 +146,15 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
                 }
             });
         }
-        
+
         [Fact]
         public void Should_save_and_load_tags_with_same_tagId()
         {
             WithCheckpointStorageService(storageService =>
             {
                 var ts = DateTime.UtcNow;
-                storageService.AppendTag(new Tag{Antenna = 1, DiscoveryTime = ts, TagId = "1"});
-                storageService.AppendTag(new Tag{Antenna = 2, DiscoveryTime = ts, TagId = "1"});
+                storageService.AppendTag(new Tag {Antenna = 1, DiscoveryTime = ts, TagId = "1"});
+                storageService.AppendTag(new Tag {Antenna = 2, DiscoveryTime = ts, TagId = "1"});
                 var list = storageService.ListTags();
                 list.Count.Should().Be(2);
                 list.Should().Contain(x => x.Antenna == 1);
@@ -168,7 +170,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             dict.Add("ServiceOptions:InitialRfidOptions:PersistTags", "true");
             dict.Add("ServiceOptions:InitialRfidOptions:CheckpointAggregationWindowMs", "1000");
             dict.Add("ServiceOptions:InitialRfidOptions:RpsThreshold", "1000");
-            
+
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(dict)
                 .Build();
@@ -188,18 +190,16 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
             File.Exists(cs.Filename).Should().BeFalse();
             using (var repo = new LiteRepository(cs).WithUtcDate())
             {
-                repo.Insert(new BadCheckpoint{Count = 1.1m}, nameof(Checkpoint));
+                repo.Insert(new BadCheckpoint {Count = 1.1m}, nameof(Checkpoint));
             }
+
             dbFile.BaseExists.Should().BeTrue();
             dbFile.Index.Should().Be(0);
 
-            WithCheckpointStorageService(storage =>
-            {
-                dbFile.Index.Should().Be(1);
-            });
+            WithCheckpointStorageService(storage => { dbFile.Index.Should().Be(1); });
         }
 
-        class BadCheckpoint
+        private class BadCheckpoint
         {
             public long Id { get; set; }
             public decimal Count { get; set; }

@@ -6,7 +6,7 @@ namespace maxbl4.Race.Logic.WsHub.Messages
     {
         public string Payload { get; set; }
     }
-    
+
     public class TestRequest : Message, IRequestMessage
     {
         public string Payload { get; set; }
