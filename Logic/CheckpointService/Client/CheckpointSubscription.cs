@@ -61,7 +61,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
                 return Task.CompletedTask;
             };
 
-            disposable.Add(Disposable.Create(() => logger.Swallow(() => wsConnection.DisposeAsync()).RunSync()));
+            disposable.Add(Disposable.Create(() => logger.Swallow(() => wsConnection.DisposeAsync())));
             disposable.Add(
                 wsConnection.On("Checkpoint", (Checkpoint[] cps) => cps.ForAll(cp => checkpoints.OnNext(cp))));
             disposable.Add(wsConnection.On("ReaderStatus", (ReaderStatus s) => readerStatus.OnNext(s)));

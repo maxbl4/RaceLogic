@@ -50,11 +50,12 @@ namespace maxbl4.Race.Logic.WsHub
         public Func<Message, Task> MessageHandler { get; set; }
         public ConcurrentDictionary<Type, Func<IRequestMessage, Task<Message>>> RequestHandlers { get; } = new();
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             disposed = true;
             disposable.DisposeSafe();
-            await logger.Swallow(() => wsConnection.DisposeAsync());
+            logger.Swallow(() => wsConnection.DisposeAsync());
+            return ValueTask.CompletedTask;
         }
 
         public async Task Connect()
