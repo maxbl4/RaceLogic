@@ -95,7 +95,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             var rider = new Rider {Id = id, Name = "Rider1"};
             JsonConvert.SerializeObject(rider).Should()
                 .Be(
-                    @"{'Id':'cbc9da11e6214d6196a7fb6ba9ddcba4','Name':'Rider1','ClassId':'00000000000000000000000000000000'}"
+                    @"{'Name':'Rider1','ClassId':'00000000000000000000000000000000','Id':'cbc9da11e6214d6196a7fb6ba9ddcba4'}"
                         .Replace('\'', '"'));
         }
 
