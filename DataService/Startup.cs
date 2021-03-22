@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reactive.PlatformServices;
 using AutoMapper;
 using LiteDB;
@@ -7,8 +8,10 @@ using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace maxbl4.Race.DataService
@@ -41,6 +44,20 @@ namespace maxbl4.Race.DataService
             if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseRouting();
+            
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+            var shared = new SharedOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "var", "data")),
+                RequestPath = "/files"
+            };
+            app.UseDirectoryBrowser(new DirectoryBrowserOptions(shared));
+            app.UseStaticFiles(new StaticFileOptions(shared)
+            {
+                ServeUnknownFileTypes = true
+            });
 
             app.UseAuthorization();
 

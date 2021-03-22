@@ -73,7 +73,6 @@ namespace maxbl4.Race.CheckpointService
 
             app.UseRouting();
             app.UseDefaultFiles();
-            app.UseDirectoryBrowser();
             app.UseStaticFiles();
             var shared = new SharedOptions
             {
