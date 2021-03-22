@@ -9,6 +9,29 @@ using maxbl4.Race.Logic.RoundTiming;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
+    /// SessionDataProvider:
+    ///  - Planned start/stop
+    ///  - Duration, finish criteria, minimal lap (checkpoint deduplication interval)
+    ///  - Notify when data changed
+    /// RiderDataManager:
+    ///  - Persistent storage of rider data (CRUD)
+    ///  - Load and notify updates for timing session
+    /// CheckpointService:
+    ///  - Store and stream tags
+    /// RaceLogService:
+    ///  - Final storage of raw checkpoints (RIFD and Number)
+    ///  - Manual input of Number checkpoint
+    ///  - Checkpoints should have GateId
+    /// TimingSessionService:
+    ///  - Subscribes to SessionData, RiderData, RaceLog
+    ///  - Map RFID/Number checkpoints to Riders
+    ///  - Deduplicate checkpoints
+    ///  - Incrementally update Rating on each new Checkpoint
+    ///  - Recalculate deduplication on update of RiderData or deduplication settings
+    ///  - Notify subscribers of new Rating throttled to 500ms
+    
+    
+    
     public class TimingSession : IHasName, IHasTimestamp, IHasSeed
     {
         public TimestampAggregator<Checkpoint> checkpointAggregator;
