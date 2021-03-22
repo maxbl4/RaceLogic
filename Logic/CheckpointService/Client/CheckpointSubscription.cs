@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper.Internal;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Infrastructure.Extensions.TaskExt;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using Microsoft.AspNetCore.SignalR.Client;

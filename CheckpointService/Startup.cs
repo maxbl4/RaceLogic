@@ -1,7 +1,6 @@
 using System.IO;
 using System.Reactive.PlatformServices;
 using System.Threading;
-using AutoMapper;
 using LiteDB;
 using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.Infrastructure.MessageHub;
