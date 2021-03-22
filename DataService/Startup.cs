@@ -1,6 +1,5 @@
 using System.IO;
 using System.Reactive.PlatformServices;
-using AutoMapper;
 using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
@@ -36,6 +35,7 @@ namespace maxbl4.Race.DataService
             services.AddControllers().AddNewtonsoftJson();
             services.AddSignalR().AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +60,15 @@ namespace maxbl4.Race.DataService
             });
 
             app.UseAuthorization();
+            
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "DataService API v1");
+            });
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

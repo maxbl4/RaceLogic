@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LiteDB;
 using maxbl4.Race.DataService.Services;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace maxbl4.Race.DataService.Controllers
 {
@@ -77,9 +78,9 @@ namespace maxbl4.Race.DataService.Controllers
 
         [HttpPost("{collection}/single/{id?}")]
         [HttpPut("{collection}/single/{id?}")]
-        public async Task<IActionResult> SinglePut(string collection, string id = null)
+        public async Task<IActionResult> SinglePut(string collection, [FromBody]JObject body, string id = null)
         {
-            var doc = await DocumentFromRequest();
+            var doc = JsonSerializer.Deserialize(body.ToString()).AsDocument;
             if (!string.IsNullOrEmpty(id)) doc["_id"] = BsonIdUrlEncoder.Decode(id);
             storageService.Upsert(collection, doc);
             return CreatedAtAction("SingleGet", new {collection, id = BsonIdUrlEncoder.Encode(doc["_id"])}, null);
@@ -100,13 +101,6 @@ namespace maxbl4.Race.DataService.Controllers
             if (string.IsNullOrEmpty(where))
                 where = "1 = 1";
             return Ok(storageService.Count(collection, where));
-        }
-
-        private async Task<BsonDocument> DocumentFromRequest()
-        {
-            using var sr = new StreamReader(Request.Body, Encoding.UTF8);
-            var stringBody = await sr.ReadToEndAsync();
-            return JsonSerializer.Deserialize(stringBody).AsDocument;
         }
     }
 }
