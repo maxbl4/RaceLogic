@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { OptionsViewComponent } from './options-view.component';
 
@@ -6,7 +6,7 @@ describe('OptionsViewComponent', () => {
   let component: OptionsViewComponent;
   let fixture: ComponentFixture<OptionsViewComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ OptionsViewComponent ]
     })

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LowRpsViewComponent } from './low-rps-view.component';
 
@@ -6,7 +6,7 @@ describe('LowRpsViewComponent', () => {
   let component: LowRpsViewComponent;
   let fixture: ComponentFixture<LowRpsViewComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ LowRpsViewComponent ]
     })
