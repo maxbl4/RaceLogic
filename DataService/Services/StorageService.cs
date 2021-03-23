@@ -4,6 +4,9 @@ using System.Reactive.PlatformServices;
 using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.Extensions.Options;
 using ServiceBase;
 
@@ -89,8 +92,6 @@ namespace maxbl4.Race.DataService.Services
                     isDefault = false;
                     return 0;
             }
-
-            ;
         }
 
         public static bool TryParseOrder(string order, out (string field, bool desc) result)
@@ -106,6 +107,63 @@ namespace maxbl4.Race.DataService.Services
             else
                 result = (order, false);
             return true;
+        }
+
+        public EventDto GetEvent(Id<EventDto> id)
+        {
+            return repo.Query<EventDto>().Where(x => x.Id == id).FirstOrDefault();
+        }
+        
+        public void DeleteEvent(Id<EventDto> id)
+        {
+            repo.DeleteMany<SessionDto>(x => x.EventId == id);
+            repo.Delete<EventDto>(id);
+        }
+        
+        public bool UpsertEvent(EventDto entity)
+        {
+            return repo.Upsert<EventDto>(entity);
+        }
+        
+        public List<EventDto> ListEvents()
+        {
+            return repo.Query<EventDto>().OrderByDescending(x => x.EndOfRegistration).ToList();
+        }
+
+        public SessionDto GetSession(Id<SessionDto> id)
+        {
+            return repo.Query<SessionDto>().Where(x => x.Id == id).FirstOrDefault();
+        }
+        
+        public void DeleteSession(Id<SessionDto> id)
+        {
+            repo.Delete<SessionDto>(id);
+        }
+        
+        public bool UpsertSession(SessionDto entity)
+        {
+            return repo.Upsert<SessionDto>(entity);
+        }
+        
+        public List<SessionDto> ListSessionsByEvent(Id<EventDto> id)
+        {
+            return repo.Query<SessionDto>().Where(x => x.EventId == id).ToList();
+        }
+    }
+
+    public class StorageCrud<T>
+        where T: IHasId<T>
+    {
+        private readonly LiteRepository repo;
+
+        public StorageCrud(LiteRepository repo)
+        {
+            this.repo = repo;
+        }
+        
+        public T Get(Id<T> id)
+        {
+            return repo.Query<T>().Where(x => x.Id == id).FirstOrDefault();
         }
     }
 }

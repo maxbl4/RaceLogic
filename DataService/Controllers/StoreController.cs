@@ -77,7 +77,7 @@ namespace maxbl4.Race.DataService.Controllers
 
         [HttpPost("{collection}/single/{id?}")]
         [HttpPut("{collection}/single/{id?}")]
-        public async Task<IActionResult> SinglePut(string collection, [FromBody]JObject body, string id = null)
+        public IActionResult SinglePut(string collection, [FromBody]JObject body, string id = null)
         {
             var doc = JsonSerializer.Deserialize(body.ToString()).AsDocument;
             if (!string.IsNullOrEmpty(id)) doc["_id"] = BsonIdUrlEncoder.Decode(id);
