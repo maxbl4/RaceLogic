@@ -1,0 +1,533 @@
+{
+  "x-generator": "NSwag v13.10.8.0 (NJsonSchema v10.3.11.0 (Newtonsoft.Json v12.0.0.0))",
+  "swagger": "2.0",
+  "info": {
+    "title": "My Title",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/data/event/{id}": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_GetEvent",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "format": "guid",
+            "x-nullable": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": false,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/EventDto"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_DeleteEvent",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/IdOfEventDto"
+            },
+            "x-nullable": false
+          },
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "x-nullable": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/data/event": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ListEvents",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": false,
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EventDto"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_UpsertEvent",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EventDto"
+            },
+            "x-nullable": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": false,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/IdOfEventDto"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_UpsertEvent2",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EventDto"
+            },
+            "x-nullable": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": false,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/IdOfEventDto"
+            }
+          }
+        }
+      }
+    },
+    "/store": {
+      "get": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_ShowHelp",
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    },
+    "/store/{collection}/single/{id}": {
+      "get": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_SingleGet",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          },
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_SingleDelete",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          },
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_SinglePut",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {},
+            "x-nullable": false
+          },
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_SinglePut2",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {},
+            "x-nullable": false
+          },
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    },
+    "/store/{collection}/search": {
+      "get": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_Search",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          },
+          {
+            "type": "string",
+            "name": "where",
+            "in": "query",
+            "x-nullable": true
+          },
+          {
+            "type": "string",
+            "name": "order",
+            "in": "query",
+            "x-nullable": true
+          },
+          {
+            "type": "integer",
+            "name": "limit",
+            "in": "query",
+            "format": "int32",
+            "default": 50,
+            "x-nullable": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    },
+    "/store/{collection}/count": {
+      "get": {
+        "tags": [
+          "Store"
+        ],
+        "operationId": "Store_Count",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "x-nullable": true
+          },
+          {
+            "type": "string",
+            "name": "where",
+            "in": "query",
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "EventDto": {
+      "type": "object",
+      "required": [
+        "championshipId",
+        "startOfRegistration",
+        "endOfRegistration",
+        "trackId",
+        "basePrice",
+        "paymentMultiplier",
+        "id",
+        "published",
+        "isSeed",
+        "created",
+        "updated"
+      ],
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "regulations": {
+          "type": "string"
+        },
+        "resultsTemplate": {
+          "type": "string"
+        },
+        "championshipId": {
+          "$ref": "#/definitions/IdOfChampionshipDto"
+        },
+        "startOfRegistration": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endOfRegistration": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "trackId": {
+          "$ref": "#/definitions/IdOfTrackDef"
+        },
+        "basePrice": {
+          "type": "number",
+          "format": "decimal"
+        },
+        "paymentMultiplier": {
+          "type": "number",
+          "format": "decimal"
+        },
+        "id": {
+          "$ref": "#/definitions/IdOfEventDto"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "published": {
+          "type": "boolean"
+        },
+        "isSeed": {
+          "type": "boolean"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "IdOfChampionshipDto": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "format": "guid"
+        }
+      }
+    },
+    "IdOfTrackDef": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "format": "guid"
+        }
+      }
+    },
+    "IdOfEventDto": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "format": "guid"
+        }
+      }
+    }
+  }
+}

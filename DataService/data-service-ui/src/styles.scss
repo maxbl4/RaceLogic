@@ -1,1 +1,66 @@
-/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "~bootstrap/scss/bootstrap";
+@import "~bootstrap-material-design/dist/css/bootstrap-material-design.css";
+@import "~ag-grid-community/dist/styles/ag-grid.css";
+@import "~ag-grid-community/dist/styles/ag-theme-balham.css";
+html, body, app-root { height: 100%; }
+body { padding-top: 67px; }
+@media (max-width: 599px) {
+  body { padding-top: 59px; }
+}
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.fab-menu-button {
+  position:absolute !important; right:1rem; bottom: 1rem; z-index: 1000;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.rotate-0 { }
+.rotate-45 { transform: rotate(45deg); }
+.rotate-90 { transform: rotate(90deg); }
+.rotate-180 { transform: rotate(180deg); }
+.rotate-225 { transform: rotate(225deg); }
+.rotate-270 { transform: rotate(270deg); }
+.rotate-315 { transform: rotate(315deg); }
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(assets/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+  local('MaterialIcons-Regular'),
+  url(assets/MaterialIcons-Regular.woff2) format('woff2'),
+  url(assets/MaterialIcons-Regular.woff) format('woff'),
+  url(assets/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
