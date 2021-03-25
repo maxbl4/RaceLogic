@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using LiteDB;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace maxbl4.Race.DataService.Controllers
 {
@@ -33,8 +35,9 @@ namespace maxbl4.Race.DataService.Controllers
         
         [HttpPost("event")]
         [HttpPut("event")]
-        public Id<EventDto> UpsertEvent([FromBody]EventDto entity)
+        public Guid UpsertEvent(EventDto entity)
         {
+            //var entity = BsonMapper.Global.Deserialize<EventDto>(JsonSerializer.Deserialize(body.ToString()));
             storageService.UpsertEvent(entity);
             return entity.Id;
         }

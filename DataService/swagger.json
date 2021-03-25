@@ -129,7 +129,8 @@
             "x-nullable": false,
             "description": "",
             "schema": {
-              "$ref": "#/definitions/IdOfEventDto"
+              "type": "string",
+              "format": "guid"
             }
           }
         }
@@ -166,7 +167,8 @@
             "x-nullable": false,
             "description": "",
             "schema": {
-              "$ref": "#/definitions/IdOfEventDto"
+              "type": "string",
+              "format": "guid"
             }
           }
         }
@@ -447,7 +449,8 @@
           "type": "string"
         },
         "championshipId": {
-          "$ref": "#/definitions/IdOfChampionshipDto"
+          "type": "string",
+          "format": "guid"
         },
         "startOfRegistration": {
           "type": "string",
@@ -458,7 +461,8 @@
           "format": "date-time"
         },
         "trackId": {
-          "$ref": "#/definitions/IdOfTrackDef"
+          "type": "string",
+          "format": "guid"
         },
         "basePrice": {
           "type": "number",
@@ -469,7 +473,8 @@
           "format": "decimal"
         },
         "id": {
-          "$ref": "#/definitions/IdOfEventDto"
+          "type": "string",
+          "format": "guid"
         },
         "name": {
           "type": "string"
@@ -490,30 +495,6 @@
         "updated": {
           "type": "string",
           "format": "date-time"
-        }
-      }
-    },
-    "IdOfChampionshipDto": {
-      "type": "object",
-      "required": [
-        "value"
-      ],
-      "properties": {
-        "value": {
-          "type": "string",
-          "format": "guid"
-        }
-      }
-    },
-    "IdOfTrackDef": {
-      "type": "object",
-      "required": [
-        "value"
-      ],
-      "properties": {
-        "value": {
-          "type": "string",
-          "format": "guid"
         }
       }
     },

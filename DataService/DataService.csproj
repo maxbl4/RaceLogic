@@ -29,6 +29,7 @@
 
     <ItemGroup>
       <Folder Include="data-service-ui\src\app\service" />
+      <Folder Include="var\data" />
     </ItemGroup>
 
     <Target Name="NSwag" AfterTargets="Build">

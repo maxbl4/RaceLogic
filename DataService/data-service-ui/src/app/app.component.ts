@@ -13,13 +13,15 @@ import {DataClient, EventDto} from "./service/data-service-client";
     </div>
     <table class="table table-bordered">
       <tr *ngFor="let e of events">
-        <td>{{e.id?.value}}</td>
+        <td>{{e.id}}</td>
         <td>{{e.date}}</td>
         <td>{{e.name}}</td>
+        <td>{{e.championshipId}}</td>
         <td>{{e.startOfRegistration}}</td>
         <td>{{e.endOfRegistration}}</td>
       </tr>
     </table>
+    <button class="btn btn-primary" (click)="addEvent()">Add</button>
     <router-outlet></router-outlet>
   `,
   styles: []
@@ -28,9 +30,23 @@ export class AppComponent {
   title = 'data-service-ui';
   events: EventDto[] = [];
   constructor(private dataClient: DataClient) {
-    dataClient.listEvents().subscribe(e => {
+    this.loadEvents();
+  }
+
+  loadEvents() {
+    this.dataClient.listEvents().subscribe(e => {
       this.events = e;
       console.log(e);
+    });
+  }
+
+  addEvent() {
+    let ev = new EventDto();
+    ev.name = "some";
+    ev.championshipId = "E955EF71-C883-477F-8DC5-CB44E8A09283";
+    this.dataClient.upsertEvent(ev).subscribe(x => {
+      console.log(x);
+      this.loadEvents();
     });
   }
 }

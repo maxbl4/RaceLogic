@@ -183,7 +183,7 @@ export class DataClient {
         return _observableOf<EventDto[]>(<any>null);
     }
 
-    upsertEvent(entity: EventDto): Observable<IdOfEventDto> {
+    upsertEvent(entity: EventDto): Observable<string> {
         let url_ = this.baseUrl + "/data/event";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -206,14 +206,14 @@ export class DataClient {
                 try {
                     return this.processUpsertEvent(<any>response_);
                 } catch (e) {
-                    return <Observable<IdOfEventDto>><any>_observableThrow(e);
+                    return <Observable<string>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<IdOfEventDto>><any>_observableThrow(response_);
+                return <Observable<string>><any>_observableThrow(response_);
         }));
     }
 
-    protected processUpsertEvent(response: HttpResponseBase): Observable<IdOfEventDto> {
+    protected processUpsertEvent(response: HttpResponseBase): Observable<string> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -224,7 +224,7 @@ export class DataClient {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = IdOfEventDto.fromJS(resultData200);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -232,10 +232,10 @@ export class DataClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<IdOfEventDto>(<any>null);
+        return _observableOf<string>(<any>null);
     }
 
-    upsertEvent2(entity: EventDto): Observable<IdOfEventDto> {
+    upsertEvent2(entity: EventDto): Observable<string> {
         let url_ = this.baseUrl + "/data/event";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -258,14 +258,14 @@ export class DataClient {
                 try {
                     return this.processUpsertEvent2(<any>response_);
                 } catch (e) {
-                    return <Observable<IdOfEventDto>><any>_observableThrow(e);
+                    return <Observable<string>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<IdOfEventDto>><any>_observableThrow(response_);
+                return <Observable<string>><any>_observableThrow(response_);
         }));
     }
 
-    protected processUpsertEvent2(response: HttpResponseBase): Observable<IdOfEventDto> {
+    protected processUpsertEvent2(response: HttpResponseBase): Observable<string> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -276,7 +276,7 @@ export class DataClient {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = IdOfEventDto.fromJS(resultData200);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -284,7 +284,7 @@ export class DataClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<IdOfEventDto>(<any>null);
+        return _observableOf<string>(<any>null);
     }
 }
 
@@ -676,13 +676,13 @@ export class EventDto implements IEventDto {
     date?: string | undefined;
     regulations?: string | undefined;
     resultsTemplate?: string | undefined;
-    championshipId!: IdOfChampionshipDto;
+    championshipId!: string;
     startOfRegistration!: moment.Moment;
     endOfRegistration!: moment.Moment;
-    trackId!: IdOfTrackDef;
+    trackId!: string;
     basePrice!: number;
     paymentMultiplier!: number;
-    id!: IdOfEventDto;
+    id!: string;
     name?: string | undefined;
     description?: string | undefined;
     published!: boolean;
@@ -697,11 +697,6 @@ export class EventDto implements IEventDto {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
-        if (!data) {
-            this.championshipId = new IdOfChampionshipDto();
-            this.trackId = new IdOfTrackDef();
-            this.id = new IdOfEventDto();
-        }
     }
 
     init(_data?: any) {
@@ -709,13 +704,13 @@ export class EventDto implements IEventDto {
             this.date = _data["date"];
             this.regulations = _data["regulations"];
             this.resultsTemplate = _data["resultsTemplate"];
-            this.championshipId = _data["championshipId"] ? IdOfChampionshipDto.fromJS(_data["championshipId"]) : new IdOfChampionshipDto();
+            this.championshipId = _data["championshipId"];
             this.startOfRegistration = _data["startOfRegistration"] ? moment(_data["startOfRegistration"].toString()) : <any>undefined;
             this.endOfRegistration = _data["endOfRegistration"] ? moment(_data["endOfRegistration"].toString()) : <any>undefined;
-            this.trackId = _data["trackId"] ? IdOfTrackDef.fromJS(_data["trackId"]) : new IdOfTrackDef();
+            this.trackId = _data["trackId"];
             this.basePrice = _data["basePrice"];
             this.paymentMultiplier = _data["paymentMultiplier"];
-            this.id = _data["id"] ? IdOfEventDto.fromJS(_data["id"]) : new IdOfEventDto();
+            this.id = _data["id"];
             this.name = _data["name"];
             this.description = _data["description"];
             this.published = _data["published"];
@@ -737,13 +732,13 @@ export class EventDto implements IEventDto {
         data["date"] = this.date;
         data["regulations"] = this.regulations;
         data["resultsTemplate"] = this.resultsTemplate;
-        data["championshipId"] = this.championshipId ? this.championshipId.toJSON() : <any>undefined;
+        data["championshipId"] = this.championshipId;
         data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toISOString() : <any>undefined;
         data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toISOString() : <any>undefined;
-        data["trackId"] = this.trackId ? this.trackId.toJSON() : <any>undefined;
+        data["trackId"] = this.trackId;
         data["basePrice"] = this.basePrice;
         data["paymentMultiplier"] = this.paymentMultiplier;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
+        data["id"] = this.id;
         data["name"] = this.name;
         data["description"] = this.description;
         data["published"] = this.published;
@@ -758,91 +753,19 @@ export interface IEventDto {
     date?: string | undefined;
     regulations?: string | undefined;
     resultsTemplate?: string | undefined;
-    championshipId: IdOfChampionshipDto;
+    championshipId: string;
     startOfRegistration: moment.Moment;
     endOfRegistration: moment.Moment;
-    trackId: IdOfTrackDef;
+    trackId: string;
     basePrice: number;
     paymentMultiplier: number;
-    id: IdOfEventDto;
+    id: string;
     name?: string | undefined;
     description?: string | undefined;
     published: boolean;
     isSeed: boolean;
     created: moment.Moment;
     updated: moment.Moment;
-}
-
-export class IdOfChampionshipDto implements IIdOfChampionshipDto {
-    value!: string;
-
-    constructor(data?: IIdOfChampionshipDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.value = _data["value"];
-        }
-    }
-
-    static fromJS(data: any): IdOfChampionshipDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new IdOfChampionshipDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["value"] = this.value;
-        return data; 
-    }
-}
-
-export interface IIdOfChampionshipDto {
-    value: string;
-}
-
-export class IdOfTrackDef implements IIdOfTrackDef {
-    value!: string;
-
-    constructor(data?: IIdOfTrackDef) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.value = _data["value"];
-        }
-    }
-
-    static fromJS(data: any): IdOfTrackDef {
-        data = typeof data === 'object' ? data : {};
-        let result = new IdOfTrackDef();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["value"] = this.value;
-        return data; 
-    }
-}
-
-export interface IIdOfTrackDef {
-    value: string;
 }
 
 export class IdOfEventDto implements IIdOfEventDto {
