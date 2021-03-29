@@ -80,21 +80,17 @@ export class DataClient {
         return _observableOf<EventDto>(<any>null);
     }
 
-    deleteEvent(idBody: IdOfEventDto, idPath: string): Observable<void> {
+    deleteEvent(id: string): Observable<void> {
         let url_ = this.baseUrl + "/data/event/{id}";
-        if (idPath === undefined || idPath === null)
-            throw new Error("The parameter 'idPath' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + idPath));
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(idBody);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
             })
         };
 
@@ -766,42 +762,6 @@ export interface IEventDto {
     isSeed: boolean;
     created: moment.Moment;
     updated: moment.Moment;
-}
-
-export class IdOfEventDto implements IIdOfEventDto {
-    value!: string;
-
-    constructor(data?: IIdOfEventDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.value = _data["value"];
-        }
-    }
-
-    static fromJS(data: any): IdOfEventDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new IdOfEventDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["value"] = this.value;
-        return data; 
-    }
-}
-
-export interface IIdOfEventDto {
-    value: string;
 }
 
 export interface FileResponse {

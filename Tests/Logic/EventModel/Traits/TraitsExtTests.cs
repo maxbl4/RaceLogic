@@ -13,11 +13,11 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Traits
         public async Task Should_apply_traits()
         {
             var series = new SeriesDto();
-            series.Id.Value.Should().BeEmpty();
+            series.Id.Should().BeEmpty();
             series.Created.Should().Be(default);
             series.Updated.Should().Be(default);
             series.ApplyTraits();
-            series.Id.Value.Should().NotBeEmpty();
+            series.Id.Should().NotBeEmpty();
             series.Created.Should().BeCloseTo(DateTime.UtcNow);
             series.Updated.Should().BeCloseTo(DateTime.UtcNow);
             var id = series.Id;

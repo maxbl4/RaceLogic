@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using LiteDB;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using SequentialGuid;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
 {
@@ -12,8 +13,8 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
             where T : IHasTraits
         {
             if (obj is IHasId<T> hasIdentifiers)
-                if (hasIdentifiers.Id == Id<T>.Empty)
-                    hasIdentifiers.Id = Id<T>.NewId();
+                if (hasIdentifiers.Id == Guid.Empty)
+                    hasIdentifiers.Id = SequentialGuidGenerator.Instance.NewGuid();
 
             if (obj is IHasTimestamp timestamp)
             {

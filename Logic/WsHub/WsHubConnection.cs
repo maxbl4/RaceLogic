@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Race.Logic.CheckpointService.Client;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.WsHub.Messages;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,11 +21,11 @@ namespace maxbl4.Race.Logic.WsHub
     {
         private readonly CompositeDisposable disposable = new();
 
-        private readonly ConcurrentDictionary<Id<Message>, DateTime> lastSeenMessageIds = new();
+        private readonly ConcurrentDictionary<Guid, DateTime> lastSeenMessageIds = new();
         private readonly ILogger logger = Log.ForContext<WsHubConnection>();
         private readonly WsHubClientOptions options;
 
-        private readonly ConcurrentDictionary<Id<Message>, TaskCompletionSource<Message>>
+        private readonly ConcurrentDictionary<Guid, TaskCompletionSource<Message>>
             outstandingClientRequests = new();
 
         private readonly ISystemClock systemClock;
@@ -193,7 +192,7 @@ namespace maxbl4.Race.Logic.WsHub
             RequestHandlers[typeof(T)] = msg => handler((T) msg);
         }
 
-        public IEnumerable<Id<Message>> GetOutstandingRequestIds()
+        public IEnumerable<Guid> GetOutstandingRequestIds()
         {
             return outstandingClientRequests.Keys.ToList();
         }

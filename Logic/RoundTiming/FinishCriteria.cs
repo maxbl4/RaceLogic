@@ -50,7 +50,7 @@ namespace maxbl4.Race.Logic.RoundTiming
             }
 
             if (!leader.Finished) return false;
-            return current.EndSequence > leader.EndSequence;
+            return current.EndSequence.CompareTo(leader.EndSequence) > 0;
         }
 
         public static FinishCriteria FromDuration(TimeSpan duration, int lapsAfterDuration = 0)

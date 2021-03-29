@@ -6,9 +6,9 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LiteDB;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Tests.Extensions;
+using SequentialGuid;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -289,7 +289,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
             public string Some3 { get; set; }
             public int Int { get; set; }
 
-            public Id<EntityWithId> Id { get; set; } = Id<EntityWithId>.NewId();
+            public Guid Id { get; set; } = SequentialGuidGenerator.Instance.NewGuid();
 
             protected bool Equals(EntityWithId other)
             {

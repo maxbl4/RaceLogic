@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using maxbl4.Race.Logic.AutoMapper;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -86,7 +85,7 @@ namespace maxbl4.Race.Logic.LogManagement
         public static IEnumerable<CheckpointDto> FlattenCheckpointLog<T>(IEnumerable<T> logEntries)
             where T : IHasId<T>
         {
-            var drops = new HashSet<Id<CheckpointDto>>(logEntries.OfType<DropCheckpointDto>().Select(x => x.TargetId));
+            var drops = new HashSet<Guid>(logEntries.OfType<DropCheckpointDto>().Select(x => x.TargetId));
             var inserts = logEntries.OfType<InsertCheckpointDto>().Where(x => !drops.Contains(x.Id))
                 .OrderBy(x => x.Timestamp)
                 .ToList();

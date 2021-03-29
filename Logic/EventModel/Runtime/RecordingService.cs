@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
@@ -46,7 +45,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         /// </summary>
         /// <param name="recordingSessionId"></param>
         /// <returns></returns>
-        public async Task<RecordingSession> ContinueRecordingSession(Id<RecordingSessionDto> recordingSessionId)
+        public async Task<RecordingSession> ContinueRecordingSession(Guid recordingSessionId)
         {
             if (actionSession != null && actionSession.SessionId == recordingSessionId)
                 return actionSession;
@@ -68,7 +67,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             SessionId = dto.Id;
         }
 
-        public Id<RecordingSessionDto> SessionId { get; }
+        public Guid SessionId { get; }
 
         public ValueTask DisposeAsync()
         {
@@ -106,7 +105,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     public interface IRecordingServiceStorage
     {
         Task<RecordingSessionDto> GetActiveSession();
-        Task<RecordingSessionDto> GetSession(Id<RecordingSessionDto> sessionId);
+        Task<RecordingSessionDto> GetSession(Guid sessionId);
         Task<string> GetCheckpointServiceAddress();
         Task SaveSession(RecordingSessionDto dto);
     }

@@ -6,7 +6,6 @@ using System.Threading;
 using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.RoundTiming;
@@ -28,7 +27,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public RecordingSessionDto ActiveRecordingSession { get; private set; }
         public TimingSession ActiveTimingSession { get; private set; }
 
-        public TimingSession StartSession(Id<SessionDto> sessionDtoId, string name)
+        public TimingSession StartSession(Guid sessionDtoId, string name)
         {
             var recordingSessionDto = ActiveRecordingSession = new RecordingSessionDto
                 {Name = name, SessionId = sessionDtoId};
@@ -36,10 +35,10 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             return ActiveTimingSession = CreateTimingSession(recordingSessionDto);
         }
 
-        public TimingSession ResumeSession(Id<RecordingSessionDto> recordingSessionId)
+        public TimingSession ResumeSession(Guid recordingSessionId)
         {
             using var s = sync.UseOnce();
-            var recordingSessionDto = ActiveRecordingSession = eventRepository.GetRawDtoById(recordingSessionId);
+            var recordingSessionDto = ActiveRecordingSession = eventRepository.GetRawDtoById<RecordingSessionDto>(recordingSessionId);
             return ActiveTimingSession = CreateTimingSession(recordingSessionDto);
         }
 
@@ -64,22 +63,22 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             return timingSession;
         }
 
-        private TimingSessionStaticData LoadTimingSessionStaticData(Id<SessionDto> sessionId)
+        private TimingSessionStaticData LoadTimingSessionStaticData(Guid sessionId)
         {
-            var session = eventRepository.GetRawDtoById(sessionId);
+            var session = eventRepository.GetRawDtoById<SessionDto>(sessionId);
             return new TimingSessionStaticData
             {
                 SessionDefinition = session,
                 MinLap = session.MinLap,
-                FinishCriteria = new FinishCriteria(eventRepository.GetRawDtoById(session.FinishCriteriaId)),
+                FinishCriteria = new FinishCriteria(eventRepository.GetRawDtoById<FinishCriteriaDto>(session.FinishCriteriaId)),
                 RiderIdMap = LoadRiderIdMap(sessionId)
             };
         }
 
-        private ConcurrentDictionary<string, List<Id<RiderProfileDto>>> LoadRiderIdMap(Id<SessionDto> sessionId)
+        private ConcurrentDictionary<string, List<Guid>> LoadRiderIdMap(Guid sessionId)
         {
-            var riderIdentifiers = eventRepository.GetRiderIdentifiers(sessionId);
-            var riderIdMap = new ConcurrentDictionary<string, List<Id<RiderProfileDto>>>();
+            var riderIdentifiers = eventRepository.GetRiderIdentifiersBySession(sessionId);
+            var riderIdMap = new ConcurrentDictionary<string, List<Guid>>();
             foreach (var idGroup in riderIdentifiers.GroupBy(x => x.Identifier))
                 riderIdMap[idGroup.Key] = idGroup.Select(x => x.RiderProfileId).ToList();
             return riderIdMap;
@@ -91,6 +90,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public SessionDto SessionDefinition { get; set; }
         public IFinishCriteria FinishCriteria { get; set; }
         public TimeSpan MinLap { get; set; }
-        public ConcurrentDictionary<string, List<Id<RiderProfileDto>>> RiderIdMap { get; set; }
+        public ConcurrentDictionary<string, List<Guid>> RiderIdMap { get; set; }
     }
 }

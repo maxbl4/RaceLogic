@@ -4,7 +4,6 @@ using System.Reactive.PlatformServices;
 using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.Extensions.Options;
@@ -114,7 +113,7 @@ namespace maxbl4.Race.DataService.Services
             return repo.Query<EventDto>().Where(x => x.Id == id).FirstOrDefault();
         }
         
-        public void DeleteEvent(Id<EventDto> id)
+        public void DeleteEvent(Guid id)
         {
             repo.DeleteMany<SessionDto>(x => x.EventId == id);
             repo.Delete<EventDto>(id);
@@ -130,12 +129,12 @@ namespace maxbl4.Race.DataService.Services
             return repo.Query<EventDto>().OrderByDescending(x => x.EndOfRegistration).ToList();
         }
 
-        public SessionDto GetSession(Id<SessionDto> id)
+        public SessionDto GetSession(Guid id)
         {
             return repo.Query<SessionDto>().Where(x => x.Id == id).FirstOrDefault();
         }
         
-        public void DeleteSession(Id<SessionDto> id)
+        public void DeleteSession(Guid id)
         {
             repo.Delete<SessionDto>(id);
         }
@@ -145,7 +144,7 @@ namespace maxbl4.Race.DataService.Services
             return repo.Upsert<SessionDto>(entity);
         }
         
-        public List<SessionDto> ListSessionsByEvent(Id<EventDto> id)
+        public List<SessionDto> ListSessionsByEvent(Guid id)
         {
             return repo.Query<SessionDto>().Where(x => x.EventId == id).ToList();
         }
@@ -161,7 +160,7 @@ namespace maxbl4.Race.DataService.Services
             this.repo = repo;
         }
         
-        public T Get(Id<T> id)
+        public T Get(Guid id)
         {
             return repo.Query<T>().Where(x => x.Id == id).FirstOrDefault();
         }

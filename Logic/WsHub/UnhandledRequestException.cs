@@ -1,6 +1,4 @@
 using System;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.WsHub.Messages;
 
 namespace maxbl4.Race.Logic.WsHub
 {
@@ -14,7 +12,7 @@ namespace maxbl4.Race.Logic.WsHub
 
     public class DuplicateRequestException : Exception
     {
-        public DuplicateRequestException(Id<Message> messageId) : base(
+        public DuplicateRequestException(Guid messageId) : base(
             $"Request with id {messageId} is already executing", null)
         {
         }

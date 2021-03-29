@@ -7,7 +7,6 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
 using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
@@ -97,7 +96,7 @@ namespace maxbl4.Race.CheckpointService.Services
             repo.Insert(cp);
         }
 
-        public int DeleteCheckpoint(Id<Checkpoint> id)
+        public int DeleteCheckpoint(Guid id)
         {
             return repo.Delete<Checkpoint>(id) ? 1 : 0;
         }

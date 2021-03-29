@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using Newtonsoft.Json;
 using Xunit;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -33,9 +32,9 @@ namespace maxbl4.Race.Tests.CheckpointService
             var result = JsonConvert.DeserializeObject<List<Checkpoint>>(str);
             result.Count.Should().Be(2);
             result[0].RiderId.Should().Be("stored1");
-            result[0].Id.Should().Be(new Id<Checkpoint>(new Guid("08d79b60-0191-f7da-9d44-2371e4be9b71")));
+            result[0].Id.Should().Be(new Guid("08d79b60-0191-f7da-9d44-2371e4be9b71"));
             result[0].Timestamp.Should().Be(new DateTime(2019, 11, 04, 18, 37, 34, 773, DateTimeKind.Utc));
-            result[1].Id.Value.Should().BeEmpty();
+            result[1].Id.Should().BeEmpty();
         }
     }
 }

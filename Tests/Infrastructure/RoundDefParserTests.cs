@@ -169,8 +169,8 @@ F13 L1 [4     ]");
             pos.Started.Should().BeTrue();
             pos.Finished.Should().BeTrue();
             pos.LapCount.Should().Be(2);
-            pos.StartSequence.Value.Should().NotBeEmpty();
-            pos.EndSequence.Should().BeGreaterThan(pos.StartSequence.Value);
+            pos.StartSequence.Should().NotBeEmpty();
+            pos.EndSequence.CompareTo(pos.StartSequence).Should().BePositive();
         }
 
         [Fact]

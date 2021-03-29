@@ -1,5 +1,4 @@
 ﻿using System;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage.Model
@@ -7,9 +6,9 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
     public class RiderDisqualificationDto : IHasId<RiderDisqualificationDto>, IHasTimestamp, IHasSeed
     {
         public string Reason { get; set; }
-        public Id<RegistrationDto> RegistrationId { get; set; }
-        public Id<SessionDto> SessionId { get; set; }
-        public Id<RiderDisqualificationDto> Id { get; set; }
+        public Guid RegistrationId { get; set; }
+        public Guid SessionId { get; set; }
+        public Guid Id { get; set; }
         public bool IsSeed { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }

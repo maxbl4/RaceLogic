@@ -42,27 +42,13 @@
           "Data"
         ],
         "operationId": "Data_DeleteEvent",
-        "consumes": [
-          "application/json-patch+json",
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/IdOfEventDto"
-            },
-            "x-nullable": false
-          },
           {
             "type": "string",
             "name": "id",
             "in": "path",
             "required": true,
+            "format": "guid",
             "x-nullable": false
           }
         ],
@@ -495,18 +481,6 @@
         "updated": {
           "type": "string",
           "format": "date-time"
-        }
-      }
-    },
-    "IdOfEventDto": {
-      "type": "object",
-      "required": [
-        "value"
-      ],
-      "properties": {
-        "value": {
-          "type": "string",
-          "format": "guid"
         }
       }
     }

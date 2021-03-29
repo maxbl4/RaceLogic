@@ -1,6 +1,6 @@
 using System;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using SequentialGuid;
 
 namespace maxbl4.Race.Logic.WsHub.Subscriptions.Storage
 {
@@ -9,6 +9,6 @@ namespace maxbl4.Race.Logic.WsHub.Subscriptions.Storage
         public string SenderId { get; set; }
         public DateTime FromTimestamp { get; set; }
         public DateTime SubscriptionExpiration { get; set; }
-        public Id<SubscriptionDto> Id { get; set; } = Id<SubscriptionDto>.NewId();
+        public Guid Id { get; set; } = SequentialGuidGenerator.Instance.NewGuid();
     }
 }

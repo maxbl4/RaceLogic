@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using maxbl4.Infrastructure.Extensions.DateTimeExt;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using SequentialGuid;
 
 namespace maxbl4.Race.Logic.Checkpoints
 {
@@ -32,7 +32,7 @@ namespace maxbl4.Race.Logic.Checkpoints
         public bool Aggregated { get; set; }
         public bool IsManual { get; set; }
         public int Rps { get; set; }
-        public Id<Checkpoint> Id { get; set; } = Id<Checkpoint>.NewId();
+        public Guid Id { get; set; } = SequentialGuidGenerator.Instance.NewGuid();
 
         public override string ToString()
         {

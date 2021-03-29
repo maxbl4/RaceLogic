@@ -7,7 +7,6 @@ using maxbl4.Infrastructure.Extensions.HttpClientExt;
 using maxbl4.Infrastructure.Extensions.HttpContentExt;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService.Model;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -45,7 +44,7 @@ namespace maxbl4.Race.Logic.CheckpointService.Client
                 .EnsureSuccessStatusCode();
         }
 
-        public async Task<int> DeleteCheckpoint(Id<Checkpoint> id)
+        public async Task<int> DeleteCheckpoint(Guid id)
         {
             var response = await http.DeleteAsync($"{address}cp/{id}");
             response.EnsureSuccessStatusCode();

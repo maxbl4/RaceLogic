@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using LiteDB;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
@@ -18,7 +17,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             this.repo = repo;
         }
 
-        public T GetRawDtoById<T>(Id<T> id)
+        public T GetRawDtoById<T>(Guid id)
             where T : IHasId<T>
         {
             return repo.FirstOrDefault<T>(x => x.Id == id);
@@ -48,21 +47,21 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return query.ToList();
         }
 
-        public Id<T> Save<T>(T recordingSession) where T : IHasId<T>
+        public Guid Save<T>(T recordingSession) where T : IHasId<T>
         {
             repo.Upsert(recordingSession.ApplyTraits());
             return recordingSession.Id;
         }
 
-        public IEnumerable<RegistrationDto> GetRegistrations(Id<ClassDto> classId, Id<EventDto> eventId)
+        public IEnumerable<RegistrationDto> GetRegistrations(Guid classId, Guid eventId)
         {
             return repo.Query<RegistrationDto>().Where(x => x.ClassId == classId && x.EventId == eventId)
                 .ToEnumerable();
         }
 
-        public List<RegistrationDto> GetRegistrations(Id<SessionDto> sessionId)
+        public List<RegistrationDto> GetRegistrations(Guid sessionId)
         {
-            var session = GetRawDtoById(sessionId);
+            var session = GetRawDtoById<SessionDto>(sessionId);
             if (session == null) return new List<RegistrationDto>();
             return session.ClassIds.Select(classId =>
                     GetRegistrations(classId, session.EventId))
@@ -70,13 +69,13 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
                 .ToList();
         }
 
-        public List<RiderIdentifierDto> GetRiderIdentifiers(Id<SessionDto> sessionId)
+        public List<RiderIdentifierDto> GetRiderIdentifiersBySession(Guid sessionId)
         {
-            return GetRegistrations(sessionId).Select(x => GetRiderIdentifiers(x.RiderProfileId))
+            return GetRegistrations(sessionId).Select(x => GetRiderIdentifiersByRiderProfile(x.RiderProfileId))
                 .SelectMany(x => x).ToList();
         }
 
-        public IEnumerable<RiderIdentifierDto> GetRiderIdentifiers(Id<RiderProfileDto> riderProfileId)
+        public IEnumerable<RiderIdentifierDto> GetRiderIdentifiersByRiderProfile(Guid riderProfileId)
         {
             return repo.Query<RiderIdentifierDto>().Where(x => x.RiderProfileId == riderProfileId).ToEnumerable();
         }

@@ -2,11 +2,11 @@
 using System.Linq;
 using FluentAssertions;
 using LiteDB;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Tests.Extensions;
 using Newtonsoft.Json;
+using SequentialGuid;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,16 +29,16 @@ namespace maxbl4.Race.Tests.Infrastructure
             Guid guid2 = rider.Id;
             guid1.Should().Be(guid2);
             rider.Id.Should().Be(guid1);
-            var @class = new Class {Id = Id<Class>.NewId()};
-            @class.Id.Value.Should().NotBe(Guid.Empty);
+            var @class = new Class {Id = SequentialGuidGenerator.Instance.NewGuid()};
+            @class.Id.Should().NotBe(Guid.Empty);
         }
 
         [Fact]
         public void Should_serialize_and_deserialize_to_litedb()
         {
             using var repo = new LiteRepository(dbFileName).WithUtcDate();
-            var cls = new Class {Id = Id<Class>.NewId(), Name = "Class1"};
-            var rider = new Rider {Id = Id<Rider>.NewId(), Name = "Rider1", ClassId = cls.Id};
+            var cls = new Class {Id = SequentialGuidGenerator.Instance.NewGuid(), Name = "Class1"};
+            var rider = new Rider {Id = SequentialGuidGenerator.Instance.NewGuid(), Name = "Rider1", ClassId = cls.Id};
             repo.Insert(cls);
             repo.Upsert(rider);
             repo.Upsert(rider);
@@ -62,7 +62,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         [Fact]
         public void Should_use_custom_id_serializer()
         {
-            BsonMapper.Global.RegisterType(x => x.Value.ToString("N"), x => new Id<Rider>(Guid.Parse(x)));
+            BsonMapper.Global.RegisterType(x => x.ToString("N"), x => Guid.Parse(x));
             using var repo = new LiteRepository(dbFileName).WithUtcDate();
             repo.Insert(new Rider {Name = "Rider1"});
             repo.Insert(new Rider {Name = "Rider2"});
@@ -102,11 +102,11 @@ namespace maxbl4.Race.Tests.Infrastructure
         [Fact]
         public void New_ids_should_be_sequential()
         {
-            var id = Id<Rider>.Empty;
+            var id = Guid.Empty;
             for (var i = 0; i < 100; i++)
             {
-                var next = Id<Rider>.NewId();
-                next.Should().BeGreaterThan(id);
+                var next = SequentialGuidGenerator.Instance.NewGuid();
+                next.CompareTo(id).Should().BePositive();
                 id = next;
             }
         }
@@ -114,14 +114,14 @@ namespace maxbl4.Race.Tests.Infrastructure
         private class Rider : IHasId<Rider>
         {
             public string Name { get; set; }
-            public Id<Class> ClassId { get; set; }
-            public Id<Rider> Id { get; set; } = Id<Rider>.NewId();
+            public Guid ClassId { get; set; }
+            public Guid Id { get; set; } = SequentialGuidGenerator.Instance.NewGuid();
         }
 
         private class Class : IHasId<Class>
         {
             public string Name { get; set; }
-            public Id<Class> Id { get; set; }
+            public Guid Id { get; set; }
         }
     }
 }

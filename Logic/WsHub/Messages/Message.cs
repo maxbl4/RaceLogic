@@ -1,12 +1,12 @@
 using System;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using Newtonsoft.Json.Linq;
+using SequentialGuid;
 
 namespace maxbl4.Race.Logic.WsHub.Messages
 {
     public interface IMessage
     {
-        Id<Message> MessageId { get; set; }
+        Guid MessageId { get; set; }
         string SenderId { get; set; }
         MessageTarget Target { get; set; }
         string MessageType { get; set; }
@@ -19,7 +19,7 @@ namespace maxbl4.Race.Logic.WsHub.Messages
             MessageType = GetType().FullName;
         }
 
-        public Id<Message> MessageId { get; set; } = Id<Message>.NewId();
+        public Guid MessageId { get; set; } = SequentialGuidGenerator.Instance.NewGuid();
         public string SenderId { get; set; }
         public MessageTarget Target { get; set; }
         public string MessageType { get; set; }

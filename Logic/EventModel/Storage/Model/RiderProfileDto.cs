@@ -1,5 +1,4 @@
 ﻿using System;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage.Model
@@ -15,7 +14,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
         public bool IsActive { get; set; }
         public bool IdentityConfirmed { get; set; }
         public DateTime IdentityConfirmedDate { get; set; }
-        public Id<RiderProfileDto> Id { get; set; }
+        public Guid Id { get; set; }
 
         public string FirstName { get; set; }
         public string ParentName { get; set; }
