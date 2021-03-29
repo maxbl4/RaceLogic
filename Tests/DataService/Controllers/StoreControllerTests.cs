@@ -56,7 +56,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
 
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Headers.Location.Should()
-                .Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9d"));
+                .Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
             (await http.GetBsonAsync<EntityWithId>(response.Headers.Location)).Should().Be(e);
 
             e.Some = "eee";
@@ -64,7 +64,7 @@ namespace maxbl4.Race.Tests.DataService.Controllers
 
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Headers.Location.Should()
-                .Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9d"));
+                .Be(new Uri($"{svc.ListenUri}/store/Entity/single/d390c9533f5545588c0b77fbae798c9dg"));
             (await http.GetBsonAsync<EntityWithId>(response.Headers.Location)).Should().Be(e);
         }
 

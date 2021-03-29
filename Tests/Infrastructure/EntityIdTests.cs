@@ -82,8 +82,8 @@ namespace maxbl4.Race.Tests.Infrastructure
             repo.Insert(new Rider {Name = "Rider2"});
             repo.Query<Rider>().Count().Should().Be(2);
             var rider = repo.Database.GetCollection("Rider").FindAll().First();
-            rider["_id"].Type.Should().Be(BsonType.String);
-            Guid.Parse(rider["_id"]).Should().NotBeEmpty();
+            rider["_id"].Type.Should().Be(BsonType.Guid);
+            rider["_id"].AsGuid.Should().NotBeEmpty();
             repo.Query<Rider>().Where(x => x.Id == r1.Id).First().Should().NotBeNull();
             repo.Delete<Rider>(r1.Id).Should().BeTrue();
         }
@@ -95,7 +95,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             var rider = new Rider {Id = id, Name = "Rider1"};
             JsonConvert.SerializeObject(rider).Should()
                 .Be(
-                    @"{'Name':'Rider1','ClassId':'00000000000000000000000000000000','Id':'cbc9da11e6214d6196a7fb6ba9ddcba4'}"
+                    @"{'Name':'Rider1','ClassId':'00000000-0000-0000-0000-000000000000','Id':'cbc9da11-e621-4d61-96a7-fb6ba9ddcba4'}"
                         .Replace('\'', '"'));
         }
 

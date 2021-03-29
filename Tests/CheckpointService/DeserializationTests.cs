@@ -11,7 +11,7 @@ namespace maxbl4.Race.Tests.CheckpointService
     public class DeserializationTests
     {
         private readonly string str =
-            @"[{'timestamp':'2019-11-04T18:37:34.773Z','riderId':'stored1','id':'08d79b60-0191-f7da-9d44-2371e4be9b71'},{'timestamp':'2019-11-04T18:39:14.773Z','riderId':'stored2', 'id':'sdfsdf'}]"
+            @"[{'timestamp':'2019-11-04T18:37:34.773Z','riderId':'stored1','id':'08d79b60-0191-f7da-9d44-2371e4be9b71'},{'timestamp':'2019-11-04T18:39:14.773Z','riderId':'stored2', 'id':'00000000-0000-0000-0000-000000000000'}]"
                 .Replace('\'', '"');
 
         [Fact]
