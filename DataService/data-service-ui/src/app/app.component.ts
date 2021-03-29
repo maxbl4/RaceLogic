@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {DataClient, EventDto} from "./service/data-service-client";
+import {DataClient, EventDto, IdOfEventDto} from "./service/data-service-client";
 
 @Component({
   selector: 'app-root',
@@ -22,6 +22,7 @@ import {DataClient, EventDto} from "./service/data-service-client";
       </tr>
     </table>
     <button class="btn btn-primary" (click)="addEvent()">Add</button>
+    <button class="btn btn-primary" (click)="deleteEvent()">Delete</button>
     <router-outlet></router-outlet>
   `,
   styles: []
@@ -48,5 +49,9 @@ export class AppComponent {
       console.log(x);
       this.loadEvents();
     });
+  }
+
+  deleteEvent() {
+    this.dataClient.deleteEvent(new IdOfEventDto({value:"E955EF71-C883-477F-8DC5-CB44E8A09283"})).subscribe();
   }
 }
