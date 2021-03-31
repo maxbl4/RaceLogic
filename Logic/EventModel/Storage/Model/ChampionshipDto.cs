@@ -4,9 +4,9 @@ using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage.Model
 {
-    public class ChampionshipDto : IHasName, IHasTimestamp, IHasSeed, IHasPublished
+    public class ChampionshipDto : IHasId<ChampionshipDto>, IHasName, IHasTimestamp, IHasSeed, IHasPublished
     {
-        public Guid SeriesId { get; set; }
+        public Id<SeriesDto> SeriesId { get; set; }
         public Id<ChampionshipDto> Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

@@ -48,7 +48,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/IdOfEventDto"
+              "type": "string",
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -90,7 +91,8 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/IdOfEventDto"
+              "type": "string",
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -478,7 +480,8 @@
             "nullable": true
           },
           "championshipId": {
-            "$ref": "#/components/schemas/IdOfChampionshipDto"
+            "type": "string",
+            "format": "uuid"
           },
           "startOfRegistration": {
             "type": "string",
@@ -501,7 +504,8 @@
             "format": "decimal"
           },
           "id": {
-            "$ref": "#/components/schemas/IdOfEventDto"
+            "type": "string",
+            "format": "uuid"
           },
           "name": {
             "type": "string",
@@ -526,21 +530,6 @@
             "format": "date-time"
           }
         }
-      },
-      "IdOfChampionshipDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "value": {
-            "type": "string",
-            "format": "guid"
-          }
-        }
-      },
-      "IdOfEventDto": {
-        "title": "Guid",
-        "type": "string",
-        "format": "guid"
       }
     }
   }

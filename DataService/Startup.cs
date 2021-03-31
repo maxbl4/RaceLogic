@@ -47,7 +47,11 @@ namespace maxbl4.Race.DataService
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
             services.AddOpenApiDocument(o =>
             {
-                foreach (var mapper in TraitsExt.GetIHasIdTypes().Select(x => new ObjectTypeMapper(x, JsonSchema.FromType<Guid>())))
+                foreach (var mapper in TraitsExt.GetIHasIdTypes().Select(x => new PrimitiveTypeMapper(x, x =>
+                    {
+                        x.Type = JsonObjectType.String;
+                        x.Format = "uuid";
+                    })))
                 {
                     o.TypeMappers.Add(mapper);                    
                 }
