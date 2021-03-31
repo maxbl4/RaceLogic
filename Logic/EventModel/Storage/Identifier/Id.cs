@@ -104,6 +104,11 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
         {
             return new(id);
         }
+        
+        public static implicit operator Id<T>(Guid? id)
+        {
+            return new(id ?? Guid.Empty);
+        }
 
         public override string ToString()
         {

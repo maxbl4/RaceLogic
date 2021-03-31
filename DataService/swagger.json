@@ -125,6 +125,29 @@
         }
       }
     },
+    "/data": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_LoadEventsFromBraaap",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/store": {
       "get": {
         "tags": [
@@ -455,8 +478,7 @@
             "nullable": true
           },
           "championshipId": {
-            "type": "string",
-            "format": "guid"
+            "$ref": "#/components/schemas/IdOfChampionshipDto"
           },
           "startOfRegistration": {
             "type": "string",
@@ -502,6 +524,16 @@
           "updated": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "IdOfChampionshipDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "format": "guid"
           }
         }
       },

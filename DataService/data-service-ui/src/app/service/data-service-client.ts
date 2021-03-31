@@ -233,6 +233,58 @@ export class DataClient {
         }
         return _observableOf<EventDto[]>(<any>null);
     }
+
+    loadEventsFromBraaap(): Observable<EventDto[]> {
+        let url_ = this.baseUrl + "/data";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processLoadEventsFromBraaap(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processLoadEventsFromBraaap(<any>response_);
+                } catch (e) {
+                    return <Observable<EventDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<EventDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processLoadEventsFromBraaap(response: HttpResponseBase): Observable<EventDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(EventDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<EventDto[]>(<any>null);
+    }
 }
 
 @Injectable({
@@ -623,7 +675,7 @@ export class EventDto implements IEventDto {
     date?: string | undefined;
     regulations?: string | undefined;
     resultsTemplate?: string | undefined;
-    championshipId?: string;
+    championshipId?: IdOfChampionshipDto;
     startOfRegistration?: moment.Moment;
     endOfRegistration?: moment.Moment;
     trackId?: string;
@@ -651,7 +703,7 @@ export class EventDto implements IEventDto {
             this.date = _data["date"];
             this.regulations = _data["regulations"];
             this.resultsTemplate = _data["resultsTemplate"];
-            this.championshipId = _data["championshipId"];
+            this.championshipId = _data["championshipId"] ? IdOfChampionshipDto.fromJS(_data["championshipId"]) : <any>undefined;
             this.startOfRegistration = _data["startOfRegistration"] ? moment(_data["startOfRegistration"].toString()) : <any>undefined;
             this.endOfRegistration = _data["endOfRegistration"] ? moment(_data["endOfRegistration"].toString()) : <any>undefined;
             this.trackId = _data["trackId"];
@@ -679,7 +731,7 @@ export class EventDto implements IEventDto {
         data["date"] = this.date;
         data["regulations"] = this.regulations;
         data["resultsTemplate"] = this.resultsTemplate;
-        data["championshipId"] = this.championshipId;
+        data["championshipId"] = this.championshipId ? this.championshipId.toJSON() : <any>undefined;
         data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toISOString() : <any>undefined;
         data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toISOString() : <any>undefined;
         data["trackId"] = this.trackId;
@@ -700,7 +752,7 @@ export interface IEventDto {
     date?: string | undefined;
     regulations?: string | undefined;
     resultsTemplate?: string | undefined;
-    championshipId?: string;
+    championshipId?: IdOfChampionshipDto;
     startOfRegistration?: moment.Moment;
     endOfRegistration?: moment.Moment;
     trackId?: string;
@@ -713,6 +765,42 @@ export interface IEventDto {
     isSeed?: boolean;
     created?: moment.Moment;
     updated?: moment.Moment;
+}
+
+export class IdOfChampionshipDto implements IIdOfChampionshipDto {
+    value?: string;
+
+    constructor(data?: IIdOfChampionshipDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): IdOfChampionshipDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new IdOfChampionshipDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IIdOfChampionshipDto {
+    value?: string;
 }
 
 export interface FileResponse {

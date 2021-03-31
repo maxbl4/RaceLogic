@@ -9,7 +9,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
         public string Date { get; set; }
         public string Regulations { get; set; }
         public string ResultsTemplate { get; set; }
-        public Guid ChampionshipId { get; set; }
+        public Id<ChampionshipDto> ChampionshipId { get; set; }
 
         public DateTime StartOfRegistration { get; set; }
         public DateTime EndOfRegistration { get; set; }

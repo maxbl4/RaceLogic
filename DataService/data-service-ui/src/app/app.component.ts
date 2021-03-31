@@ -35,7 +35,7 @@ export class AppComponent {
   }
 
   loadEvents() {
-    this.dataClient.listEvents().subscribe(e => {
+    this.dataClient.loadEventsFromBraaap().subscribe(e => {
       this.events = e;
     });
   }
@@ -43,7 +43,7 @@ export class AppComponent {
   addEvent() {
     let ev = new EventDto();
     ev.name = "some";
-    ev.championshipId = "E955EF71-C883-477F-8DC5-CB44E8A09283";
+    //ev.championshipId = "E955EF71-C883-477F-8DC5-CB44E8A09283";
     this.dataClient.upsertEvent('', ev).subscribe(x => {
       console.log(x);
       this.loadEvents();
