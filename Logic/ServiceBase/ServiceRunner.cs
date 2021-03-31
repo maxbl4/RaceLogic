@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace ServiceBase
+namespace maxbl4.Race.Logic.ServiceBase
 {
     public class ServiceRunner<TStartup> : IDisposable where TStartup : class
     {

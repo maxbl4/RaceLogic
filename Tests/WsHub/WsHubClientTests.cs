@@ -7,6 +7,7 @@ using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Race.Logic.CheckpointService.Client;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Messages;
 using maxbl4.Race.WsHub;
@@ -14,7 +15,6 @@ using Microsoft.AspNetCore.SignalR;
 using Serilog;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
-using ServiceBase;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Reactive.PlatformServices;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.WsHub.Model;
 using Microsoft.Extensions.Options;
-using ServiceBase;
 
 namespace maxbl4.Race.WsHub.Services
 {

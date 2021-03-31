@@ -8,7 +8,7 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Extensions;
 using Serilog;
 
-namespace ServiceBase
+namespace maxbl4.Race.Logic.ServiceBase
 {
     public abstract class StorageServiceBase : IDisposable
     {

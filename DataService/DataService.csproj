@@ -25,7 +25,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Logic\Logic.csproj" />
-      <ProjectReference Include="..\ServiceBase\ServiceBase.csproj" />
     </ItemGroup>
 
     <ItemGroup>

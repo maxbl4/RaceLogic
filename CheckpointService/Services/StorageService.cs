@@ -8,11 +8,11 @@ using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
 using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
 using Microsoft.Extensions.Options;
-using ServiceBase;
 
 namespace maxbl4.Race.CheckpointService.Services
 {

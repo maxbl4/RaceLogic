@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using ServiceBase;
+using maxbl4.Race.Logic.ServiceBase;
 
 namespace maxbl4.Race.CheckpointService
 {

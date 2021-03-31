@@ -6,11 +6,11 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Tests.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
-using ServiceBase;
 using Xunit.Abstractions;
 
 namespace maxbl4.Race.Tests

@@ -7,8 +7,8 @@ using maxbl4.Race.DataService.Options;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.ServiceBase;
 using Microsoft.Extensions.Options;
-using ServiceBase;
 
 namespace maxbl4.Race.DataService.Services
 {
