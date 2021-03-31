@@ -33,11 +33,12 @@ namespace maxbl4.Race.DataService.Controllers
             return storageService.ListEvents();
         }
         
-        [HttpPost("event")]
-        [HttpPut("event")]
-        public Guid UpsertEvent(EventDto entity)
+        //[HttpPost("event/{id?}")]
+        [HttpPut("event/{id?}")]
+        public Guid UpsertEvent(Id<EventDto> id, EventDto entity)
         {
-            //var entity = BsonMapper.Global.Deserialize<EventDto>(JsonSerializer.Deserialize(body.ToString()));
+            if (id != Id<EventDto>.Empty)
+                entity.Id = id;
             storageService.UpsertEvent(entity);
             return entity.Id;
         }

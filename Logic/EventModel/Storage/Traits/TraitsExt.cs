@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using LiteDB;
@@ -27,20 +28,25 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
 
         public static void RegisterIdBsonMappers(this BsonMapper mapper, Assembly assemblyToScanForTypes = null)
         {
+            var types = GetIHasIdTypes(assemblyToScanForTypes);
+            foreach (var type in types)
+            {
+                mapper.RegisterType(type, obj => ((IGuidValue) obj).Value.ToString("N"),
+                    value => Activator.CreateInstance(type, new Guid(value.AsString)));
+            }
+        }
+        
+        public static IEnumerable<Type> GetIHasIdTypes(Assembly assemblyToScanForTypes = null)
+        {
+            var idType = typeof(Id<>);
             if (assemblyToScanForTypes == null)
                 assemblyToScanForTypes = Assembly.GetExecutingAssembly();
             var iHasTraits = typeof(IHasTraits);
-            var types = assemblyToScanForTypes.GetTypes()
+            return assemblyToScanForTypes.GetTypes()
                 .Select(x => (type: x, interfaces: x.GetInterfaces()))
                 .Where(x => x.interfaces.Contains(iHasTraits))
-                .Where(HasId);
-            var idType = typeof(Id<>);
-            foreach (var type in types)
-            {
-                var idClosed = idType.MakeGenericType(type.type);
-                mapper.RegisterType(idClosed, obj => ((IGuidValue) obj).Value.ToString("N"),
-                    value => Activator.CreateInstance(idClosed, new Guid(value.AsString)));
-            }
+                .Where(HasId)
+                .Select(x => idType.MakeGenericType(x.type));
         }
 
         private static bool HasId((Type type, Type[] interfaces) def)

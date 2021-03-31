@@ -1,10 +1,16 @@
 ﻿using System;
+using System.Threading.Tasks;
 using LiteDB;
+using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Newtonsoft.Json;
 using SequentialGuid;
 
 namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
 {
+    [ModelBinder(BinderType = typeof(IdBinder))]
     [JsonConverter(typeof(IdJsonConverter))]
     public struct Id<T> : IEquatable<Id<T>>, IGuidValue, IComparable<Id<T>>, IComparable, IFormattable
     {
@@ -107,6 +113,87 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Identifier
         public string ToString(string format, IFormatProvider provider)
         {
             return Value.ToString(format, provider);
+        }
+    }
+    
+    public class IdBinder : IModelBinder
+    {
+        public IdBinder()
+        {
+            
+        }
+        
+        public Task BindModelAsync(ModelBindingContext bindingContext)
+        {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
+            var modelName = bindingContext.ModelName;
+
+            // Try to fetch the value of the argument by name
+            var valueProviderResult = bindingContext.ValueProvider.GetValue(modelName);
+
+            if (valueProviderResult == ValueProviderResult.None)
+            {
+                return Task.CompletedTask;
+            }
+
+            bindingContext.ModelState.SetModelValue(modelName, valueProviderResult);
+
+            var value = valueProviderResult.FirstValue;
+
+            // Check if the argument value is null or empty
+            if (string.IsNullOrEmpty(value))
+            {
+                return Task.CompletedTask;
+            }
+
+            if (!Guid.TryParse(value, out var id))
+            {
+                // Non-integer arguments result in model state errors
+                bindingContext.ModelState.TryAddModelError(
+                    modelName, "Id must be Guid.");
+
+                return Task.CompletedTask;
+            }
+
+            // object model;
+            // if (bindingContext.ModelType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            //     model = new Nullable<Id<EventDto>>();
+
+            var model = Activator.CreateInstance(bindingContext.ModelType, id);
+            bindingContext.Result = ModelBindingResult.Success(model);
+            return Task.CompletedTask;
+        }
+    }
+    
+    public class IdBinderProvider : IModelBinderProvider
+    {
+        public IdBinderProvider()
+        {
+            
+        }
+        
+        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (!context.Metadata.ModelType.IsConstructedGenericType) return null;
+            if (context.Metadata.ModelType.GetGenericTypeDefinition() == typeof(Id<>))
+                return new BinderTypeModelBinder(typeof(IdBinder));
+            
+            if (context.Metadata.ModelType.GetGenericTypeDefinition() != typeof(Nullable<>))
+                return null;
+            var nullableArg = context.Metadata.ModelType.GetGenericArguments()[0];
+            if (nullableArg.IsConstructedGenericType && nullableArg.GetGenericTypeDefinition() == typeof(Id<>))
+                return new BinderTypeModelBinder(typeof(IdBinder));
+
+            return null;
         }
     }
 }

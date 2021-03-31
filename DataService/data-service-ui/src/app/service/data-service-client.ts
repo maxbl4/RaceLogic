@@ -80,14 +80,14 @@ export class DataClient {
         return _observableOf<EventDto>(<any>null);
     }
 
-    deleteEvent(idBody: IdOfEventDto, idPath: string): Observable<void> {
+    upsertEvent(id: string, entity: EventDto): Observable<string> {
         let url_ = this.baseUrl + "/data/event/{id}";
-        if (idPath === undefined || idPath === null)
-            throw new Error("The parameter 'idPath' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + idPath));
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(idBody);
+        const content_ = JSON.stringify(entity);
 
         let options_ : any = {
             body: content_,
@@ -95,6 +95,57 @@ export class DataClient {
             responseType: "blob",
             headers: new HttpHeaders({
                 "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpsertEvent(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpsertEvent(<any>response_);
+                } catch (e) {
+                    return <Observable<string>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<string>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpsertEvent(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<string>(<any>null);
+    }
+
+    deleteEvent(id: string): Observable<void> {
+        let url_ = this.baseUrl + "/data/event/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
             })
         };
 
@@ -182,110 +233,6 @@ export class DataClient {
         }
         return _observableOf<EventDto[]>(<any>null);
     }
-
-    upsertEvent(entity: EventDto): Observable<string> {
-        let url_ = this.baseUrl + "/data/event";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(entity);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processUpsertEvent(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processUpsertEvent(<any>response_);
-                } catch (e) {
-                    return <Observable<string>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<string>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processUpsertEvent(response: HttpResponseBase): Observable<string> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<string>(<any>null);
-    }
-
-    upsertEvent2(entity: EventDto): Observable<string> {
-        let url_ = this.baseUrl + "/data/event";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(entity);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processUpsertEvent2(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processUpsertEvent2(<any>response_);
-                } catch (e) {
-                    return <Observable<string>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<string>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processUpsertEvent2(response: HttpResponseBase): Observable<string> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<string>(<any>null);
-    }
 }
 
 @Injectable({
@@ -301,7 +248,7 @@ export class StoreClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    showHelp(): Observable<FileResponse | null> {
+    showHelp(): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -320,14 +267,14 @@ export class StoreClient {
                 try {
                     return this.processShowHelp(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processShowHelp(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processShowHelp(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -344,10 +291,10 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    singleGet(collection: string | null, id: string | null): Observable<FileResponse | null> {
+    singleGet(collection: string | null, id: string | null): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store/{collection}/single/{id}";
         if (collection === undefined || collection === null)
             throw new Error("The parameter 'collection' must be defined.");
@@ -372,14 +319,14 @@ export class StoreClient {
                 try {
                     return this.processSingleGet(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processSingleGet(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processSingleGet(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -396,10 +343,10 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    singleDelete(collection: string | null, id: string | null): Observable<FileResponse | null> {
+    singleDelete(collection: string | null, id: string | null): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store/{collection}/single/{id}";
         if (collection === undefined || collection === null)
             throw new Error("The parameter 'collection' must be defined.");
@@ -424,14 +371,14 @@ export class StoreClient {
                 try {
                     return this.processSingleDelete(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processSingleDelete(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processSingleDelete(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -448,10 +395,10 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    singlePut(collection: string | null, body: any, id: string | null): Observable<FileResponse | null> {
+    singlePut(collection: string | null, id: string | null, body: any): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store/{collection}/single/{id}";
         if (collection === undefined || collection === null)
             throw new Error("The parameter 'collection' must be defined.");
@@ -480,14 +427,14 @@ export class StoreClient {
                 try {
                     return this.processSinglePut(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processSinglePut(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processSinglePut(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -504,10 +451,10 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    singlePut2(collection: string | null, body: any, id: string | null): Observable<FileResponse | null> {
+    singlePut2(collection: string | null, id: string | null, body: any): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store/{collection}/single/{id}";
         if (collection === undefined || collection === null)
             throw new Error("The parameter 'collection' must be defined.");
@@ -536,14 +483,14 @@ export class StoreClient {
                 try {
                     return this.processSinglePut2(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processSinglePut2(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processSinglePut2(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -560,10 +507,10 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    search(collection: string | null, where: string | null | undefined, order: string | null | undefined, limit: number | undefined): Observable<FileResponse | null> {
+    search(collection: string | null, where: string | null | undefined, order: string | null | undefined, limit: number | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store/{collection}/search?";
         if (collection === undefined || collection === null)
             throw new Error("The parameter 'collection' must be defined.");
@@ -593,14 +540,14 @@ export class StoreClient {
                 try {
                     return this.processSearch(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processSearch(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processSearch(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -617,10 +564,10 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    count(collection: string | null, where: string | null | undefined): Observable<FileResponse | null> {
+    count(collection: string | null, where: string | null | undefined): Observable<FileResponse> {
         let url_ = this.baseUrl + "/store/{collection}/count?";
         if (collection === undefined || collection === null)
             throw new Error("The parameter 'collection' must be defined.");
@@ -644,14 +591,14 @@ export class StoreClient {
                 try {
                     return this.processCount(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processCount(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processCount(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -668,7 +615,7 @@ export class StoreClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 }
 
@@ -676,19 +623,19 @@ export class EventDto implements IEventDto {
     date?: string | undefined;
     regulations?: string | undefined;
     resultsTemplate?: string | undefined;
-    championshipId!: string;
-    startOfRegistration!: moment.Moment;
-    endOfRegistration!: moment.Moment;
-    trackId!: string;
-    basePrice!: number;
-    paymentMultiplier!: number;
-    id!: string;
+    championshipId?: string;
+    startOfRegistration?: moment.Moment;
+    endOfRegistration?: moment.Moment;
+    trackId?: string;
+    basePrice?: number;
+    paymentMultiplier?: number;
+    id?: string;
     name?: string | undefined;
     description?: string | undefined;
-    published!: boolean;
-    isSeed!: boolean;
-    created!: moment.Moment;
-    updated!: moment.Moment;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
 
     constructor(data?: IEventDto) {
         if (data) {
@@ -753,55 +700,19 @@ export interface IEventDto {
     date?: string | undefined;
     regulations?: string | undefined;
     resultsTemplate?: string | undefined;
-    championshipId: string;
-    startOfRegistration: moment.Moment;
-    endOfRegistration: moment.Moment;
-    trackId: string;
-    basePrice: number;
-    paymentMultiplier: number;
-    id: string;
+    championshipId?: string;
+    startOfRegistration?: moment.Moment;
+    endOfRegistration?: moment.Moment;
+    trackId?: string;
+    basePrice?: number;
+    paymentMultiplier?: number;
+    id?: string;
     name?: string | undefined;
     description?: string | undefined;
-    published: boolean;
-    isSeed: boolean;
-    created: moment.Moment;
-    updated: moment.Moment;
-}
-
-export class IdOfEventDto implements IIdOfEventDto {
-    value!: string;
-
-    constructor(data?: IIdOfEventDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.value = _data["value"];
-        }
-    }
-
-    static fromJS(data: any): IdOfEventDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new IdOfEventDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["value"] = this.value;
-        return data; 
-    }
-}
-
-export interface IIdOfEventDto {
-    value: string;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
 }
 
 export interface FileResponse {

@@ -109,7 +109,7 @@ namespace maxbl4.Race.DataService.Services
             return true;
         }
 
-        public EventDto GetEvent(Guid id)
+        public EventDto GetEvent(Id<EventDto> id)
         {
             return repo.Query<EventDto>().Where(x => x.Id == id).FirstOrDefault();
         }
@@ -122,7 +122,7 @@ namespace maxbl4.Race.DataService.Services
         
         public bool UpsertEvent(EventDto entity)
         {
-            return repo.Upsert<EventDto>(entity);
+            return repo.Upsert<EventDto>(entity.ApplyTraits());
         }
         
         public List<EventDto> ListEvents()

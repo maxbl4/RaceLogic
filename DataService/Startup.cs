@@ -1,9 +1,13 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Reactive.PlatformServices;
 using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +16,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using NJsonSchema;
+using NJsonSchema.Generation.TypeMappers;
+using NSwag.Generation;
 
 namespace maxbl4.Race.DataService
 {
@@ -32,10 +39,19 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<StorageService>();
             services.AddAutoMapper(typeof(Startup));
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddControllers(o =>
+            {
+                o.ModelBinderProviders.Insert(0, new IdBinderProvider());
+            }).AddNewtonsoftJson();
             services.AddSignalR().AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
-            services.AddSwaggerDocument();
+            services.AddOpenApiDocument(o =>
+            {
+                foreach (var mapper in TraitsExt.GetIHasIdTypes().Select(x => new ObjectTypeMapper(x, JsonSchema.FromType<Guid>())))
+                {
+                    o.TypeMappers.Add(mapper);                    
+                }
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

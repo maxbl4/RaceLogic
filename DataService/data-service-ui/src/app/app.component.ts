@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {DataClient, EventDto, IdOfEventDto} from "./service/data-service-client";
+import {DataClient, EventDto} from "./service/data-service-client";
 
 @Component({
   selector: 'app-root',
@@ -19,10 +19,10 @@ import {DataClient, EventDto, IdOfEventDto} from "./service/data-service-client"
         <td>{{e.championshipId}}</td>
         <td>{{e.startOfRegistration}}</td>
         <td>{{e.endOfRegistration}}</td>
+        <td><button class="btn btn-primary" (click)="deleteEvent(e.id!)">Delete</button></td>
       </tr>
     </table>
     <button class="btn btn-primary" (click)="addEvent()">Add</button>
-    <button class="btn btn-primary" (click)="deleteEvent()">Delete</button>
     <router-outlet></router-outlet>
   `,
   styles: []
@@ -37,7 +37,6 @@ export class AppComponent {
   loadEvents() {
     this.dataClient.listEvents().subscribe(e => {
       this.events = e;
-      console.log(e);
     });
   }
 
@@ -45,13 +44,15 @@ export class AppComponent {
     let ev = new EventDto();
     ev.name = "some";
     ev.championshipId = "E955EF71-C883-477F-8DC5-CB44E8A09283";
-    this.dataClient.upsertEvent(ev).subscribe(x => {
+    this.dataClient.upsertEvent('', ev).subscribe(x => {
       console.log(x);
       this.loadEvents();
     });
   }
 
-  deleteEvent() {
-    this.dataClient.deleteEvent(new IdOfEventDto({value:"E955EF71-C883-477F-8DC5-CB44E8A09283"})).subscribe();
+  deleteEvent(id: string) {
+    this.dataClient.deleteEvent(id).subscribe(_ => {
+      this.loadEvents();
+    });
   }
 }
