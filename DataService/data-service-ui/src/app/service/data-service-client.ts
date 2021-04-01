@@ -234,8 +234,106 @@ export class DataClient {
         return _observableOf<EventDto[]>(<any>null);
     }
 
-    loadEventsFromBraaap(): Observable<EventDto[]> {
-        let url_ = this.baseUrl + "/data";
+    purgeUpstreamData(): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/upstream/purge";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPurgeUpstreamData(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPurgeUpstreamData(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processPurgeUpstreamData(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    downloadUpstreamData(forceFullSync: boolean | undefined): Observable<boolean> {
+        let url_ = this.baseUrl + "/data/upstream?";
+        if (forceFullSync === null)
+            throw new Error("The parameter 'forceFullSync' cannot be null.");
+        else if (forceFullSync !== undefined)
+            url_ += "forceFullSync=" + encodeURIComponent("" + forceFullSync) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDownloadUpstreamData(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDownloadUpstreamData(<any>response_);
+                } catch (e) {
+                    return <Observable<boolean>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<boolean>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDownloadUpstreamData(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<boolean>(<any>null);
+    }
+
+    listSeries(): Observable<SeriesDto[]> {
+        let url_ = this.baseUrl + "/data/series";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -247,20 +345,20 @@ export class DataClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processLoadEventsFromBraaap(response_);
+            return this.processListSeries(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processLoadEventsFromBraaap(<any>response_);
+                    return this.processListSeries(<any>response_);
                 } catch (e) {
-                    return <Observable<EventDto[]>><any>_observableThrow(e);
+                    return <Observable<SeriesDto[]>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<EventDto[]>><any>_observableThrow(response_);
+                return <Observable<SeriesDto[]>><any>_observableThrow(response_);
         }));
     }
 
-    protected processLoadEventsFromBraaap(response: HttpResponseBase): Observable<EventDto[]> {
+    protected processListSeries(response: HttpResponseBase): Observable<SeriesDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -274,7 +372,7 @@ export class DataClient {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(EventDto.fromJS(item));
+                    result200!.push(SeriesDto.fromJS(item));
             }
             return _observableOf(result200);
             }));
@@ -283,7 +381,63 @@ export class DataClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<EventDto[]>(<any>null);
+        return _observableOf<SeriesDto[]>(<any>null);
+    }
+
+    listChampionship(value: string | undefined): Observable<ChampionshipDto[]> {
+        let url_ = this.baseUrl + "/data/championship?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListChampionship(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListChampionship(<any>response_);
+                } catch (e) {
+                    return <Observable<ChampionshipDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<ChampionshipDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processListChampionship(response: HttpResponseBase): Observable<ChampionshipDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(ChampionshipDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<ChampionshipDto[]>(<any>null);
     }
 }
 
@@ -758,6 +912,130 @@ export interface IEventDto {
     trackId?: string;
     basePrice?: number;
     paymentMultiplier?: number;
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+}
+
+export class SeriesDto implements ISeriesDto {
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+
+    constructor(data?: ISeriesDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? moment(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? moment(_data["updated"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): SeriesDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SeriesDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface ISeriesDto {
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+}
+
+export class ChampionshipDto implements IChampionshipDto {
+    seriesId?: string;
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+
+    constructor(data?: IChampionshipDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.seriesId = _data["seriesId"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? moment(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? moment(_data["updated"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): ChampionshipDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ChampionshipDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["seriesId"] = this.seriesId;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IChampionshipDto {
+    seriesId?: string;
     id?: string;
     name?: string | undefined;
     description?: string | undefined;

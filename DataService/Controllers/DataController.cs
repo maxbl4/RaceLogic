@@ -6,19 +6,24 @@ using System.Threading.Tasks;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.UpstreamData;
 using Microsoft.AspNetCore.Mvc;
 
 namespace maxbl4.Race.DataService.Controllers
 {
     [ApiController]
     [Route("data")]
-    public class DataController
+    public class DataController: ControllerBase
     {
         private readonly StorageService storageService;
+        private readonly UpstreamDataSyncService syncService;
+        private readonly UpstreamDataStorageService syncStorage;
 
-        public DataController(StorageService storageService)
+        public DataController(StorageService storageService, UpstreamDataSyncService syncService, UpstreamDataStorageService syncStorage)
         {
             this.storageService = storageService;
+            this.syncService = syncService;
+            this.syncStorage = syncStorage;
         }
 
         [HttpGet("event/{id}")]
@@ -48,19 +53,30 @@ namespace maxbl4.Race.DataService.Controllers
         {
             storageService.DeleteEvent(id);
         }
-
-        public async Task<List<EventDto>> LoadEventsFromBraaap()
+        
+        [HttpPost("upstream/purge")]
+        public ActionResult PurgeUpstreamData()
         {
-            var mainClient = new BraaapWeb.Client.MainClient("https://braaap.ru", new HttpClient());
-            var events = await mainClient.EventsAsync("zrbTmslsBNIEpj1zMjL0eK8Et6Tt_ivO-toyPHLOdBA", null);
-            return events.Select(x => new EventDto
-            {
-                Id = x.EventId,
-                Name = x.Name,
-                ChampionshipId = x.ChampionshipId,
-                StartOfRegistration = x.StartOfRegistration.UtcDateTime,
-                EndOfRegistration = x.EndOfRegistration.UtcDateTime
-            }).ToList();
+            syncStorage.PurgeExistingData();
+            return Ok();
+        }
+
+        [HttpPost("upstream")]
+        public async Task<bool> DownloadUpstreamData(bool forceFullSync = false)
+        {
+            return await syncService.Download(forceFullSync);
+        }
+        
+        [HttpGet("series")]
+        public ActionResult<List<SeriesDto>> ListSeries()
+        {
+            return syncStorage.ListSeries().ToList();
+        }
+        
+        [HttpGet("championship")]
+        public ActionResult<List<ChampionshipDto>> ListChampionship([FromQuery]Id<SeriesDto> value)
+        {
+            return syncStorage.ListChampionships(value).ToList();
         }
     }
 }

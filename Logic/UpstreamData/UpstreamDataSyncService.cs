@@ -8,6 +8,7 @@ using AutoMapper;
 using BraaapWeb.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.Logic.UpstreamData
 {
@@ -16,15 +17,13 @@ namespace maxbl4.Race.Logic.UpstreamData
         private readonly UpstreamDataSyncServiceOptions options;
         private readonly IMainClient mainClient;
         private readonly UpstreamDataStorageService storageService;
-        private readonly ISystemClock systemClock;
         private readonly SemaphoreSlim sync = new(1);
 
-        public UpstreamDataSyncService(UpstreamDataSyncServiceOptions options, IMainClient mainClient, UpstreamDataStorageService storageService, ISystemClock systemClock)
+        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, UpstreamDataStorageService storageService)
         {
-            this.options = options;
+            this.options = options.Value;
             this.mainClient = mainClient;
             this.storageService = storageService;
-            this.systemClock = systemClock;
         }
         
         public async Task<bool> Download(bool forceFullSync = false)
@@ -34,16 +33,17 @@ namespace maxbl4.Race.Logic.UpstreamData
             try
             {
                 var lastSyncTimestamp = forceFullSync ? Constants.DefaultUtcDate : storageService.GetLastSyncTimestamp();
-                storageService.UpsertSeries((await mainClient.SeriesAsync(options.ApiKey, lastSyncTimestamp)).ToDto());
-                storageService.UpsertChampionships((await mainClient.ChampionshipsAsync(options.ApiKey, lastSyncTimestamp)).ToDto());
-                // storageService.ReplaceChampionships(await client.ChampionshipsAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceClasses(await client.ClassesAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceEvents(await client.EventsAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceEventConfirmations(await client.EventConfirmationsAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceSchedules(await client.SchedulesAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceScheduleToClasses(await client.ScheduleToClassAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceRiderProfiles(await client.RiderProfilesAsync(peer.ApiKey, loadFrom), forceFullSync);
-                // storageService.ReplaceRiderRegistrations(await client.RiderRegistrationsAsync(peer.ApiKey, loadFrom), forceFullSync);
+                var series = await mainClient.SeriesAsync(options.ApiKey, lastSyncTimestamp);
+                var championships = await mainClient.ChampionshipsAsync(options.ApiKey, lastSyncTimestamp);
+                var classes = await mainClient.ClassesAsync(options.ApiKey, lastSyncTimestamp);
+                var events = await mainClient.EventsAsync(options.ApiKey, lastSyncTimestamp);
+                var schedules = await mainClient.SchedulesAsync(options.ApiKey, lastSyncTimestamp);
+                var scheduleToClass = await mainClient.ScheduleToClassAsync(options.ApiKey, lastSyncTimestamp);
+                var eventConfirmations = await mainClient.EventConfirmationsAsync(options.ApiKey, lastSyncTimestamp);
+                var riderProfiles = await mainClient.RiderProfilesAsync(options.ApiKey, lastSyncTimestamp);
+                var riderRegistrations = await mainClient.RiderRegistrationsAsync(options.ApiKey, lastSyncTimestamp);
+                storageService.UpsertSeries(series.ToDto());
+                storageService.UpsertChampionships(championships.ToDto());
                 return true;
             }
             finally
@@ -99,5 +99,6 @@ namespace maxbl4.Race.Logic.UpstreamData
     {
         public string BaseUri { get; set; }
         public string ApiKey { get; set; }
+        public string StorageConnectionString { get; set; }
     }
 }

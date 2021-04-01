@@ -5,12 +5,13 @@ using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
+using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.Logic.UpstreamData
 {
     public class UpstreamDataStorageService: StorageServiceBase
     {
-        public UpstreamDataStorageService(string connectionString) : base(connectionString)
+        public UpstreamDataStorageService(IOptions<UpstreamDataSyncServiceOptions> options) : base(options.Value.StorageConnectionString)
         {
         }
 
@@ -83,6 +84,19 @@ namespace maxbl4.Race.Logic.UpstreamData
         public void UpsertRiderRegistrations(ICollection<RiderRegistration> entities)
         {
             repo.Upsert(entities);
+        }
+
+        public IEnumerable<SeriesDto> ListSeries()
+        {
+            return repo.Query<SeriesDto>().ToEnumerable();
+        }
+        
+        public IEnumerable<ChampionshipDto> ListChampionships(Id<SeriesDto>? seriesId = null)
+        {
+            var query = repo.Query<ChampionshipDto>();
+            if (seriesId != null && seriesId != Id<SeriesDto>.Empty)
+                query = query.Where(x => x.SeriesId == seriesId);
+            return query.ToEnumerable();
         }
 
         private class Timestamp

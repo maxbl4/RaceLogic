@@ -127,12 +127,64 @@
         }
       }
     },
-    "/data": {
+    "/data/upstream/purge": {
+      "post": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_PurgeUpstreamData",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/upstream": {
+      "post": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_DownloadUpstreamData",
+        "parameters": [
+          {
+            "name": "forceFullSync",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/series": {
       "get": {
         "tags": [
           "Data"
         ],
-        "operationId": "Data_LoadEventsFromBraaap",
+        "operationId": "Data_ListSeries",
         "responses": {
           "200": {
             "description": "",
@@ -141,7 +193,41 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EventDto"
+                    "$ref": "#/components/schemas/SeriesDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/championship": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ListChampionship",
+        "parameters": [
+          {
+            "name": "Value",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChampionshipDto"
                   }
                 }
               }
@@ -502,6 +588,74 @@
           "paymentMultiplier": {
             "type": "number",
             "format": "decimal"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "isSeed": {
+            "type": "boolean"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SeriesDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "isSeed": {
+            "type": "boolean"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ChampionshipDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "seriesId": {
+            "type": "string",
+            "format": "uuid"
           },
           "id": {
             "type": "string",

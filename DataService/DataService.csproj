@@ -3,7 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>maxbl4.Race.DataService</RootNamespace>
-    </PropertyGroup>
+      <UserSecretsId>d878b971-3d50-4a59-bd2f-f1074505e2c4</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="10.1.1" />
