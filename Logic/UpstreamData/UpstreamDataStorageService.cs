@@ -34,10 +34,11 @@ namespace maxbl4.Race.Logic.UpstreamData
             repo.DeleteMany<ChampionshipDto>(x => true);
             repo.DeleteMany<ClassDto>(x => true);
             repo.DeleteMany<EventDto>(x => true);
+            repo.DeleteMany<SessionDto>(x => true);
             repo.DeleteMany<EventConfirmation>(x => true);
             repo.DeleteMany<ScheduleItemDto>(x => true);
             repo.DeleteMany<ScheduleToClass>(x => true);
-            repo.DeleteMany<RiderProfile>(x => true);
+            repo.DeleteMany<RiderProfileDto>(x => true);
             repo.DeleteMany<RiderRegistration>(x => true);
         }
 
@@ -57,6 +58,11 @@ namespace maxbl4.Race.Logic.UpstreamData
         }
 
         public void UpsertEvents(IEnumerable<EventDto> entities)
+        {
+            repo.Upsert(entities.ApplyTraits());
+        }
+        
+        public void UpsertSessions(IEnumerable<SessionDto> entities)
         {
             repo.Upsert(entities.ApplyTraits());
         }

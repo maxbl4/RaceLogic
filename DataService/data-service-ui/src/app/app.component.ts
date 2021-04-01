@@ -49,6 +49,7 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "./serv
                     <table class="table table-bordered">
                       <tr *ngFor="let e of events.get(c.id!)">
                         <td>{{e.id}}</td>
+                        <td>{{e.date}}</td>
                         <td>{{e.name}}</td>
                         <td>{{e.description}}</td>
                         <td>{{e.basePrice}}</td>
