@@ -61,8 +61,7 @@ namespace maxbl4.Race.Tests
             Logger.Debug("Creating DataStorageServiceService with {@storageConnectionString}", storageConnectionString);
             using var storageService = new Race.DataService.Services.StorageService(
                 Options.Create(new Race.DataService.Options.ServiceOptions
-                    {StorageConnectionString = storageConnectionString}),
-                MessageHub, SystemClock);
+                    {StorageConnectionString = storageConnectionString}));
             storageServiceInitializer(storageService);
         }
 

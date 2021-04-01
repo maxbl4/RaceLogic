@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Reactive.PlatformServices;
-using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.WsHub.Model;
@@ -10,13 +8,9 @@ namespace maxbl4.Race.WsHub.Services
 {
     public class StorageService : StorageServiceBase
     {
-        private readonly IOptions<ServiceOptions> serviceOptions;
-
-        public StorageService(IOptions<ServiceOptions> serviceOptions,
-            IMessageHub messageHub, ISystemClock systemClock) :
-            base(serviceOptions.Value.StorageConnectionString, messageHub, systemClock)
+        public StorageService(IOptions<ServiceOptions> serviceOptions) :
+            base(serviceOptions.Value.StorageConnectionString)
         {
-            this.serviceOptions = serviceOptions;
         }
 
         protected override void ValidateDatabase()

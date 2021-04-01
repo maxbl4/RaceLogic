@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Reactive.PlatformServices;
 using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
-using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Extensions;
 using Serilog;
 
@@ -14,16 +12,12 @@ namespace maxbl4.Race.Logic.ServiceBase
     {
         protected readonly string connectionString;
         protected readonly ILogger logger;
-        protected readonly IMessageHub messageHub;
-        protected readonly ISystemClock systemClock;
         protected LiteRepository repo;
 
-        protected StorageServiceBase(string connectionString, IMessageHub messageHub, ISystemClock systemClock)
+        protected StorageServiceBase(string connectionString)
         {
             logger = Log.ForContext(GetType());
             this.connectionString = connectionString;
-            this.messageHub = messageHub;
-            this.systemClock = systemClock;
             var cs = new ConnectionString(connectionString);
             logger.SwallowError(() => Initialize(cs), ex =>
             {

@@ -8,9 +8,9 @@ using maxbl4.Race.Logic.ServiceBase;
 
 namespace maxbl4.Race.Logic.PeerData
 {
-    public partial class PeerDataStorageService: StorageServiceBase
+    public class PeerDataStorageService: StorageServiceBase
     {
-        public PeerDataStorageService(string connectionString, IMessageHub messageHub, ISystemClock systemClock) : base(connectionString, messageHub, systemClock)
+        public PeerDataStorageService(string connectionString, IMessageHub messageHub, ISystemClock systemClock) : base(connectionString)
         {
         }
 

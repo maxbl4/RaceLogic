@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.PlatformServices;
 using LiteDB;
-using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
@@ -14,9 +12,8 @@ namespace maxbl4.Race.DataService.Services
 {
     public class StorageService : StorageServiceBase
     {
-        public StorageService(IOptions<ServiceOptions> serviceOptions,
-            IMessageHub messageHub, ISystemClock systemClock) :
-            base(serviceOptions.Value.StorageConnectionString, messageHub, systemClock)
+        public StorageService(IOptions<ServiceOptions> serviceOptions) :
+            base(serviceOptions.Value.StorageConnectionString)
         {
         }
 

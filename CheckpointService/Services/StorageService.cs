@@ -19,12 +19,16 @@ namespace maxbl4.Race.CheckpointService.Services
     public class StorageService : StorageServiceBase, ICheckpointStorage, ISubscriptionStorage, IUpstreamOptionsStorage
     {
         private readonly IOptions<ServiceOptions> serviceOptions;
+        private readonly IMessageHub messageHub;
+        private readonly ISystemClock systemClock;
 
         public StorageService(IOptions<ServiceOptions> serviceOptions,
             IMessageHub messageHub, ISystemClock systemClock) :
-            base(serviceOptions.Value.StorageConnectionString, messageHub, systemClock)
+            base(serviceOptions.Value.StorageConnectionString)
         {
             this.serviceOptions = serviceOptions;
+            this.messageHub = messageHub;
+            this.systemClock = systemClock;
         }
 
         public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
