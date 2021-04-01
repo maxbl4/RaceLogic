@@ -109,7 +109,7 @@
         "tags": [
           "Data"
         ],
-        "operationId": "Data_ListEvents",
+        "operationId": "Data_ListEventsAll",
         "responses": {
           "200": {
             "description": "",
@@ -202,12 +202,12 @@
         }
       }
     },
-    "/data/championship": {
+    "/data/championships": {
       "get": {
         "tags": [
           "Data"
         ],
-        "operationId": "Data_ListChampionship",
+        "operationId": "Data_ListChampionships",
         "parameters": [
           {
             "name": "Value",
@@ -228,6 +228,74 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/ChampionshipDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/classes": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ListClasses",
+        "parameters": [
+          {
+            "name": "Value",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClassDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/events": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ListEvents",
+        "parameters": [
+          {
+            "name": "Value",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventDto"
                   }
                 }
               }
@@ -577,10 +645,6 @@
             "type": "string",
             "format": "date-time"
           },
-          "trackId": {
-            "type": "string",
-            "format": "guid"
-          },
           "basePrice": {
             "type": "number",
             "format": "decimal"
@@ -654,6 +718,46 @@
         "additionalProperties": false,
         "properties": {
           "seriesId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "isSeed": {
+            "type": "boolean"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ClassDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "championshipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numberGroupId": {
             "type": "string",
             "format": "uuid"
           },

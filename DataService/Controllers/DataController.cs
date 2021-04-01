@@ -73,10 +73,22 @@ namespace maxbl4.Race.DataService.Controllers
             return syncStorage.ListSeries().ToList();
         }
         
-        [HttpGet("championship")]
-        public ActionResult<List<ChampionshipDto>> ListChampionship([FromQuery]Id<SeriesDto> value)
+        [HttpGet("championships")]
+        public ActionResult<List<ChampionshipDto>> ListChampionships([FromQuery]Id<SeriesDto> value)
         {
             return syncStorage.ListChampionships(value).ToList();
+        }
+        
+        [HttpGet("classes")]
+        public ActionResult<List<ClassDto>> ListClasses([FromQuery]Id<ChampionshipDto> value)
+        {
+            return syncStorage.ListClasses(value).ToList();
+        }
+        
+        [HttpGet("events")]
+        public ActionResult<List<EventDto>> ListEvents([FromQuery]Id<ChampionshipDto> value)
+        {
+            return syncStorage.ListEvents(value).ToList();
         }
     }
 }

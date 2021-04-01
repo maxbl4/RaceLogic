@@ -51,37 +51,37 @@ namespace maxbl4.Race.Logic.UpstreamData
             repo.Upsert(entities.ApplyTraits());
         }
 
-        public void UpsertClasses(ICollection<ClassDto> entities)
+        public void UpsertClasses(IEnumerable<ClassDto> entities)
         {
             repo.Upsert(entities.ApplyTraits());
         }
 
-        public void UpsertEvents(ICollection<EventDto> entities)
+        public void UpsertEvents(IEnumerable<EventDto> entities)
         {
             repo.Upsert(entities.ApplyTraits());
         }
 
-        public void UpsertEventConfirmations(ICollection<EventConfirmation> entities)
+        public void UpsertEventConfirmations(IEnumerable<EventConfirmation> entities)
         {
             repo.Upsert(entities);
         }
 
-        public void UpsertSchedules(ICollection<ScheduleItemDto> entities)
+        public void UpsertSchedules(IEnumerable<ScheduleItemDto> entities)
         {
             repo.Upsert(entities.ApplyTraits());
         }
 
-        public void UpsertScheduleToClasses(ICollection<ScheduleToClass> entities)
+        public void UpsertScheduleToClasses(IEnumerable<ScheduleToClass> entities)
         {
             repo.Upsert(entities);
         }
 
-        public void UpsertRiderProfiles(ICollection<RiderProfile> entities)
+        public void UpsertRiderProfiles(IEnumerable<RiderProfileDto> entities)
         {
-            repo.Upsert(entities);
+            repo.Upsert(entities.ApplyTraits());
         }
 
-        public void UpsertRiderRegistrations(ICollection<RiderRegistration> entities)
+        public void UpsertRiderRegistrations(IEnumerable<RiderRegistration> entities)
         {
             repo.Upsert(entities);
         }
@@ -96,6 +96,22 @@ namespace maxbl4.Race.Logic.UpstreamData
             var query = repo.Query<ChampionshipDto>();
             if (seriesId != null && seriesId != Id<SeriesDto>.Empty)
                 query = query.Where(x => x.SeriesId == seriesId);
+            return query.ToEnumerable();
+        }
+        
+        public IEnumerable<ClassDto> ListClasses(Id<ChampionshipDto>? championshipId = null)
+        {
+            var query = repo.Query<ClassDto>();
+            if (championshipId != null && championshipId != Id<ChampionshipDto>.Empty)
+                query = query.Where(x => x.ChampionshipId == championshipId);
+            return query.ToEnumerable();
+        }
+        
+        public IEnumerable<EventDto> ListEvents(Id<ChampionshipDto>? championshipId = null)
+        {
+            var query = repo.Query<EventDto>();
+            if (championshipId != null && championshipId != Id<ChampionshipDto>.Empty)
+                query = query.Where(x => x.ChampionshipId == championshipId);
             return query.ToEnumerable();
         }
 

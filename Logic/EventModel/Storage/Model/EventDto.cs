@@ -13,7 +13,6 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
 
         public DateTime StartOfRegistration { get; set; }
         public DateTime EndOfRegistration { get; set; }
-        public Guid TrackId { get; set; }
 
         public decimal BasePrice { get; set; }
         public decimal PaymentMultiplier { get; set; }

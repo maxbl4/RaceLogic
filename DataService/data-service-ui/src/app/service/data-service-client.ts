@@ -182,7 +182,7 @@ export class DataClient {
         return _observableOf<void>(<any>null);
     }
 
-    listEvents(): Observable<EventDto[]> {
+    listEventsAll(): Observable<EventDto[]> {
         let url_ = this.baseUrl + "/data/event";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -195,11 +195,11 @@ export class DataClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processListEvents(response_);
+            return this.processListEventsAll(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processListEvents(<any>response_);
+                    return this.processListEventsAll(<any>response_);
                 } catch (e) {
                     return <Observable<EventDto[]>><any>_observableThrow(e);
                 }
@@ -208,7 +208,7 @@ export class DataClient {
         }));
     }
 
-    protected processListEvents(response: HttpResponseBase): Observable<EventDto[]> {
+    protected processListEventsAll(response: HttpResponseBase): Observable<EventDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -384,8 +384,8 @@ export class DataClient {
         return _observableOf<SeriesDto[]>(<any>null);
     }
 
-    listChampionship(value: string | undefined): Observable<ChampionshipDto[]> {
-        let url_ = this.baseUrl + "/data/championship?";
+    listChampionships(value: string | undefined): Observable<ChampionshipDto[]> {
+        let url_ = this.baseUrl + "/data/championships?";
         if (value === null)
             throw new Error("The parameter 'value' cannot be null.");
         else if (value !== undefined)
@@ -401,11 +401,11 @@ export class DataClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processListChampionship(response_);
+            return this.processListChampionships(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processListChampionship(<any>response_);
+                    return this.processListChampionships(<any>response_);
                 } catch (e) {
                     return <Observable<ChampionshipDto[]>><any>_observableThrow(e);
                 }
@@ -414,7 +414,7 @@ export class DataClient {
         }));
     }
 
-    protected processListChampionship(response: HttpResponseBase): Observable<ChampionshipDto[]> {
+    protected processListChampionships(response: HttpResponseBase): Observable<ChampionshipDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -438,6 +438,118 @@ export class DataClient {
             }));
         }
         return _observableOf<ChampionshipDto[]>(<any>null);
+    }
+
+    listClasses(value: string | undefined): Observable<ClassDto[]> {
+        let url_ = this.baseUrl + "/data/classes?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListClasses(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListClasses(<any>response_);
+                } catch (e) {
+                    return <Observable<ClassDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<ClassDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processListClasses(response: HttpResponseBase): Observable<ClassDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(ClassDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<ClassDto[]>(<any>null);
+    }
+
+    listEvents(value: string | undefined): Observable<EventDto[]> {
+        let url_ = this.baseUrl + "/data/events?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListEvents(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListEvents(<any>response_);
+                } catch (e) {
+                    return <Observable<EventDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<EventDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processListEvents(response: HttpResponseBase): Observable<EventDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(EventDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<EventDto[]>(<any>null);
     }
 }
 
@@ -832,7 +944,6 @@ export class EventDto implements IEventDto {
     championshipId?: string;
     startOfRegistration?: moment.Moment;
     endOfRegistration?: moment.Moment;
-    trackId?: string;
     basePrice?: number;
     paymentMultiplier?: number;
     id?: string;
@@ -860,7 +971,6 @@ export class EventDto implements IEventDto {
             this.championshipId = _data["championshipId"];
             this.startOfRegistration = _data["startOfRegistration"] ? moment(_data["startOfRegistration"].toString()) : <any>undefined;
             this.endOfRegistration = _data["endOfRegistration"] ? moment(_data["endOfRegistration"].toString()) : <any>undefined;
-            this.trackId = _data["trackId"];
             this.basePrice = _data["basePrice"];
             this.paymentMultiplier = _data["paymentMultiplier"];
             this.id = _data["id"];
@@ -888,7 +998,6 @@ export class EventDto implements IEventDto {
         data["championshipId"] = this.championshipId;
         data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toISOString() : <any>undefined;
         data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toISOString() : <any>undefined;
-        data["trackId"] = this.trackId;
         data["basePrice"] = this.basePrice;
         data["paymentMultiplier"] = this.paymentMultiplier;
         data["id"] = this.id;
@@ -909,7 +1018,6 @@ export interface IEventDto {
     championshipId?: string;
     startOfRegistration?: moment.Moment;
     endOfRegistration?: moment.Moment;
-    trackId?: string;
     basePrice?: number;
     paymentMultiplier?: number;
     id?: string;
@@ -1036,6 +1144,74 @@ export class ChampionshipDto implements IChampionshipDto {
 
 export interface IChampionshipDto {
     seriesId?: string;
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+}
+
+export class ClassDto implements IClassDto {
+    championshipId?: string;
+    numberGroupId?: string;
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+
+    constructor(data?: IClassDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.championshipId = _data["championshipId"];
+            this.numberGroupId = _data["numberGroupId"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? moment(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? moment(_data["updated"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): ClassDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ClassDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["championshipId"] = this.championshipId;
+        data["numberGroupId"] = this.numberGroupId;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IClassDto {
+    championshipId?: string;
+    numberGroupId?: string;
     id?: string;
     name?: string | undefined;
     description?: string | undefined;
