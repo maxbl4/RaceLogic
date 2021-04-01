@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Reactive.PlatformServices;
@@ -7,7 +6,6 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,7 +16,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using NJsonSchema;
 using NJsonSchema.Generation.TypeMappers;
-using NSwag.Generation;
 
 namespace maxbl4.Race.DataService
 {

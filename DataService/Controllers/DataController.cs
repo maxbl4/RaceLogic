@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using LiteDB;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 
 namespace maxbl4.Race.DataService.Controllers
 {

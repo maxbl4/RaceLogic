@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using LiteDB;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;

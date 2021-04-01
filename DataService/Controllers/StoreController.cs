@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Threading.Tasks;
 using LiteDB;
 using maxbl4.Race.DataService.Services;
 using Microsoft.AspNetCore.Mvc;
