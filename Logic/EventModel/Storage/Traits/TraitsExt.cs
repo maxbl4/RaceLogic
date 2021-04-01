@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,12 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
 {
     public static class TraitsExt
     {
+        public static IEnumerable<T> ApplyTraits<T>(this IEnumerable<T> obj)
+            where T : IHasTraits
+        {
+            return obj.Select(ApplyTraits);
+        }
+        
         public static T ApplyTraits<T>(this T obj)
             where T : IHasTraits
         {

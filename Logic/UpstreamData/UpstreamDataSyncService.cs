@@ -4,21 +4,22 @@ using System.Net.Http;
 using System.Reactive.PlatformServices;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using BraaapWeb.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 
-namespace maxbl4.Race.Logic.PeerData
+namespace maxbl4.Race.Logic.UpstreamData
 {
-    public class PeerDataSyncService
+    public class UpstreamDataSyncService
     {
-        private readonly PeerDataSyncServiceOptions options;
+        private readonly UpstreamDataSyncServiceOptions options;
         private readonly IMainClient mainClient;
-        private readonly PeerDataStorageService storageService;
+        private readonly UpstreamDataStorageService storageService;
         private readonly ISystemClock systemClock;
         private readonly SemaphoreSlim sync = new(1);
 
-        public PeerDataSyncService(PeerDataSyncServiceOptions options, IMainClient mainClient, PeerDataStorageService storageService, ISystemClock systemClock)
+        public UpstreamDataSyncService(UpstreamDataSyncServiceOptions options, IMainClient mainClient, UpstreamDataStorageService storageService, ISystemClock systemClock)
         {
             this.options = options;
             this.mainClient = mainClient;
@@ -26,17 +27,15 @@ namespace maxbl4.Race.Logic.PeerData
             this.systemClock = systemClock;
         }
         
-        public async Task<bool> Download(Id<PeerDatabaseDto> peerId,bool forceFullSync = false)
+        public async Task<bool> Download(bool forceFullSync = false)
         {
             if (!await sync.WaitAsync(0))
                 return false;
             try
             {
-                var peer = storageService.GetPeerDatabase(peerId);
-                var lastSyncTimestamp = forceFullSync ? Constants.DefaultUtcDate : peer.LastSyncTimestamp;
-                var client = new MainClient(peer.BaseUri, new HttpClient());
-                storageService.ReplaceSeries((await client.SeriesAsync(peer.ApiKey, lastSyncTimestamp)).ToDto(),
-                    forceFullSync);
+                var lastSyncTimestamp = forceFullSync ? Constants.DefaultUtcDate : storageService.GetLastSyncTimestamp();
+                storageService.UpsertSeries((await mainClient.SeriesAsync(options.ApiKey, lastSyncTimestamp)).ToDto());
+                storageService.UpsertChampionships((await mainClient.ChampionshipsAsync(options.ApiKey, lastSyncTimestamp)).ToDto());
                 // storageService.ReplaceChampionships(await client.ChampionshipsAsync(peer.ApiKey, loadFrom), forceFullSync);
                 // storageService.ReplaceClasses(await client.ClassesAsync(peer.ApiKey, loadFrom), forceFullSync);
                 // storageService.ReplaceEvents(await client.EventsAsync(peer.ApiKey, loadFrom), forceFullSync);
@@ -61,18 +60,44 @@ namespace maxbl4.Race.Logic.PeerData
             return entities.Select(ToDto);
         }
         
-        public static SeriesDto ToDto(this Series entity)
+        public static IEnumerable<ChampionshipDto> ToDto(this IEnumerable<Championship> entities)
         {
-            return new SeriesDto();
+            return entities.Select(ToDto);
         }
         
-        public static Series ToBraaap(this SeriesDto entity)
+        public static SeriesDto ToDto(this Series entity)
         {
-            return new Series();
+            return new SeriesDto
+            {
+                Id = entity.SeriesId,
+                Name = entity.Name,
+                Description = entity.Description,
+                Published = entity.Published,
+                IsSeed = entity.Seed,
+                Created = entity.Created.UtcDateTime,
+                Updated = entity.Updated.UtcDateTime,
+            };
+        }
+        
+        public static ChampionshipDto ToDto(this Championship entity)
+        {
+            return new ChampionshipDto
+            {
+                Id = entity.ChampionshipId,
+                SeriesId = entity.SeriesId,
+                Name = entity.Name,
+                Description = entity.Description,
+                Published = entity.Published,
+                IsSeed = entity.Seed,
+                Created = entity.Created.UtcDateTime,
+                Updated = entity.Updated.UtcDateTime,
+            };
         }
     }
 
-    public class PeerDataSyncServiceOptions
+    public class UpstreamDataSyncServiceOptions
     {
+        public string BaseUri { get; set; }
+        public string ApiKey { get; set; }
     }
 }
