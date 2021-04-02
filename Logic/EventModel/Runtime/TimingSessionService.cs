@@ -71,7 +71,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             {
                 SessionDefinition = session,
                 MinLap = session.MinLap,
-                FinishCriteria = new FinishCriteria(eventRepository.GetRawDtoById(session.FinishCriteriaId)),
+                FinishCriteria = new FinishCriteria(session.FinishCriteria),
                 RiderIdMap = LoadRiderIdMap(sessionId)
             };
         }

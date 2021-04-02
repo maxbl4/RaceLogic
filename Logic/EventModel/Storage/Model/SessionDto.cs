@@ -9,7 +9,8 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
     {
         public Id<EventDto> EventId { get; set; }
         public TimeSpan MinLap { get; set; } = TimeSpan.FromSeconds(15);
-        public Id<FinishCriteriaDto> FinishCriteriaId { get; set; }
+        public DateTime StartTime { get; set; }
+        public FinishCriteriaDto FinishCriteria { get; set; }
         public List<Id<ClassDto>> ClassIds { get; set; } = new();
         public Id<SessionDto> Id { get; set; }
         public string Name { get; set; }

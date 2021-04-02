@@ -77,11 +77,6 @@ namespace maxbl4.Race.Logic.UpstreamData
             repo.Upsert(entities.ApplyTraits());
         }
 
-        public void UpsertScheduleToClasses(IEnumerable<ScheduleToClass> entities)
-        {
-            repo.Upsert(entities);
-        }
-
         public void UpsertRiderProfiles(IEnumerable<RiderProfileDto> entities)
         {
             repo.Upsert(entities.ApplyTraits());
