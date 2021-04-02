@@ -48,7 +48,11 @@ namespace maxbl4.Race.Logic.UpstreamData
                 storageService.UpsertClasses(classes.ToDto());
                 storageService.UpsertEvents(events.ToDto(eventPrices));
                 storageService.UpsertSessions(schedules.ToDto(scheduleToClass));
-                
+                var joined = from rr in riderRegistrations
+                    join rp in riderProfiles on rr.RiderProfileId equals rp.Id
+                    join ec in eventConfirmations on rr.RiderRegistrationId equals ec.RiderRegistrationId
+                    join ev in events on ec.EventId equals ev.EventId
+                    select ec;
 
                 storageService.UpsertRiderProfiles(riderProfiles.ToDto());
                 return true;
