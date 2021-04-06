@@ -76,12 +76,10 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             };
         }
 
-        private ConcurrentDictionary<string, List<Id<RiderProfileDto>>> LoadRiderIdMap(Id<SessionDto> sessionId)
+        private ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>> LoadRiderIdMap(Id<SessionDto> sessionId)
         {
             var riderIdentifiers = eventRepository.GetRiderIdentifiers(sessionId);
-            var riderIdMap = new ConcurrentDictionary<string, List<Id<RiderProfileDto>>>();
-            foreach (var idGroup in riderIdentifiers.GroupBy(x => x.Identifier))
-                riderIdMap[idGroup.Key] = idGroup.Select(x => x.RiderProfileId).ToList();
+            var riderIdMap = new ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>>(riderIdentifiers);
             return riderIdMap;
         }
     }
@@ -91,6 +89,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public SessionDto SessionDefinition { get; set; }
         public IFinishCriteria FinishCriteria { get; set; }
         public TimeSpan MinLap { get; set; }
-        public ConcurrentDictionary<string, List<Id<RiderProfileDto>>> RiderIdMap { get; set; }
+        public ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; set; }
     }
 }

@@ -44,47 +44,37 @@ namespace maxbl4.Race.Logic.UpstreamData
 
         public void UpsertSeries(IEnumerable<SeriesDto> entities)
         {
-            repo.Upsert(entities.ApplyTraits());
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
         public void UpsertChampionships(IEnumerable<ChampionshipDto> entities)
         {
-            repo.Upsert(entities.ApplyTraits());
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
         public void UpsertClasses(IEnumerable<ClassDto> entities)
         {
-            repo.Upsert(entities.ApplyTraits());
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
         public void UpsertEvents(IEnumerable<EventDto> entities)
         {
-            repo.Upsert(entities.ApplyTraits());
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
         
         public void UpsertSessions(IEnumerable<SessionDto> entities)
         {
-            repo.Upsert(entities.ApplyTraits());
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
-        public void UpsertEventConfirmations(IEnumerable<EventConfirmation> entities)
+        public void UpsertEventRegistrations(IEnumerable<RiderEventRegistrationDto> entities)
         {
-            repo.Upsert(entities);
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
-        public void UpsertSchedules(IEnumerable<ScheduleItemDto> entities)
+        public void UpsertRiderRegistrations(IEnumerable<RiderClassRegistrationDto> entities)
         {
-            repo.Upsert(entities.ApplyTraits());
-        }
-
-        public void UpsertRiderProfiles(IEnumerable<RiderProfileDto> entities)
-        {
-            repo.Upsert(entities.ApplyTraits());
-        }
-
-        public void UpsertRiderRegistrations(IEnumerable<RiderRegistration> entities)
-        {
-            repo.Upsert(entities);
+            repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
         public IEnumerable<SeriesDto> ListSeries()

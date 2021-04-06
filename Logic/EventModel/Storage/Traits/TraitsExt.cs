@@ -10,20 +10,20 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
 {
     public static class TraitsExt
     {
-        public static IEnumerable<T> ApplyTraits<T>(this IEnumerable<T> obj)
+        public static IEnumerable<T> ApplyTraits<T>(this IEnumerable<T> obj, bool skipTimestamp = false)
             where T : IHasTraits
         {
-            return obj.Select(ApplyTraits);
+            return obj.Select(x => ApplyTraits(x, skipTimestamp));
         }
         
-        public static T ApplyTraits<T>(this T obj)
+        public static T ApplyTraits<T>(this T obj, bool skipTimestamp = false)
             where T : IHasTraits
         {
             if (obj is IHasId<T> hasIdentifiers)
                 if (hasIdentifiers.Id == Id<T>.Empty)
                     hasIdentifiers.Id = Id<T>.NewId();
 
-            if (obj is IHasTimestamp timestamp)
+            if (!skipTimestamp && obj is IHasTimestamp timestamp)
             {
                 if (timestamp.Created == default)
                     timestamp.Created = DateTime.UtcNow;

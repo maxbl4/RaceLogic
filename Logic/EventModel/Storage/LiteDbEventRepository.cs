@@ -24,6 +24,21 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return repo.FirstOrDefault<T>(x => x.Id == id);
         }
 
+        public IEnumerable<RiderClassRegistrationDto> GetRegistrations(Id<ClassDto> classId, Id<EventDto> eventId)
+        {
+            yield break;
+        }
+
+        public List<RiderClassRegistrationDto> GetRegistrations(Id<SessionDto> sessionId)
+        {
+            return null;
+        }
+
+        public Dictionary<string, List<Id<RiderClassRegistrationDto>>> GetRiderIdentifiers(Id<SessionDto> sessionId)
+        {
+            return null;
+        }
+
         public List<T> GetRawDtos<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
             where T : IHasId<T>
         {
@@ -52,33 +67,6 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         {
             repo.Upsert(recordingSession.ApplyTraits());
             return recordingSession.Id;
-        }
-
-        public IEnumerable<RegistrationDto> GetRegistrations(Id<ClassDto> classId, Id<EventDto> eventId)
-        {
-            return repo.Query<RegistrationDto>().Where(x => x.ClassId == classId && x.EventId == eventId)
-                .ToEnumerable();
-        }
-
-        public List<RegistrationDto> GetRegistrations(Id<SessionDto> sessionId)
-        {
-            var session = GetRawDtoById(sessionId);
-            if (session == null) return new List<RegistrationDto>();
-            return session.ClassIds.Select(classId =>
-                    GetRegistrations(classId, session.EventId))
-                .SelectMany(x => x)
-                .ToList();
-        }
-
-        public List<RiderIdentifierDto> GetRiderIdentifiers(Id<SessionDto> sessionId)
-        {
-            return GetRegistrations(sessionId).Select(x => GetRiderIdentifiers(x.RiderProfileId))
-                .SelectMany(x => x).ToList();
-        }
-
-        public IEnumerable<RiderIdentifierDto> GetRiderIdentifiers(Id<RiderProfileDto> riderProfileId)
-        {
-            return repo.Query<RiderIdentifierDto>().Where(x => x.RiderProfileId == riderProfileId).ToEnumerable();
         }
     }
 }

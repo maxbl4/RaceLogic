@@ -7,7 +7,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
     public class RiderDisqualificationDto : IHasId<RiderDisqualificationDto>, IHasTimestamp, IHasSeed
     {
         public string Reason { get; set; }
-        public Id<RegistrationDto> RegistrationId { get; set; }
+        public Id<RiderClassRegistrationDto> RegistrationId { get; set; }
         public Id<SessionDto> SessionId { get; set; }
         public Id<RiderDisqualificationDto> Id { get; set; }
         public bool IsSeed { get; set; }
