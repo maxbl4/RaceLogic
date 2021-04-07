@@ -54,16 +54,18 @@ namespace maxbl4.Race.Logic.UpstreamData
                 storageService.UpsertSessions(schedules.ToDto(scheduleToClass));
                 
                 var riderRegs = from rr in riderRegistrations
+                    join cl in classes on rr.ClassId equals  cl.ClassId
                     join rp in riderProfiles on rr.RiderProfileId equals rp.Id
                     join dsq in disqualifications on new {rr.RiderRegistrationId, rr.ClassId} equals new {dsq.RiderRegistrationId, ClassId = dsq.ClassId??Guid.Empty} 
                         into hasDsq
-                    let rider = new {Profile = rp, Reg = rr, HasDsq = hasDsq.Any()}
+                    let rider = new {Profile = rp, Reg = rr, Class = cl, HasDsq = hasDsq.Any()}
                     select rider;
                 storageService.UpsertRiderRegistrations(riderRegs.Select(riderReg => new RiderClassRegistrationDto
                 {
                     Id = riderReg.Reg.RiderRegistrationId,
                     RiderProfileId = riderReg.Reg.RiderProfileId,
                     ClassId = riderReg.Reg.ClassId,
+                    ChampionshipDtoId = riderReg.Class.ChampionshipId,
                     Moto = riderReg.Reg.Moto,
                     Number = riderReg.Reg.Number,
                     Validated = riderReg.Reg.Validated,

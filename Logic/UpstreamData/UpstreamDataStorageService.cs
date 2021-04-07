@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using BraaapWeb.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -21,6 +20,17 @@ namespace maxbl4.Race.Logic.UpstreamData
 
         protected override void SetupIndexes()
         {
+            repo.Database.GetCollection<ClassDto>().EnsureIndex(x => x.ChampionshipId);
+            repo.Database.GetCollection<EventDto>().EnsureIndex(x => x.ChampionshipId);
+            repo.Database.GetCollection<EventDto>().EnsureIndex(x => x.EndOfRegistration);
+            repo.Database.GetCollection<SessionDto>().EnsureIndex(x => x.EventId);
+            repo.Database.GetCollection<SessionDto>().EnsureIndex(x => x.ClassIds);
+            repo.Database.GetCollection<RiderClassRegistrationDto>().EnsureIndex(x => x.ClassId);
+            repo.Database.GetCollection<RiderClassRegistrationDto>().EnsureIndex(x => x.RiderProfileId);
+            repo.Database.GetCollection<RiderClassRegistrationDto>().EnsureIndex(x => x.ChampionshipDtoId);
+            repo.Database.GetCollection<RiderEventRegistrationDto>().EnsureIndex(x => x.ClassId);
+            repo.Database.GetCollection<RiderEventRegistrationDto>().EnsureIndex(x => x.EventId);
+            repo.Database.GetCollection<RiderEventRegistrationDto>().EnsureIndex(x => x.RiderClassRegistrationId);
         }
 
         public DateTime GetLastSyncTimestamp()
@@ -35,11 +45,8 @@ namespace maxbl4.Race.Logic.UpstreamData
             repo.DeleteMany<ClassDto>(x => true);
             repo.DeleteMany<EventDto>(x => true);
             repo.DeleteMany<SessionDto>(x => true);
-            repo.DeleteMany<EventConfirmation>(x => true);
-            repo.DeleteMany<ScheduleItemDto>(x => true);
-            repo.DeleteMany<ScheduleToClass>(x => true);
-            repo.DeleteMany<RiderProfileDto>(x => true);
-            repo.DeleteMany<RiderRegistration>(x => true);
+            repo.DeleteMany<RiderClassRegistrationDto>(x => true);
+            repo.DeleteMany<RiderEventRegistrationDto>(x => true);
         }
 
         public void UpsertSeries(IEnumerable<SeriesDto> entities)
@@ -67,12 +74,12 @@ namespace maxbl4.Race.Logic.UpstreamData
             repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
 
-        public void UpsertEventRegistrations(IEnumerable<RiderEventRegistrationDto> entities)
+        public void UpsertRiderRegistrations(IEnumerable<RiderClassRegistrationDto> entities)
         {
             repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }
-
-        public void UpsertRiderRegistrations(IEnumerable<RiderClassRegistrationDto> entities)
+        
+        public void UpsertEventRegistrations(IEnumerable<RiderEventRegistrationDto> entities)
         {
             repo.Upsert(entities.ApplyTraits(skipTimestamp:true));
         }

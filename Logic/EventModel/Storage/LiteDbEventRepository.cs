@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using LiteDB;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.ServiceBase;
+using maxbl4.Race.Logic.UpstreamData;
+using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage
 {
-    public class LiteDbEventRepository : IEventRepository
+    public class LiteDbEventRepository : StorageServiceBase, IEventRepository
     {
-        private readonly LiteRepository repo;
-
-        public LiteDbEventRepository(LiteRepository repo)
+        public LiteDbEventRepository(IOptions<UpstreamDataSyncServiceOptions> options) : base(options.Value
+            .StorageConnectionString)
         {
-            this.repo = repo;
+            
         }
 
         public T GetRawDtoById<T>(Id<T> id)
@@ -67,6 +68,14 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         {
             repo.Upsert(recordingSession.ApplyTraits());
             return recordingSession.Id;
+        }
+
+        protected override void ValidateDatabase()
+        {
+        }
+
+        protected override void SetupIndexes()
+        {
         }
     }
 }

@@ -8,6 +8,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
     {
         public Id<RiderProfileDto> RiderProfileId { get; set; }
         public Id<ClassDto> ClassId { get; set; }
+        public Id<ChampionshipDto> ChampionshipDtoId { get; set; }
         public DateTime Birthdate { get; set; }
         public Sex Sex { get; set; }
         public string RiderDescription { get; set; }
