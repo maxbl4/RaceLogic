@@ -1,113 +1,121 @@
 using System;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
+using LiteDB;
+using maxbl4.Infrastructure.Extensions.DisposableExt;
+using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.Extensions;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
     public class RecordingService
     {
         private readonly IRecordingServiceStorage storage;
-        private RecordingSession actionSession;
+        private readonly ICheckpointServiceClientFactory checkpointServiceClientFactory;
+        private readonly IAutoMapperProvider mapper;
+        private RecordingSession activeSession;
 
-        public RecordingService(IRecordingServiceStorage storage)
+        public RecordingService(IRecordingServiceStorage storage, ICheckpointServiceClientFactory checkpointServiceClientFactory, IAutoMapperProvider mapper)
         {
             this.storage = storage;
+            this.checkpointServiceClientFactory = checkpointServiceClientFactory;
+            this.mapper = mapper;
+            Initialize();
         }
 
-        public async Task Initialize()
+        private void Initialize()
         {
-            var dto = await storage.GetActiveSession();
+            var dto = storage.GetActiveSession();
             if (dto != null)
-                actionSession = new RecordingSession(null, storage, dto);
+                activeSession = Create(dto);
         }
 
-        /// <summary>
-        ///     Start new session. Returns currently active session if createNew == false
-        /// </summary>
-        /// <returns></returns>
-        public async Task<RecordingSession> StartRecordingSession(bool createNew = false)
+        public RecordingSession StartRecordingSession(string name, string checkpointServiceAddress, bool createNew = false)
         {
-            if (!createNew && actionSession != null)
-                return actionSession;
-            if (actionSession != null)
+            if (!createNew && activeSession != null)
+                return activeSession;
+            if (activeSession != null)
             {
-                await actionSession.DisposeAsync();
-                actionSession = null;
+                activeSession.Dispose();
+                activeSession = null;
             }
 
-            actionSession = new RecordingSession(null, storage, new RecordingSessionDto());
-            return actionSession;
+            var dto = new RecordingSessionDto
+            {
+                Name = name,
+                CheckpointServiceAddress = checkpointServiceAddress,
+                IsRunning = true,
+                StartTime = DateTime.UtcNow
+            };
+            storage.SaveSession(dto);
+            return activeSession = Create(dto);
         }
 
-        /// <summary>
-        ///     Load and continue previous session or return e
-        /// </summary>
-        /// <param name="recordingSessionId"></param>
-        /// <returns></returns>
-        public async Task<RecordingSession> ContinueRecordingSession(Id<RecordingSessionDto> recordingSessionId)
+        private RecordingSession Create(RecordingSessionDto dto)
         {
-            if (actionSession != null && actionSession.SessionId == recordingSessionId)
-                return actionSession;
-            actionSession = new RecordingSession(null, storage, await storage.GetSession(recordingSessionId));
-            return actionSession;
+            var client = dto.CheckpointServiceAddress != null ? checkpointServiceClientFactory.CreateClient(dto.CheckpointServiceAddress) : null;
+            return activeSession = new RecordingSession(dto.Id, client, storage, mapper);
         }
     }
 
-    public class RecordingSession : IAsyncDisposable
+    public class RecordingSession : IDisposable
     {
-        private readonly ICheckpointServiceClientFactory cpFactory;
+        private readonly ICheckpointServiceClient client;
         private readonly IRecordingServiceStorage storage;
+        private readonly IAutoMapperProvider mapper;
+        private ICheckpointSubscription subscription;
+        private readonly CompositeDisposable disposable;
 
-        public RecordingSession(ICheckpointServiceClientFactory cpFactory, IRecordingServiceStorage storage,
-            RecordingSessionDto dto)
+        public RecordingSession(Id<RecordingSessionDto> id, ICheckpointServiceClient client, IRecordingServiceStorage storage, IAutoMapperProvider mapper)
         {
-            this.cpFactory = cpFactory;
+            this.client = client;
             this.storage = storage;
-            SessionId = dto.Id;
+            this.mapper = mapper;
+            SessionId = id;
+            var dto = storage.GetSession(id);
+            if (client != null)
+            {
+                disposable = new CompositeDisposable(
+                    subscription = client.CreateSubscription(dto.StartTime),
+                    subscription.Checkpoints.Subscribe(OnCheckpoint)
+                    );
+                subscription.Start();
+            }
         }
 
         public Id<RecordingSessionDto> SessionId { get; }
 
-        public ValueTask DisposeAsync()
+        public void Dispose()
         {
-            return default;
+            disposable.DisposeSafe();
         }
 
-        public async Task Start()
+        public void Stop()
         {
-            // TODO: Subscribe to checkpoints from each enabled CheckpointService
-            // Call OnCheckpoint
-            await Task.Delay(1);
-        }
-
-        public async Task Stop()
-        {
-            // TODO: dispose subscription
-            await Task.Delay(1);
+            disposable.DisposeSafe();
+            storage.UpdateSession(dto => dto.IsRunning = false);
         }
 
         private void OnCheckpoint(Checkpoint checkpoint)
         {
-            // TODO: store checkpoint and signal we have updates
+            var dto = mapper.Map<CheckpointDto>(checkpoint);
+            dto.RecordingSessionId = SessionId;
+            storage.UpsertCheckpoint(dto);
         }
-    }
-
-    public interface ICheckpointServiceClient
-    {
-    }
-
-    public interface ICheckpointServiceClientFactory
-    {
-        ICheckpointServiceClient CreateClient(string address);
     }
 
     public interface IRecordingServiceStorage
     {
-        Task<RecordingSessionDto> GetActiveSession();
-        Task<RecordingSessionDto> GetSession(Id<RecordingSessionDto> sessionId);
-        Task<string> GetCheckpointServiceAddress();
-        Task SaveSession(RecordingSessionDto dto);
+        RecordingSessionDto GetActiveSession();
+        RecordingSessionDto GetSession(Id<RecordingSessionDto> sessionId);
+        void SaveSession(RecordingSessionDto dto);
+        void UpdateSession(Action<RecordingSessionDto> modifier);
+        DeviceDescriptorDto GetDeviceDescriptor(Id<DeviceDescriptorDto> id);
+        void UpsertCheckpoint(CheckpointDto checkpoint);
     }
 }

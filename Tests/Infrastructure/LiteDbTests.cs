@@ -4,6 +4,8 @@ using System.Threading;
 using FluentAssertions;
 using LiteDB;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.Extensions;
 using Xunit;
 
@@ -140,15 +142,53 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
             var token = cts.Token;
-            using (var repo = new LiteRepository(dbFile).WithUtcDate())
+            using var repo = new LiteRepository(dbFile).WithUtcDate();
+            for (var i = 0; i < count; i++)
             {
-                for (var i = 0; i < count; i++)
-                {
-                    repo.Insert(new Entity {Data = i.ToString()});
-                    if (token.IsCancellationRequested)
-                        break;
-                }
+                repo.Insert(new Entity {Data = i.ToString()});
+                if (token.IsCancellationRequested)
+                    break;
             }
+        }
+
+        [Fact]
+        public void Read_bson_with_more_fields_then_entity()
+        {
+            using var repo = new LiteRepository(dbFile).WithUtcDate();
+            repo.Insert(new BigEntity{Field1 = "111", Field2 = "222"}, "col");
+            var e = repo.Query<SmallEntity>("col").First();
+            e.Field1.Should().Be("111");
+            repo.Update(e, "col");
+            var e2 = repo.Query<BigEntity>("col").First();
+            e2.Field1.Should().Be("111");
+            e2.Field2.Should().BeNullOrEmpty();
+        }
+        
+        [Fact]
+        public void Read_untyped_object()
+        {
+            using var repo = new LiteRepository(dbFile).WithUtcDate();
+
+            var custom = new SmallEntity {Id = Id<SmallEntity>.NewId(), Field1 = "ffff"};
+            repo.Insert(new BigEntity{Field1 = "111", Field2 = "222", Custom = custom});
+            var e = repo.Query<BigEntity>().First();
+            var custom2 = e.Custom.Should().BeOfType<SmallEntity>().Subject;
+            custom2.Id.Should().Be(custom.Id);
+            custom2.Field1.Should().Be(custom.Field1);
+        }
+
+        private class BigEntity: IHasId<BigEntity>
+        {
+            public Id<BigEntity> Id { get; set; }
+            public string Field1 { get; set; }
+            public string Field2 { get; set; }
+            public object Custom { get; set; }
+        }
+        
+        private class SmallEntity: IHasId<SmallEntity>
+        {
+            public Id<SmallEntity> Id { get; set; }
+            public string Field1 { get; set; }
         }
 
         private class Entity

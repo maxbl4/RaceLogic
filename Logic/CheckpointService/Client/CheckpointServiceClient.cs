@@ -13,7 +13,7 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.CheckpointService.Client
 {
-    public class CheckpointServiceClient
+    public class CheckpointServiceClient : ICheckpointServiceClient
     {
         private readonly string address;
         private readonly HttpClient http = new();
