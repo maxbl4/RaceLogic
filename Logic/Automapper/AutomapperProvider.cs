@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Runtime;
+using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 
 namespace maxbl4.Race.Logic.AutoMapper
@@ -28,6 +30,7 @@ namespace maxbl4.Race.Logic.AutoMapper
 
         private void ConfigureMappings(IMapperConfigurationExpression cfg)
         {
+            cfg.CreateMap(typeof(Id<>), typeof(Id<>));
             cfg.CreateMap<Checkpoint, CheckpointDto>();
             cfg.CreateMap<RecordingSessionDto, TimingSession>();
         }
