@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Reactive.PlatformServices;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using BraaapWeb.Client;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using Microsoft.Extensions.Options;
 
@@ -18,13 +15,16 @@ namespace maxbl4.Race.Logic.UpstreamData
         private readonly UpstreamDataSyncServiceOptions options;
         private readonly IMainClient mainClient;
         private readonly UpstreamDataStorageService storageService;
+        private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
 
-        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, UpstreamDataStorageService storageService)
+        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, UpstreamDataStorageService storageService,
+            IMessageHub messageHub)
         {
             this.options = options.Value;
             this.mainClient = mainClient;
             this.storageService = storageService;
+            this.messageHub = messageHub;
         }
         
         public async Task<bool> Download(bool forceFullSync = false)
@@ -105,6 +105,7 @@ namespace maxbl4.Race.Logic.UpstreamData
                     Created = x.Ec.Created.UtcDateTime,
                     Updated = x.Ec.Updated.UtcDateTime,
                 }));
+                messageHub.Publish(new UpstreamDataSyncComplete());
                 return true;
             }
             finally
@@ -112,6 +113,10 @@ namespace maxbl4.Race.Logic.UpstreamData
                 sync.Release();
             }
         }
+    }
+
+    public class UpstreamDataSyncComplete
+    {
     }
 
     public class UpstreamDataSyncServiceOptions

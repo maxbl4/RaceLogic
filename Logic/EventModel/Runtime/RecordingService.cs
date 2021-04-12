@@ -1,9 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
+using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService.Client;
@@ -63,13 +68,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         }
     }
 
-    public class RecordingSession : IDisposable
+    public class RecordingSession : IDisposable, IObservable<Checkpoint>
     {
         private readonly ICheckpointServiceClient client;
         private readonly IRecordingServiceStorage storage;
         private readonly IAutoMapperProvider mapper;
         private ICheckpointSubscription subscription;
         private readonly CompositeDisposable disposable;
+        private readonly Subject<Checkpoint> chekpoints = new();
+        private readonly SemaphoreSlim sync = new(1);
 
         public RecordingSession(Id<RecordingSessionDto> id, ICheckpointServiceClient client, IRecordingServiceStorage storage, IAutoMapperProvider mapper)
         {
@@ -103,9 +110,23 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         private void OnCheckpoint(Checkpoint checkpoint)
         {
+            using var _ = sync.UseOnce();
             var dto = mapper.Map<CheckpointDto>(checkpoint);
             dto.RecordingSessionId = SessionId;
             storage.UpsertCheckpoint(dto);
+        }
+
+        public IDisposable Subscribe(IObserver<Checkpoint> observer)
+        {
+            using var _ = sync.UseOnce();
+            var cps = mapper.Map<List<Checkpoint>>(storage.GetCheckpoints(SessionId));
+            cps.ToObservable()
+
+                .Buffer(10)
+                .SelectMany(x => x)
+                .Concat(chekpoints);
+            
+            return null;
         }
     }
 
@@ -115,7 +136,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         RecordingSessionDto GetSession(Id<RecordingSessionDto> sessionId);
         void SaveSession(RecordingSessionDto dto);
         void UpdateSession(Action<RecordingSessionDto> modifier);
-        DeviceDescriptorDto GetDeviceDescriptor(Id<DeviceDescriptorDto> id);
         void UpsertCheckpoint(CheckpointDto checkpoint);
+        IEnumerable<CheckpointDto> GetCheckpoints(Id<RecordingSessionDto> sessionId);
     }
 }

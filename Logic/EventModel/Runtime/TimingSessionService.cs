@@ -56,11 +56,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         {
             var staticData = LoadTimingSessionStaticData(recordingSessionDto.SessionId);
             var timingSession = ActiveTimingSession = autoMapperProvider.Map<TimingSession>(recordingSessionDto);
-            timingSession.StartTime = recordingSessionDto.Created;
-            timingSession.MinLap = staticData.MinLap;
-            timingSession.FinishCriteria = staticData.FinishCriteria;
-            timingSession.Initialize(autoMapperProvider.Map<List<Checkpoint>>(
-                eventRepository.GetRawDtos<CheckpointDto>(x => x.RecordingSessionId == recordingSessionDto.Id)));
+            // timingSession.StartTime = recordingSessionDto.Created;
+            // timingSession.MinLap = staticData.MinLap;
+            // timingSession.FinishCriteria = staticData.FinishCriteria;
+            // timingSession.Initialize(autoMapperProvider.Map<List<Checkpoint>>(
+            //     eventRepository.GetRawDtos<CheckpointDto>(x => x.RecordingSessionId == recordingSessionDto.Id)));
             return timingSession;
         }
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using FluentAssertions;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
@@ -71,6 +73,33 @@ namespace maxbl4.Race.Tests
             list.ToObservable().Concat(timer).Subscribe(x => result.Add(x));
             new Timing().Expect(() => result.Count >= 8);
             result.SequenceEqual(new long[] {0, 1, 2, 3, 4, 5, 6, 7});
+        }
+        
+        [Fact]
+        public void Should_observe_in_order_and_not_block_publish()
+        {
+            const int count = 100;
+
+            var sync = new ManualResetEventSlim(false);
+            var items = new List<int>();
+            var subj = new Subject<int>();
+            subj
+                .ObserveOn(TaskPoolScheduler.Default)
+                .Subscribe(x =>
+                {
+                    Thread.Sleep(10 - x/10);
+                    items.Add(x);
+                    if (x == count)
+                        sync.Set();
+                });
+            for (var i = 1; i <= count; i++)
+            {
+                subj.OnNext(i);
+            }
+            items.Count.Should().BeLessThan(count);
+            sync.Wait(5000);
+            items.Count.Should().Be(count);
+            items.Should().BeInAscendingOrder();
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.RoundTiming;
+using maxbl4.Race.Logic.UpstreamData;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
@@ -34,15 +37,16 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     
     public class TimingSession : IHasName, IHasTimestamp, IHasSeed
     {
-        public TimestampAggregator<Checkpoint> checkpointAggregator;
+        private readonly Id<TimingSessionDto> id;
+        private readonly IEventRepository eventRepository;
+        private readonly IMessageHub messageHub;
+        private TimestampAggregator<Checkpoint> checkpointAggregator;
 
-        public Id<SessionDto> SessionId { get; set; }
-        public Id<RecordingSessionDto> RecordingSessionId { get; set; }
-        public DateTime StartTime { get; set; }
-        public TimeSpan MinLap { get; set; } = TimeSpan.FromSeconds(15);
+        public Id<SessionDto> SessionId { get; private set; }
+        public Id<RecordingSessionDto> RecordingSessionId { get; private set; }
+        public DateTime StartTime { get; private set; }
         public List<Checkpoint> RawCheckpoints { get; } = new();
         public List<Checkpoint> AggCheckpoints { get; } = new();
-        public IFinishCriteria FinishCriteria { get; set; }
         public ITrackOfCheckpoints Track { get; private set; }
         public ConcurrentDictionary<string, List<Id<RiderProfileDto>>> RiderIdMap { get; set; }
         public string Name { get; set; }
@@ -51,15 +55,38 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
 
-        public void Initialize(IEnumerable<Checkpoint> initialCheckpoints = null)
+        public TimingSession(Id<TimingSessionDto> id, IEventRepository eventRepository, IMessageHub messageHub)
         {
-            Track = new TrackOfCheckpoints(StartTime, FinishCriteria);
+            this.id = id;
+            this.eventRepository = eventRepository;
+            this.messageHub = messageHub;
+            messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Initialize());
+            messageHub.Subscribe<EventDataUpdated>(Initialize);
+            Initialize();
+        }
+
+        public void Initialize(EventDataUpdated msg = null)
+        {
+            if (msg != null)
+            {
+                switch (msg.Entity)
+                {
+                    case RecordingSessionDto r:
+                    case CheckpointDto c:
+                        return;
+                }
+            }
+            var timingSession = eventRepository.GetRawDtoById(id);
+            var session = eventRepository.GetRawDtoById(timingSession.SessionId);
+            var recordingSession = eventRepository.GetRawDtoById(timingSession.RecordingSessionId);
+            Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
             RawCheckpoints.Clear();
             AggCheckpoints.Clear();
-            checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(MinLap);
+            checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
             checkpointAggregator.Subscribe(Track.Append);
             checkpointAggregator.AggregatedCheckpoints.Subscribe(AggCheckpoints.Add);
-            foreach (var checkpoint in initialCheckpoints) checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
+            
+            //foreach (var checkpoint in initialCheckpoints) checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
         }
 
         public void AppendCheckpoint(Checkpoint checkpoint)

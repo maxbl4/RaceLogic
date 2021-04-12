@@ -13,7 +13,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             int? skip = null, int? limit = null)
             where T : IHasId<T>;
 
-        Id<T> Save<T>(T recordingSession)
+        Id<T> Save<T>(T entity)
             where T : IHasId<T>;
 
         List<T> GetRawDtos<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using LiteDB;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -13,10 +14,12 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
 {
     public class LiteDbEventRepository : StorageServiceBase, IEventRepository
     {
-        public LiteDbEventRepository(IOptions<UpstreamDataSyncServiceOptions> options) : base(options.Value
+        private readonly IMessageHub messageHub;
+
+        public LiteDbEventRepository(IOptions<UpstreamDataSyncServiceOptions> options, IMessageHub messageHub) : base(options.Value
             .StorageConnectionString)
         {
-            
+            this.messageHub = messageHub;
         }
 
         public T GetRawDtoById<T>(Id<T> id)
@@ -64,10 +67,11 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return query.ToList();
         }
 
-        public Id<T> Save<T>(T recordingSession) where T : IHasId<T>
+        public Id<T> Save<T>(T entity) where T : IHasId<T>
         {
-            repo.Upsert(recordingSession.ApplyTraits());
-            return recordingSession.Id;
+            repo.Upsert(entity.ApplyTraits());
+            messageHub.Publish(new EventDataUpdated{Id = entity.Id, Entity = entity});
+            return entity.Id;
         }
 
         protected override void ValidateDatabase()
@@ -77,5 +81,11 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         protected override void SetupIndexes()
         {
         }
+    }
+
+    public class EventDataUpdated
+    {
+        public Guid Id { get; set; }
+        public IHasGuidId Entity { get; set; }
     }
 }
