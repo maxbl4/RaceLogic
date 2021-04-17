@@ -55,6 +55,19 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Traits
                 .Where(HasId)
                 .Select(x => idType.MakeGenericType(x.type));
         }
+        
+        public static void Start(this IHasRunning obj, DateTime time)
+        {
+            obj.StartTime = time;
+            obj.StopTime = Constants.DefaultUtcDate;
+            obj.IsRunning = true;
+        }
+        
+        public static void Stop(this IHasRunning obj, DateTime time)
+        {
+            obj.StopTime = time;
+            obj.IsRunning = false;
+        }
 
         private static bool HasId((Type type, Type[] interfaces) def)
         {

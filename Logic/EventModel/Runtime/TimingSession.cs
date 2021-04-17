@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reactive.PlatformServices;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
@@ -39,7 +40,9 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     {
         private readonly Id<TimingSessionDto> id;
         private readonly IEventRepository eventRepository;
+        private readonly IRecordingService recordingService;
         private readonly IMessageHub messageHub;
+        private readonly ISystemClock clock;
         private TimestampAggregator<Checkpoint> checkpointAggregator;
 
         public Id<SessionDto> SessionId { get; private set; }
@@ -55,11 +58,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
 
-        public TimingSession(Id<TimingSessionDto> id, IEventRepository eventRepository, IMessageHub messageHub)
+        public TimingSession(Id<TimingSessionDto> id, IEventRepository eventRepository, IRecordingService recordingService, IMessageHub messageHub, ISystemClock clock)
         {
             this.id = id;
             this.eventRepository = eventRepository;
+            this.recordingService = recordingService;
             this.messageHub = messageHub;
+            this.clock = clock;
             messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Initialize());
             messageHub.Subscribe<EventDataUpdated>(Initialize);
             Initialize();
@@ -87,6 +92,14 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             checkpointAggregator.AggregatedCheckpoints.Subscribe(AggCheckpoints.Add);
             
             //foreach (var checkpoint in initialCheckpoints) checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
+        }
+
+        public void Start()
+        {
+            eventRepository.Update(id, x =>
+            {
+                x.Start(clock.UtcNow.UtcDateTime);
+            });
         }
 
         public void AppendCheckpoint(Checkpoint checkpoint)

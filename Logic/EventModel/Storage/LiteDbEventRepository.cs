@@ -43,6 +43,11 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return null;
         }
 
+        public Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>
+        {
+            return default;
+        }
+
         public List<T> GetRawDtos<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
             where T : IHasId<T>
         {
