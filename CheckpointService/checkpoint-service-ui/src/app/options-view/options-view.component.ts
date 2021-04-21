@@ -7,6 +7,7 @@ import {OptionsService} from "../service/options.service";
   template: `
       <mat-form-field class="w-100">
           <input matInput placeholder="Rfid Connection String" [(ngModel)]="rfidOptions.connectionString">
+        <mat-hint>Local serial connection: Protocol=Serial;Serial=/dev/ttyS2@115200;RFPower=29;AntennaConfiguration=Antenna1</mat-hint>
       </mat-form-field>
       <mat-form-field class="w-100">
           <input matInput placeholder="Checkpoint aggregation window milliseconds"

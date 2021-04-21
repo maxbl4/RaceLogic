@@ -67,6 +67,17 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             return activeSession = Create(dto);
         }
 
+        public RecordingSession GetOrCreateRecordingSession(Id<RecordingSessionDto> id)
+        {
+            var dto = storage.GetSession(id);
+            if (dto == null)
+            {
+                
+            }
+
+            return Create(dto);
+        }
+
         private RecordingSession Create(RecordingSessionDto dto)
         {
             var client = dto.CheckpointServiceAddress != null ? checkpointServiceClientFactory.CreateClient(dto.CheckpointServiceAddress) : null;

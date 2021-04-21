@@ -83,6 +83,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             }
             var timingSession = eventRepository.GetRawDtoById(id);
             var session = eventRepository.GetRawDtoById(timingSession.SessionId);
+            //recordingService.StartRecordingSession()
             var recordingSession = eventRepository.GetRawDtoById(timingSession.RecordingSessionId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
             RawCheckpoints.Clear();
@@ -90,8 +91,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
             checkpointAggregator.Subscribe(Track.Append);
             checkpointAggregator.AggregatedCheckpoints.Subscribe(AggCheckpoints.Add);
-            
-            //foreach (var checkpoint in initialCheckpoints) checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
         }
 
         public void Start()

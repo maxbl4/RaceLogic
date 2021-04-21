@@ -1,4 +1,4 @@
-﻿#1.0.33
+#1.0.37
 
 function Main()
 {
@@ -7,7 +7,7 @@ function Main()
     $publishRoot = "./_build"
     $containerRoot = "./_build/bin"
     $imageName = "checkpoint-service"    
-    $platforms = @("armhf","amd64")
+    $platforms = @("arm64","amd64")
     rmdir -Force -Recurs $publishRoot
     cp -r ./lib "$publishRoot/lib" 
     dotnet publish -c Release /p:Version=$version -o $containerRoot

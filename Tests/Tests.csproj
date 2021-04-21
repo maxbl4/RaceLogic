@@ -3,6 +3,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>maxbl4.Race.Tests</RootNamespace>
+    <UserSecretsId>dc5c5e9d-4468-43ed-ada7-441d40ce4df4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />

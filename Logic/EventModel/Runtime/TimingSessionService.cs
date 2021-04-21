@@ -2,8 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.PlatformServices;
 using System.Threading;
 using maxbl4.Infrastructure.Extensions.SemaphoreExt;
+using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
@@ -16,72 +18,46 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     public class TimingSessionService
     {
         private readonly IAutoMapperProvider autoMapperProvider;
+        private readonly ISystemClock clock;
         private readonly IEventRepository eventRepository;
+        private readonly IRecordingService recordingService;
+        private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
 
-        public TimingSessionService(IEventRepository eventRepository, IAutoMapperProvider autoMapperProvider)
+        public TimingSessionService(IEventRepository eventRepository, IRecordingService recordingService, IMessageHub messageHub, 
+            IAutoMapperProvider autoMapperProvider, ISystemClock clock)
         {
             this.eventRepository = eventRepository;
+            this.recordingService = recordingService;
+            this.messageHub = messageHub;
             this.autoMapperProvider = autoMapperProvider;
+            this.clock = clock;
         }
 
-        public RecordingSessionDto ActiveRecordingSession { get; private set; }
         public TimingSession ActiveTimingSession { get; private set; }
 
-        public TimingSession StartSession(Id<SessionDto> sessionDtoId, string name)
+        /// <summary>
+        /// Публичный TimingSession не нужен, сервис всё делает, обновляет DTO сразу в хранилище
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public TimingSession GetTimingSession(Id<TimingSessionDto> id)
         {
-            var recordingSessionDto = ActiveRecordingSession = new RecordingSessionDto
-                {Name = name, SessionId = sessionDtoId};
-            eventRepository.Save(recordingSessionDto);
-            return ActiveTimingSession = CreateTimingSession(recordingSessionDto);
+            var dto = eventRepository.GetRawDtoById(id);
+            if (dto == null)
+                return null;
+            return new TimingSession(id, eventRepository, recordingService, messageHub, clock);
         }
-
-        public TimingSession ResumeSession(Id<RecordingSessionDto> recordingSessionId)
-        {
-            using var s = sync.UseOnce();
-            var recordingSessionDto = ActiveRecordingSession = eventRepository.GetRawDtoById(recordingSessionId);
-            return ActiveTimingSession = CreateTimingSession(recordingSessionDto);
-        }
-
-        public void RecordCheckpoint(Checkpoint checkpoint)
-        {
-            using var s = sync.UseOnce();
-            var checkpointDto = autoMapperProvider.Map<CheckpointDto>(checkpoint);
-            checkpointDto.RecordingSessionId = ActiveRecordingSession.Id;
-            eventRepository.Save(checkpointDto);
-            ActiveTimingSession.AppendCheckpoint(checkpoint);
-        }
-
+        
         private TimingSession CreateTimingSession(RecordingSessionDto recordingSessionDto)
         {
-            var staticData = LoadTimingSessionStaticData(recordingSessionDto.SessionId);
-            var timingSession = ActiveTimingSession = autoMapperProvider.Map<TimingSession>(recordingSessionDto);
-            // timingSession.StartTime = recordingSessionDto.Created;
-            // timingSession.MinLap = staticData.MinLap;
-            // timingSession.FinishCriteria = staticData.FinishCriteria;
-            // timingSession.Initialize(autoMapperProvider.Map<List<Checkpoint>>(
-            //     eventRepository.GetRawDtos<CheckpointDto>(x => x.RecordingSessionId == recordingSessionDto.Id)));
-            return timingSession;
+            return default;
         }
+    }
 
-        private TimingSessionStaticData LoadTimingSessionStaticData(Id<SessionDto> sessionId)
-        {
-            var session = eventRepository.GetRawDtoById(sessionId);
-            return new TimingSessionStaticData
-            {
-                SessionDefinition = session,
-                MinLap = session.MinLap,
-                FinishCriteria = new FinishCriteria(session.FinishCriteria),
-                RiderIdMap = LoadRiderIdMap(sessionId)
-            };
-        }
-
-        private ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>> LoadRiderIdMap(Id<SessionDto> sessionId)
-        {
-            var riderIdentifiers = eventRepository.GetRiderIdentifiers(sessionId);
-            var riderIdMap = new ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>>(riderIdentifiers);
-            return riderIdMap;
-        }
+    public class TimingSessionRatingUpdated
+    {
+        public List<RoundPosition> Rating { get; set; }
     }
 
     public class TimingSessionStaticData
