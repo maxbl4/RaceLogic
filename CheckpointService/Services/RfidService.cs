@@ -115,6 +115,7 @@ namespace maxbl4.Race.CheckpointService.Services
             disposable = new CompositeDisposable
             {
                 stream,
+                stream.Errors.Subscribe(x => logger.Warning(x, "Rfid error")),
                 stream.Tags.Subscribe(x =>
                 {
                     if (options.PersistTags)
