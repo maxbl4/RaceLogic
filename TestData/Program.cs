@@ -17,7 +17,7 @@ namespace TestData
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             Randomizer.Seed = new Random(1);
             
@@ -109,12 +109,6 @@ namespace TestData
             using var sw = new StreamWriter($"{name}.json");
             serializer.Serialize(sw, items);
             Console.WriteLine($"Saved {items.Count} {name}");
-        }
-        
-        public void Generate_name_and_email()
-        {
-            Bogus.Randomizer.Seed = new Random(1);
-            var names = new Bogus.DataSets.Name("ru");
         }
     }
 }
