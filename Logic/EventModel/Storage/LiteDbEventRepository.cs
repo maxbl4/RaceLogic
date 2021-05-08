@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage
 {
-    public class LiteDbEventRepository : StorageServiceBase, IEventRepository
+    public partial class LiteDbEventRepository : StorageServiceBase, IEventRepository
     {
         private readonly IMessageHub messageHub;
 
@@ -45,7 +45,9 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
 
         public Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>
         {
-            return default;
+            var dto = GetRawDtoById(id);
+            modifier(dto);
+            return Save(dto);
         }
 
         public List<T> GetRawDtos<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
@@ -85,6 +87,8 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
 
         protected override void SetupIndexes()
         {
+            repo.Database.GetCollection<RecordingSessionDto>().EnsureIndex(x => x.IsRunning);
+            repo.Database.GetCollection<CheckpointDto>().EnsureIndex(x => x.RecordingSessionId);
         }
     }
 

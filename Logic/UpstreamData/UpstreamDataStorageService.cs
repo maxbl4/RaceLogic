@@ -113,6 +113,14 @@ namespace maxbl4.Race.Logic.UpstreamData
                 query = query.Where(x => x.ChampionshipId == championshipId);
             return query.ToEnumerable();
         }
+        
+        public IEnumerable<SessionDto> ListSessions(Id<EventDto>? eventId = null)
+        {
+            var query = repo.Query<SessionDto>();
+            if (eventId != null && eventId != Id<EventDto>.Empty)
+                query = query.Where(x => x.EventId == eventId);
+            return query.ToEnumerable();
+        }
 
         private class Timestamp
         {

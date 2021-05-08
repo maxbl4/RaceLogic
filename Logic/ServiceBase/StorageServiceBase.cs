@@ -13,6 +13,7 @@ namespace maxbl4.Race.Logic.ServiceBase
         protected readonly string connectionString;
         protected readonly ILogger logger;
         protected LiteRepository repo;
+        public LiteRepository Repo => repo;
 
         protected StorageServiceBase(string connectionString)
         {

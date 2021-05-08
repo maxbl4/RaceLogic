@@ -31,8 +31,8 @@ namespace maxbl4.Race.Logic.AutoMapper
         private void ConfigureMappings(IMapperConfigurationExpression cfg)
         {
             cfg.CreateMap(typeof(Id<>), typeof(Id<>));
-            cfg.CreateMap<Checkpoint, CheckpointDto>();
-            cfg.CreateMap<RecordingSessionDto, TimingSession>();
+            cfg.CreateMap<Checkpoint, CheckpointDto>().ReverseMap();
+            cfg.CreateMap<RecordingSessionDto, TimingSession>().ReverseMap();
         }
     }
 }

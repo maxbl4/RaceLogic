@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
@@ -21,6 +22,9 @@ namespace maxbl4.Race.Tests.Infrastructure
             });
             dto.Id.Value.Should().Be(id);
             dto.Count.Should().Be(5);
+            
+            var cp = mapper.Map<Checkpoint>(dto);
+            cp.Id.Value.Should().Be(id);
         }
     }
 }

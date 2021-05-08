@@ -34,8 +34,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.clock = clock;
         }
 
-        public TimingSession ActiveTimingSession { get; private set; }
-
         /// <summary>
         /// Публичный TimingSession не нужен, сервис всё делает, обновляет DTO сразу в хранилище
         /// </summary>
@@ -48,10 +46,19 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 return null;
             return new TimingSession(id, eventRepository, recordingService, messageHub, clock);
         }
-        
-        private TimingSession CreateTimingSession(RecordingSessionDto recordingSessionDto)
+
+        public TimingSession CreateSession(string name, Id<EventDto> eventId, Id<SessionDto> sessionId,
+            Id<RecordingSessionDto> recordingSessionSessionId)
         {
-            return default;
+            var dto = new TimingSessionDto
+            {
+                Name = name,
+                EventId = eventId,
+                SessionId = sessionId,
+                RecordingSessionId = recordingSessionSessionId
+            };
+            eventRepository.Save(dto);
+            return new TimingSession(dto.Id, eventRepository, recordingService, messageHub, clock);
         }
     }
 
