@@ -25,17 +25,17 @@ namespace maxbl4.Race.CheckpointService.Services
         private readonly ILogger logger = Log.ForContext<RfidService>();
         private readonly IMapper mapper;
         private readonly IMessageHub messageHub;
-        private readonly StorageService storageService;
+        private readonly CheckpointRepository checkpointRepository;
         private readonly ISystemClock systemClock;
         private TimestampAggregator<Checkpoint> aggregator;
         private CompositeDisposable aggregatorDisposable;
         private CompositeDisposable disposable;
         private IUniversalTagStream stream;
 
-        public RfidService(StorageService storageService, IMessageHub messageHub,
+        public RfidService(CheckpointRepository checkpointRepository, IMessageHub messageHub,
             ISystemClock systemClock, IMapper mapper)
         {
-            this.storageService = storageService;
+            this.checkpointRepository = checkpointRepository;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
             this.mapper = mapper;
@@ -43,7 +43,7 @@ namespace maxbl4.Race.CheckpointService.Services
             factory = new UniversalTagStreamFactory();
             factory.UseAlienProtocol();
             factory.UseSerialProtocol();
-            RfidOptionsChanged(storageService.GetRfidOptions());
+            RfidOptionsChanged(checkpointRepository.GetRfidOptions());
         }
 
         public void AppendRiderId(string riderId)
@@ -87,7 +87,7 @@ namespace maxbl4.Race.CheckpointService.Services
                 && systemClock.UtcNow.UtcDateTime - options.Timestamp > TimeSpan.FromDays(1))
             {
                 options.Enabled = false;
-                storageService.SetRfidOptions(options, false);
+                checkpointRepository.SetRfidOptions(options, false);
                 return false;
             }
 
@@ -97,7 +97,7 @@ namespace maxbl4.Race.CheckpointService.Services
         private void OnCheckpoint(Checkpoint cp)
         {
             logger.Debug("OnCheckpoint {cp}", cp);
-            logger.SwallowError(() => storageService.AppendCheckpoint(cp));
+            logger.SwallowError(() => checkpointRepository.AppendCheckpoint(cp));
             logger.Swallow(() => messageHub.Publish(cp));
         }
 
@@ -119,7 +119,7 @@ namespace maxbl4.Race.CheckpointService.Services
                 stream.Tags.Subscribe(x =>
                 {
                     if (options.PersistTags)
-                        logger.Swallow(() => storageService.AppendTag(mapper.Map<Tag>(x)));
+                        logger.Swallow(() => checkpointRepository.AppendTag(mapper.Map<Tag>(x)));
                     AppendRiderId(x.TagId);
                 }),
                 stream.Connected.CombineLatest(stream.Heartbeat,

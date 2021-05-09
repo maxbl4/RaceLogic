@@ -6,127 +6,6 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/data/event/{id}": {
-      "get": {
-        "tags": [
-          "Data"
-        ],
-        "operationId": "Data_GetEvent",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Data"
-        ],
-        "operationId": "Data_UpsertEvent",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "entity",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EventDto"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "format": "guid"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Data"
-        ],
-        "operationId": "Data_DeleteEvent",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/data/event": {
-      "get": {
-        "tags": [
-          "Data"
-        ],
-        "operationId": "Data_ListEventsAll",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/data/upstream/purge": {
       "post": {
         "tags": [
@@ -617,70 +496,6 @@
   },
   "components": {
     "schemas": {
-      "EventDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "type": "string",
-            "nullable": true
-          },
-          "regulations": {
-            "type": "string",
-            "nullable": true
-          },
-          "resultsTemplate": {
-            "type": "string",
-            "nullable": true
-          },
-          "championshipId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "startOfRegistration": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endOfRegistration": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "basePrice": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "paymentMultiplier": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "published": {
-            "type": "boolean"
-          },
-          "isSeed": {
-            "type": "boolean"
-          },
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
       "SeriesDto": {
         "type": "object",
         "additionalProperties": false,
@@ -760,6 +575,70 @@
           "numberGroupId": {
             "type": "string",
             "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "isSeed": {
+            "type": "boolean"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EventDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "nullable": true
+          },
+          "regulations": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultsTemplate": {
+            "type": "string",
+            "nullable": true
+          },
+          "championshipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startOfRegistration": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endOfRegistration": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basePrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "paymentMultiplier": {
+            "type": "number",
+            "format": "decimal"
           },
           "id": {
             "type": "string",

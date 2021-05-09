@@ -23,13 +23,13 @@ namespace maxbl4.Race.CheckpointService.Services
         private readonly CompositeDisposable disposable;
         private readonly ILogger logger = Log.ForContext<DistributionService>();
         private readonly ReaderWriterLockSlim rwlock = new(LockRecursionPolicy.SupportsRecursion);
-        private readonly StorageService storageService;
+        private readonly CheckpointRepository checkpointRepository;
 
         public DistributionService(IHubContext<CheckpointsHub> checkpointsHub, IMessageHub messageHub,
-            StorageService storageService)
+            CheckpointRepository checkpointRepository)
         {
             this.checkpointsHub = checkpointsHub;
-            this.storageService = storageService;
+            this.checkpointRepository = checkpointRepository;
             disposable = new CompositeDisposable(
                 messageHub.Subscribe<Checkpoint>(OnCheckpoint),
                 messageHub.Subscribe<ReaderStatus>(OnReaderStatus),
@@ -107,7 +107,7 @@ namespace maxbl4.Race.CheckpointService.Services
             {
                 rwlock.EnterWriteLock();
                 StopStream(contextConnectionId);
-                clients[contextConnectionId] = storageService.ListCheckpoints(from)
+                clients[contextConnectionId] = checkpointRepository.ListCheckpoints(from)
                     .ToObservable()
                     .Buffer(TimeSpan.FromMilliseconds(100), 100)
                     .Concat(checkpoints.Select(x => new[] {x}))

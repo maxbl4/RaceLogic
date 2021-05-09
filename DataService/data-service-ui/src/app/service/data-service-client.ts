@@ -29,211 +29,6 @@ export class DataClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getEvent(id: string): Observable<EventDto> {
-        let url_ = this.baseUrl + "/data/event/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetEvent(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetEvent(<any>response_);
-                } catch (e) {
-                    return <Observable<EventDto>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<EventDto>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processGetEvent(response: HttpResponseBase): Observable<EventDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EventDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<EventDto>(<any>null);
-    }
-
-    upsertEvent(id: string, entity: EventDto): Observable<string> {
-        let url_ = this.baseUrl + "/data/event/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(entity);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processUpsertEvent(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processUpsertEvent(<any>response_);
-                } catch (e) {
-                    return <Observable<string>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<string>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processUpsertEvent(response: HttpResponseBase): Observable<string> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<string>(<any>null);
-    }
-
-    deleteEvent(id: string): Observable<void> {
-        let url_ = this.baseUrl + "/data/event/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-            })
-        };
-
-        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processDeleteEvent(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processDeleteEvent(<any>response_);
-                } catch (e) {
-                    return <Observable<void>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<void>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processDeleteEvent(response: HttpResponseBase): Observable<void> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return _observableOf<void>(<any>null);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<void>(<any>null);
-    }
-
-    listEventsAll(): Observable<EventDto[]> {
-        let url_ = this.baseUrl + "/data/event";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processListEventsAll(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processListEventsAll(<any>response_);
-                } catch (e) {
-                    return <Observable<EventDto[]>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<EventDto[]>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processListEventsAll(response: HttpResponseBase): Observable<EventDto[]> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(EventDto.fromJS(item));
-            }
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<EventDto[]>(<any>null);
-    }
-
     purgeUpstreamData(): Observable<FileResponse> {
         let url_ = this.baseUrl + "/data/upstream/purge";
         url_ = url_.replace(/[?&]$/, "");
@@ -937,98 +732,6 @@ export class StoreClient {
     }
 }
 
-export class EventDto implements IEventDto {
-    date?: string | undefined;
-    regulations?: string | undefined;
-    resultsTemplate?: string | undefined;
-    championshipId?: string;
-    startOfRegistration?: moment.Moment;
-    endOfRegistration?: moment.Moment;
-    basePrice?: number;
-    paymentMultiplier?: number;
-    id?: string;
-    name?: string | undefined;
-    description?: string | undefined;
-    published?: boolean;
-    isSeed?: boolean;
-    created?: moment.Moment;
-    updated?: moment.Moment;
-
-    constructor(data?: IEventDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.date = _data["date"];
-            this.regulations = _data["regulations"];
-            this.resultsTemplate = _data["resultsTemplate"];
-            this.championshipId = _data["championshipId"];
-            this.startOfRegistration = _data["startOfRegistration"] ? moment(_data["startOfRegistration"].toString()) : <any>undefined;
-            this.endOfRegistration = _data["endOfRegistration"] ? moment(_data["endOfRegistration"].toString()) : <any>undefined;
-            this.basePrice = _data["basePrice"];
-            this.paymentMultiplier = _data["paymentMultiplier"];
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.description = _data["description"];
-            this.published = _data["published"];
-            this.isSeed = _data["isSeed"];
-            this.created = _data["created"] ? moment(_data["created"].toString()) : <any>undefined;
-            this.updated = _data["updated"] ? moment(_data["updated"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): EventDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new EventDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["date"] = this.date;
-        data["regulations"] = this.regulations;
-        data["resultsTemplate"] = this.resultsTemplate;
-        data["championshipId"] = this.championshipId;
-        data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toISOString() : <any>undefined;
-        data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toISOString() : <any>undefined;
-        data["basePrice"] = this.basePrice;
-        data["paymentMultiplier"] = this.paymentMultiplier;
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        data["published"] = this.published;
-        data["isSeed"] = this.isSeed;
-        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
-        data["updated"] = this.updated ? this.updated.toISOString() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IEventDto {
-    date?: string | undefined;
-    regulations?: string | undefined;
-    resultsTemplate?: string | undefined;
-    championshipId?: string;
-    startOfRegistration?: moment.Moment;
-    endOfRegistration?: moment.Moment;
-    basePrice?: number;
-    paymentMultiplier?: number;
-    id?: string;
-    name?: string | undefined;
-    description?: string | undefined;
-    published?: boolean;
-    isSeed?: boolean;
-    created?: moment.Moment;
-    updated?: moment.Moment;
-}
-
 export class SeriesDto implements ISeriesDto {
     id?: string;
     name?: string | undefined;
@@ -1212,6 +915,98 @@ export class ClassDto implements IClassDto {
 export interface IClassDto {
     championshipId?: string;
     numberGroupId?: string;
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+}
+
+export class EventDto implements IEventDto {
+    date?: string | undefined;
+    regulations?: string | undefined;
+    resultsTemplate?: string | undefined;
+    championshipId?: string;
+    startOfRegistration?: moment.Moment;
+    endOfRegistration?: moment.Moment;
+    basePrice?: number;
+    paymentMultiplier?: number;
+    id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: moment.Moment;
+    updated?: moment.Moment;
+
+    constructor(data?: IEventDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.date = _data["date"];
+            this.regulations = _data["regulations"];
+            this.resultsTemplate = _data["resultsTemplate"];
+            this.championshipId = _data["championshipId"];
+            this.startOfRegistration = _data["startOfRegistration"] ? moment(_data["startOfRegistration"].toString()) : <any>undefined;
+            this.endOfRegistration = _data["endOfRegistration"] ? moment(_data["endOfRegistration"].toString()) : <any>undefined;
+            this.basePrice = _data["basePrice"];
+            this.paymentMultiplier = _data["paymentMultiplier"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? moment(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? moment(_data["updated"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): EventDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new EventDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["date"] = this.date;
+        data["regulations"] = this.regulations;
+        data["resultsTemplate"] = this.resultsTemplate;
+        data["championshipId"] = this.championshipId;
+        data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toISOString() : <any>undefined;
+        data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toISOString() : <any>undefined;
+        data["basePrice"] = this.basePrice;
+        data["paymentMultiplier"] = this.paymentMultiplier;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IEventDto {
+    date?: string | undefined;
+    regulations?: string | undefined;
+    resultsTemplate?: string | undefined;
+    championshipId?: string;
+    startOfRegistration?: moment.Moment;
+    endOfRegistration?: moment.Moment;
+    basePrice?: number;
+    paymentMultiplier?: number;
     id?: string;
     name?: string | undefined;
     description?: string | undefined;

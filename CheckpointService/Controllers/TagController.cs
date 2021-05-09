@@ -10,11 +10,11 @@ namespace maxbl4.Race.CheckpointService.Controllers
     [Route("tag")]
     public class TagController : ControllerBase
     {
-        private readonly StorageService storageService;
+        private readonly CheckpointRepository checkpointRepository;
 
-        public TagController(StorageService storageService)
+        public TagController(CheckpointRepository checkpointRepository)
         {
-            this.storageService = storageService;
+            this.checkpointRepository = checkpointRepository;
         }
 
         [HttpGet]
@@ -22,13 +22,13 @@ namespace maxbl4.Race.CheckpointService.Controllers
         {
             if (count == null)
                 count = 100;
-            return storageService.ListTags(start, end, count);
+            return checkpointRepository.ListTags(start, end, count);
         }
 
         [HttpDelete]
         public int Delete(DateTime? start, DateTime? end)
         {
-            return storageService.DeleteTags(start, end);
+            return checkpointRepository.DeleteTags(start, end);
         }
     }
 }

@@ -1,21 +1,18 @@
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Reactive.PlatformServices;
 using System.Threading.Tasks;
-using BraaapWeb.Client;
 using FluentAssertions;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Runtime;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
 using maxbl4.Race.Tests.CheckpointService.Client;
 using maxbl4.Race.Tests.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
@@ -31,8 +28,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             upstreamDataSyncServiceOptions = new UpstreamDataSyncServiceOptions
             {
                 BaseUri = "fake",
-                ApiKey = "fake",
-                StorageConnectionString = storageConnectionString
+                ApiKey = "fake"
             };
         }
         
@@ -40,13 +36,15 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
         public async Task Create_and_start_timing_session()
         {
             var messageHub = new ChannelMessageHub();
-            var upstreamDataStorage = new UpstreamDataStorageService(Options.Create(upstreamDataSyncServiceOptions));
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var upstreamDataStorage = new UpstreamDataRepository(storageService);
+            var eventRepository = new EventRepository(storageService);
+            var recordingRepository = new RecordingServiceRepository(storageService);
             var upstreamDataSyncService = new UpstreamDataSyncService(Options.Create(upstreamDataSyncServiceOptions), new FakeMainClient(), 
                 upstreamDataStorage, messageHub);
             var downloadResult = await upstreamDataSyncService.Download(true);
             downloadResult.Should().BeTrue();
             upstreamDataStorage.ListSeries().Should().HaveCount(4);
-            var eventRepository = new LiteDbEventRepository(Options.Create(upstreamDataSyncServiceOptions), messageHub);
 
             var tagSub = new FakeCheckpointSubscription();
             var cpf = Substitute.For<ICheckpointServiceClientFactory>();
@@ -54,20 +52,20 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             cpf.CreateClient(Arg.Any<string>()).Returns(cps);
             cps.CreateSubscription(Arg.Any<DateTime>()).Returns(tagSub);
 
-            eventRepository.Repo.Query<CheckpointDto>().Count().Should().Be(0);
+            storageService.Repo.Query<CheckpointDto>().Count().Should().Be(0);
 
-            var recordingService = new RecordingService(eventRepository, cpf, new AutoMapperProvider(), new DefaultSystemClock());
+            var recordingService = new RecordingService(recordingRepository, cpf, new AutoMapperProvider(), new DefaultSystemClock());
             var recordingSession = recordingService.StartRecordingSession("My session", "cps address");
             tagSub.SendTags((1, "11"), (2, "12"));
-            eventRepository.Repo.Query<CheckpointDto>().Count().Should().Be(2);
-            eventRepository.GetActiveRecordingSession().Should().NotBeNull();
+            storageService.Repo.Query<CheckpointDto>().Count().Should().Be(2);
+            recordingRepository.GetActiveRecordingSession().Should().NotBeNull();
             
             var timingSessionService = new TimingSessionService(eventRepository, recordingService, MessageHub, new AutoMapperProvider(),
                 new DefaultSystemClock());
 
             var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");
             var session = upstreamDataStorage.ListSessions(ev.Id).First(x => x.Name == "Эксперт и Опен");
-            eventRepository.Save(session);
+            storageService.Save(session);
             var timingSession = timingSessionService.CreateSession("timing sess", session.EventId, session.Id, recordingSession.Id);
             timingSession.Start(tagSub.Now.AddSeconds(-10));
             await Task.Delay(100);
@@ -76,7 +74,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             timingSession.Track.Rating[1].RiderId.Should().Be("12");
 
             recordingSession.Stop();
-            eventRepository.GetActiveRecordingSession().Should().BeNull();
+            recordingRepository.GetActiveRecordingSession().Should().BeNull();
         }
     }
 }

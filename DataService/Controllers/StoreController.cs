@@ -10,11 +10,11 @@ namespace maxbl4.Race.DataService.Controllers
     [Route("store")]
     public class StoreController : ControllerBase
     {
-        private readonly StorageService storageService;
+        private readonly DataServiceRepository repository;
 
-        public StoreController(StorageService storageService)
+        public StoreController(DataServiceRepository repository)
         {
-            this.storageService = storageService;
+            this.repository = repository;
         }
 
         [HttpGet("")]
@@ -59,7 +59,7 @@ namespace maxbl4.Race.DataService.Controllers
         public IActionResult SingleGet(string collection, string id)
         {
             var bsonId = BsonIdUrlEncoder.Decode(id);
-            var doc = storageService.Get<BsonDocument>(bsonId, collection);
+            var doc = repository.Get<BsonDocument>(bsonId, collection);
             if (doc == null)
                 return NotFound();
             return Content(JsonSerializer.Serialize(doc), "application/json", Encoding.UTF8);
@@ -69,7 +69,7 @@ namespace maxbl4.Race.DataService.Controllers
         public IActionResult SingleDelete(string collection, string id)
         {
             var bsonId = BsonIdUrlEncoder.Decode(id);
-            if (!storageService.Delete<BsonDocument>(bsonId, collection))
+            if (!repository.Delete<BsonDocument>(bsonId, collection))
                 return NotFound();
             return Ok();
         }
@@ -80,7 +80,7 @@ namespace maxbl4.Race.DataService.Controllers
         {
             var doc = JsonSerializer.Deserialize(body.ToString()).AsDocument;
             if (!string.IsNullOrEmpty(id)) doc["_id"] = BsonIdUrlEncoder.Decode(id);
-            storageService.Upsert(collection, doc);
+            repository.Upsert(collection, doc);
             return CreatedAtAction("SingleGet", new {collection, id = BsonIdUrlEncoder.Encode(doc["_id"])}, null);
         }
 
@@ -89,7 +89,7 @@ namespace maxbl4.Race.DataService.Controllers
         {
             if (string.IsNullOrEmpty(where))
                 where = "1 = 1";
-            var result = storageService.Search(collection, where, order, limit);
+            var result = repository.Search(collection, where, order, limit);
             return Content(JsonSerializer.Serialize(new BsonArray(result)), "application/json", Encoding.UTF8);
         }
 
@@ -98,7 +98,7 @@ namespace maxbl4.Race.DataService.Controllers
         {
             if (string.IsNullOrEmpty(where))
                 where = "1 = 1";
-            return Ok(storageService.Count(collection, where));
+            return Ok(repository.Count(collection, where));
         }
     }
 }

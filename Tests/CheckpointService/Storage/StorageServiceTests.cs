@@ -8,6 +8,7 @@ using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.Extensions;
+using maxbl4.Race.Logic.ServiceBase;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -63,14 +64,13 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         public void Should_return_initial_rfid_options()
         {
             var opts = new RfidOptions();
-            using var storageService = new StorageService(Options
-                .Create(new ServiceOptions
-                {
-                    StorageConnectionString = storageConnectionString,
-                    InitialRfidOptions = opts
-                }), MessageHub, SystemClock);
-
-            var settings = storageService.GetRfidOptions();
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var repo = new CheckpointRepository(Options.Create(new ServiceOptions
+                    {
+                        StorageConnectionString = storageConnectionString,
+                        InitialRfidOptions = opts
+                    }), storageService, MessageHub, SystemClock);
+            var settings = repo.GetRfidOptions();
             settings.Should().BeSameAs(opts);
         }
 

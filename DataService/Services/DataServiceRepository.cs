@@ -1,43 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using LiteDB;
-using maxbl4.Race.DataService.Options;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
-using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.DataService.Services
 {
-    public class StorageService : StorageServiceBase
+    public class DataServiceRepository : IRepository
     {
-        public StorageService(IOptions<ServiceOptions> serviceOptions) :
-            base(serviceOptions.Value.StorageConnectionString)
+        public DataServiceRepository(IStorageService storageService)
+        {
+            StorageService = storageService;
+        }
+
+        public IStorageService StorageService { get; }
+
+        void IRepository.ValidateDatabase(ILiteRepository repo)
         {
         }
 
-        protected override void ValidateDatabase()
-        {
-        }
-
-        protected override void SetupIndexes()
+        void IRepository.SetupIndexes(ILiteRepository repo)
         {
         }
 
         public T Get<T>(BsonValue key, string collectionName = null)
         {
-            return repo.Database.GetCollection<T>(collectionName).FindById(key);
+            return StorageService.Repo.Database.GetCollection<T>(collectionName).FindById(key);
         }
 
         public bool Delete<T>(BsonValue key, string collectionName = null)
         {
-            return repo.Database.GetCollection<T>(collectionName).Delete(key);
+            return StorageService.Repo.Database.GetCollection<T>(collectionName).Delete(key);
         }
 
         public IEnumerable<BsonDocument> Search(string collectionName, string where, string order, int limit)
         {
-            var query = repo.Query<BsonDocument>(collectionName)
+            var query = StorageService.Repo.Query<BsonDocument>(collectionName)
                 .Where(where);
             if (TryParseOrder(order, out var ord))
             {
@@ -52,12 +49,12 @@ namespace maxbl4.Race.DataService.Services
 
         public long Count(string collectionName, string query)
         {
-            return repo.Query<BsonDocument>(collectionName).Where(query).LongCount();
+            return StorageService.Repo.Query<BsonDocument>(collectionName).Where(query).LongCount();
         }
 
         public bool Upsert(string collectionName, BsonDocument document)
         {
-            var col = repo.Database.GetCollection(collectionName, GetAutoId(document, out var isDefault));
+            var col = StorageService.Repo.Database.GetCollection(collectionName, GetAutoId(document, out var isDefault));
             if (isDefault)
                 document.Remove("_id");
             return col.Upsert(document);
@@ -104,63 +101,6 @@ namespace maxbl4.Race.DataService.Services
             else
                 result = (order, false);
             return true;
-        }
-
-        public EventDto GetEvent(Id<EventDto> id)
-        {
-            return repo.Query<EventDto>().Where(x => x.Id == id).FirstOrDefault();
-        }
-        
-        public void DeleteEvent(Id<EventDto> id)
-        {
-            repo.DeleteMany<SessionDto>(x => x.EventId == id);
-            repo.Delete<EventDto>(id);
-        }
-        
-        public bool UpsertEvent(EventDto entity)
-        {
-            return repo.Upsert<EventDto>(entity.ApplyTraits());
-        }
-        
-        public List<EventDto> ListEvents()
-        {
-            return repo.Query<EventDto>().OrderByDescending(x => x.EndOfRegistration).ToList();
-        }
-
-        public SessionDto GetSession(Id<SessionDto> id)
-        {
-            return repo.Query<SessionDto>().Where(x => x.Id == id).FirstOrDefault();
-        }
-        
-        public void DeleteSession(Id<SessionDto> id)
-        {
-            repo.Delete<SessionDto>(id);
-        }
-        
-        public bool UpsertSession(SessionDto entity)
-        {
-            return repo.Upsert<SessionDto>(entity);
-        }
-        
-        public List<SessionDto> ListSessionsByEvent(Id<EventDto> id)
-        {
-            return repo.Query<SessionDto>().Where(x => x.EventId == id).ToList();
-        }
-    }
-
-    public class StorageCrud<T>
-        where T: IHasId<T>
-    {
-        private readonly LiteRepository repo;
-
-        public StorageCrud(LiteRepository repo)
-        {
-            this.repo = repo;
-        }
-        
-        public T Get(Id<T> id)
-        {
-            return repo.Query<T>().Where(x => x.Id == id).FirstOrDefault();
         }
     }
 }

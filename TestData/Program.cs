@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Bogus;
 using BraaapWeb.Client;
 using maxbl4.Infrastructure.MessageHub;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -25,7 +26,6 @@ namespace TestData
                 .AddUserSecrets<Program>()
                 .Build();
             var options = config.GetSection(nameof(UpstreamDataSyncServiceOptions)).Get<UpstreamDataSyncServiceOptions>();
-            options.StorageConnectionString = "upstream-data.litedb";
             Console.WriteLine("Downloading upstream data");
             var mainClient = new MainClient(options.BaseUri, new HttpClient());
             var series = await mainClient.SeriesAsync(options.ApiKey, null);
@@ -54,7 +54,11 @@ namespace TestData
             Console.WriteLine($"Done");
             
             var messageHub = new ChannelMessageHub();
-            var upstreamDataStorage = new UpstreamDataStorageService(Options.Create(options));
+            var storageService = new StorageService(Options.Create(new StorageServiceOptions
+            {
+                StorageConnectionString = "upstream-data.litedb"
+            }), new ChannelMessageHub());
+            var upstreamDataStorage = new UpstreamDataRepository(storageService);
             var fakeMainClient = Substitute.For<IMainClient>();
             fakeMainClient.SeriesAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>()).Returns(series);
             fakeMainClient.ChampionshipsAsync(Arg.Any<string>(), Arg.Any<DateTimeOffset>()).Returns(championships);

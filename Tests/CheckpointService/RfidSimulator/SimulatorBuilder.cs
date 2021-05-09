@@ -6,11 +6,11 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
 {
     public class SimulatorBuilder
     {
-        private readonly StorageService storageService;
+        private readonly CheckpointRepository checkpointRepository;
 
-        public SimulatorBuilder(StorageService storageService)
+        public SimulatorBuilder(CheckpointRepository checkpointRepository)
         {
-            this.storageService = storageService;
+            this.checkpointRepository = checkpointRepository;
         }
 
         public TagListHandler Build(bool enableRfid = true)
@@ -20,10 +20,10 @@ namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator
             var tagListHandler = new TagListHandler();
             simulator.TagListHandler = tagListHandler.Handle;
             var serializedConnectionString = $"Protocol = Alien; Network = {simulator.ListenEndpoint}";
-            var settings = storageService.GetRfidOptions();
+            var settings = checkpointRepository.GetRfidOptions();
             settings.Enabled = enableRfid;
             settings.ConnectionString = serializedConnectionString;
-            storageService.SetRfidOptions(settings);
+            checkpointRepository.SetRfidOptions(settings);
             return tagListHandler;
         }
     }

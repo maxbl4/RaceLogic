@@ -20,13 +20,13 @@ namespace maxbl4.Race.WsHub.Services
 
     public class AuthService : IAuthService
     {
-        private readonly StorageService storageService;
+        private readonly WsHubRepository wsHubRepository;
         private readonly ConcurrentDictionary<string, AuthToken> tokenCache;
 
-        public AuthService(StorageService storageService, IOptions<ServiceOptions> options)
+        public AuthService(WsHubRepository wsHubRepository, IOptions<ServiceOptions> options)
         {
-            this.storageService = storageService;
-            var tokens = storageService.GetTokens()
+            this.wsHubRepository = wsHubRepository;
+            var tokens = wsHubRepository.GetTokens()
                 .GroupBy(x => x.Token)
                 .Select(x => new KeyValuePair<string, AuthToken>(x.Key, x.First()));
             tokenCache = new ConcurrentDictionary<string, AuthToken>(tokens);
@@ -48,14 +48,14 @@ namespace maxbl4.Race.WsHub.Services
 
         public bool UpsertToken(AuthToken token)
         {
-            var b = storageService.UpsertToken(token);
+            var b = wsHubRepository.UpsertToken(token);
             tokenCache[token.Token] = token;
             return b;
         }
 
         public bool DeleteToken(string token)
         {
-            var b = storageService.DeleteToken(token);
+            var b = wsHubRepository.DeleteToken(token);
             tokenCache.TryRemove(token, out _);
             return b;
         }

@@ -14,16 +14,16 @@ namespace maxbl4.Race.Logic.UpstreamData
     {
         private readonly UpstreamDataSyncServiceOptions options;
         private readonly IMainClient mainClient;
-        private readonly UpstreamDataStorageService storageService;
+        private readonly UpstreamDataRepository repository;
         private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
 
-        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, UpstreamDataStorageService storageService,
+        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, UpstreamDataRepository repository,
             IMessageHub messageHub)
         {
             this.options = options.Value;
             this.mainClient = mainClient;
-            this.storageService = storageService;
+            this.repository = repository;
             this.messageHub = messageHub;
         }
         
@@ -34,8 +34,8 @@ namespace maxbl4.Race.Logic.UpstreamData
             try
             {
                 if (forceFullSync)
-                    storageService.PurgeExistingData();
-                var lastSyncTimestamp = forceFullSync ? Constants.DefaultUtcDate : storageService.GetLastSyncTimestamp();
+                    repository.PurgeExistingData();
+                var lastSyncTimestamp = forceFullSync ? Constants.DefaultUtcDate : repository.GetLastSyncTimestamp();
                 var series = await mainClient.SeriesAsync(options.ApiKey, lastSyncTimestamp);
                 var championships = await mainClient.ChampionshipsAsync(options.ApiKey, lastSyncTimestamp);
                 var classes = await mainClient.ClassesAsync(options.ApiKey, lastSyncTimestamp);
@@ -47,11 +47,11 @@ namespace maxbl4.Race.Logic.UpstreamData
                 var riderProfiles = await mainClient.RiderProfilesAsync(options.ApiKey, lastSyncTimestamp);
                 var riderRegistrations = await mainClient.RiderRegistrationsAsync(options.ApiKey, lastSyncTimestamp);
                 var disqualifications = await mainClient.RiderDisqualificationsAsync(options.ApiKey);
-                storageService.UpsertSeries(series.ToDto());
-                storageService.UpsertChampionships(championships.ToDto());
-                storageService.UpsertClasses(classes.ToDto());
-                storageService.UpsertEvents(events.ToDto(eventPrices));
-                storageService.UpsertSessions(schedules.ToDto(scheduleToClass));
+                repository.UpsertSeries(series.ToDto());
+                repository.UpsertChampionships(championships.ToDto());
+                repository.UpsertClasses(classes.ToDto());
+                repository.UpsertEvents(events.ToDto(eventPrices));
+                repository.UpsertSessions(schedules.ToDto(scheduleToClass));
                 
                 var riderRegs = from rr in riderRegistrations
                     join cl in classes on rr.ClassId equals  cl.ClassId
@@ -60,7 +60,7 @@ namespace maxbl4.Race.Logic.UpstreamData
                         into hasDsq
                     let rider = new {Profile = rp, Reg = rr, Class = cl, HasDsq = hasDsq.Any()}
                     select rider;
-                storageService.UpsertRiderRegistrations(riderRegs.Select(riderReg => new RiderClassRegistrationDto
+                repository.UpsertRiderRegistrations(riderRegs.Select(riderReg => new RiderClassRegistrationDto
                 {
                     Id = riderReg.Reg.RiderRegistrationId,
                     RiderProfileId = riderReg.Reg.RiderProfileId,
@@ -89,7 +89,7 @@ namespace maxbl4.Race.Logic.UpstreamData
                     join dsq in disqualifications on new {rr.RiderRegistrationId, ec.EventId} equals new {dsq.RiderRegistrationId, EventId = dsq.EventId??Guid.Empty} 
                         into hasDsq
                     select new {Ec = ec, Rr = rr, HasDsq = hasDsq.Any()};
-                storageService.UpsertEventRegistrations(eventRegs.Select(x => new RiderEventRegistrationDto
+                repository.UpsertEventRegistrations(eventRegs.Select(x => new RiderEventRegistrationDto
                 {
                     Id = x.Ec.EventConfirmationId,
                     EventId = x.Ec.EventId,
@@ -123,6 +123,5 @@ namespace maxbl4.Race.Logic.UpstreamData
     {
         public string BaseUri { get; set; }
         public string ApiKey { get; set; }
-        public string StorageConnectionString { get; set; }
     }
 }

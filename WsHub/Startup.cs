@@ -30,7 +30,7 @@ namespace maxbl4.Race.WsHub
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<IAuthService, AuthService>();
-            services.AddSingleton<StorageService>();
+            services.AddSingleton<WsHubRepository>();
             services.AddAuthentication(Constants.WsHub.Authentication.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, WsAccessTokenAuthenticationHandler>(
                     Constants.WsHub.Authentication.SchemeName, options => { });

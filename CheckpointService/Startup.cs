@@ -38,12 +38,12 @@ namespace maxbl4.Race.CheckpointService
             BsonMapper.Global.RegisterIdBsonMappers();
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, ChannelMessageHub>();
-            services.AddSingleton<StorageService>();
+            services.AddSingleton<CheckpointRepository>();
             services.AddSingleton<SubscriptionManager>();
             services.AddSingleton<IHostedService, SubscriptionService>();
-            services.AddSingleton<ICheckpointStorage>(p => p.GetService<StorageService>());
-            services.AddSingleton<IUpstreamOptionsStorage>(p => p.GetService<StorageService>());
-            services.AddSingleton<ISubscriptionStorage>(p => p.GetService<StorageService>());
+            services.AddSingleton<ICheckpointStorage>(p => p.GetService<CheckpointRepository>());
+            services.AddSingleton<IUpstreamOptionsStorage>(p => p.GetService<CheckpointRepository>());
+            services.AddSingleton<ISubscriptionStorage>(p => p.GetService<CheckpointRepository>());
             services.AddAutoMapper(typeof(Startup));
             services.RegisterHostedService<IRfidService, RfidService>();
             services.RegisterHostedService<DistributionService>();

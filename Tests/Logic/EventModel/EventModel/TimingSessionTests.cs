@@ -1,4 +1,3 @@
-using maxbl4.Race.Logic.EventModel.Runtime;
 using Xunit;
 using Xunit.Abstractions;
 

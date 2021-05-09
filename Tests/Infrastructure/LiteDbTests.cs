@@ -48,7 +48,7 @@ namespace maxbl4.Race.Tests.Infrastructure
         {
             using var repo = new LiteRepository(dbFile).WithUtcDate();
             var doc = new BsonDocument {["Some"] = "123", ["_id"] = 0L};
-            var col = repo.Database.GetCollection("some", StorageService.GetAutoId(doc, out var isDefault));
+            var col = repo.Database.GetCollection("some", DataServiceRepository.GetAutoId(doc, out var isDefault));
             if (isDefault)
                 doc.Remove("_id");
             col.Upsert(doc);

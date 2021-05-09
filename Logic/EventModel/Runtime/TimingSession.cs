@@ -9,6 +9,7 @@ using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.RoundTiming;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
@@ -65,11 +66,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.messageHub = messageHub;
             this.clock = clock;
             messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Initialize());
-            messageHub.Subscribe<EventDataUpdated>(Initialize);
+            messageHub.Subscribe<StorageUpdated>(Initialize);
             Initialize();
         }
 
-        public void Initialize(EventDataUpdated msg = null)
+        public void Initialize(StorageUpdated msg = null)
         {
             if (msg != null)
             {
@@ -80,8 +81,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                         return;
                 }
             }
-            var timingSession = eventRepository.GetRawDtoById(id);
-            var session = eventRepository.GetRawDtoById(timingSession.SessionId);
+            var timingSession = eventRepository.StorageService.Get(id);
+            var session = eventRepository.StorageService.Get(timingSession.SessionId);
             var recordingSession = recordingService.GetOrCreateRecordingSession(timingSession.RecordingSessionId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
             RawCheckpoints.Clear();
@@ -94,7 +95,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void Start(DateTime? startTime = null)
         {
-            eventRepository.Update(id, x =>
+            eventRepository.StorageService.Update(id, x =>
             {
                 x.Start(startTime ?? clock.UtcNow.UtcDateTime);
             });

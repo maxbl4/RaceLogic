@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.PlatformServices;
 using System.Threading;
-using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
-using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
@@ -41,7 +38,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         /// <returns></returns>
         public TimingSession GetTimingSession(Id<TimingSessionDto> id)
         {
-            var dto = eventRepository.GetRawDtoById(id);
+            var dto = eventRepository.StorageService.Get(id);
             if (dto == null)
                 return null;
             return new TimingSession(id, eventRepository, recordingService, messageHub, clock);
@@ -57,7 +54,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 SessionId = sessionId,
                 RecordingSessionId = recordingSessionSessionId
             };
-            eventRepository.Save(dto);
+            eventRepository.StorageService.Save(dto);
             return new TimingSession(dto.Id, eventRepository, recordingService, messageHub, clock);
         }
     }

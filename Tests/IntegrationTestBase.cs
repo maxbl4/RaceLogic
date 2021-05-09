@@ -5,6 +5,7 @@ using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Tests.Extensions;
@@ -46,44 +47,41 @@ namespace maxbl4.Race.Tests
         protected ILogger Logger { get; }
         protected IMapper Mapper { get; }
 
-        public void WithCheckpointStorageService(Action<StorageService> storageServiceInitializer)
+        public void WithCheckpointStorageService(Action<CheckpointRepository> storageServiceInitializer)
         {
             Logger.Debug("Creating CheckpointStorageServiceService with {@storageConnectionString}",
                 storageConnectionString);
-            using var storageService = new StorageService(
-                Options.Create(new ServiceOptions {StorageConnectionString = storageConnectionString}),
-                MessageHub, SystemClock);
-            storageServiceInitializer(storageService);
+            
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var repo = new CheckpointRepository(Options.Create(new ServiceOptions()), storageService, MessageHub, SystemClock);
+            storageServiceInitializer(repo);
         }
 
-        public void WithDataStorageService(Action<Race.DataService.Services.StorageService> storageServiceInitializer)
+        public void WithDataStorageService(Action<DataServiceRepository> storageServiceInitializer)
         {
             Logger.Debug("Creating DataStorageServiceService with {@storageConnectionString}", storageConnectionString);
-            using var storageService = new Race.DataService.Services.StorageService(
-                Options.Create(new Race.DataService.Options.ServiceOptions
-                    {StorageConnectionString = storageConnectionString}));
-            storageServiceInitializer(storageService);
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var repo = new DataServiceRepository(storageService);
+            storageServiceInitializer(repo);
         }
 
-        public void WithRfidService(Action<StorageService, RfidService> action)
+        public void WithRfidService(Action<CheckpointRepository, RfidService> action)
         {
             Logger.Debug("Creating CheckpointStorageServiceService with {@storageConnectionString}",
                 storageConnectionString);
-            using var storageService = new StorageService(
-                Options.Create(new ServiceOptions {StorageConnectionString = storageConnectionString}),
-                MessageHub, SystemClock);
-            using var rfidService = new RfidService(storageService, MessageHub, SystemClock, Mapper);
-            action(storageService, rfidService);
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var repo = new CheckpointRepository(Options.Create(new ServiceOptions()), storageService, MessageHub, SystemClock);
+            using var rfidService = new RfidService(repo, MessageHub, SystemClock, Mapper);
+            action(repo, rfidService);
         }
 
-        public T WithCheckpointStorageService<T>(Func<StorageService, T> storageServiceInitializer)
+        public T WithCheckpointStorageService<T>(Func<CheckpointRepository, T> storageServiceInitializer)
         {
             Logger.Debug("Creating CheckpointStorageServiceService with {@storageConnectionString}",
                 storageConnectionString);
-            using var storageService = new StorageService(
-                Options.Create(new ServiceOptions {StorageConnectionString = storageConnectionString}),
-                MessageHub, SystemClock);
-            return storageServiceInitializer(storageService);
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var repo = new CheckpointRepository(Options.Create(new ServiceOptions()), storageService, MessageHub, SystemClock);
+            return storageServiceInitializer(repo);
         }
 
         public ServiceRunner<Startup> CreateCheckpointService(int pauseStartupMs = 0, int port = 0)

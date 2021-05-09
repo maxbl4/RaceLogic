@@ -10,23 +10,23 @@ namespace maxbl4.Race.CheckpointService.Controllers
     [Route("options")]
     public class OptionsController : ControllerBase
     {
-        private readonly StorageService storageService;
+        private readonly CheckpointRepository checkpointRepository;
 
-        public OptionsController(StorageService storageService)
+        public OptionsController(CheckpointRepository checkpointRepository)
         {
-            this.storageService = storageService;
+            this.checkpointRepository = checkpointRepository;
         }
 
         [HttpGet]
         public RfidOptions Get()
         {
-            return storageService.GetRfidOptions();
+            return checkpointRepository.GetRfidOptions();
         }
 
         [HttpGet("{property}")]
         public object Get(string property)
         {
-            var opts = storageService.GetRfidOptions();
+            var opts = checkpointRepository.GetRfidOptions();
             var prop = opts.GetType().GetProperties()
                 .FirstOrDefault(x => x.Name.Equals(property, StringComparison.OrdinalIgnoreCase));
             if (prop == null)
@@ -41,13 +41,13 @@ namespace maxbl4.Race.CheckpointService.Controllers
         [HttpPut("{property}")]
         public object Put(string property, [FromBody] object newValue)
         {
-            var opts = storageService.GetRfidOptions();
+            var opts = checkpointRepository.GetRfidOptions();
             var prop = opts.GetType().GetProperties()
                 .FirstOrDefault(x => x.Name.Equals(property, StringComparison.OrdinalIgnoreCase));
             if (prop == null)
                 return NotFound();
             prop.SetValue(opts, Convert.ChangeType(newValue, prop.PropertyType));
-            storageService.SetRfidOptions(opts);
+            checkpointRepository.SetRfidOptions(opts);
             return Ok();
         }
 
@@ -55,13 +55,13 @@ namespace maxbl4.Race.CheckpointService.Controllers
         [HttpPut]
         public void Put([FromBody] RfidOptions options)
         {
-            storageService.SetRfidOptions(options);
+            checkpointRepository.SetRfidOptions(options);
         }
 
         [HttpDelete]
         public void Delete()
         {
-            storageService.SetRfidOptions(RfidOptions.Default);
+            checkpointRepository.SetRfidOptions(RfidOptions.Default);
         }
     }
 }

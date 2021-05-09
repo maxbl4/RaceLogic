@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -15,6 +14,7 @@ using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.ServiceBase;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
@@ -26,15 +26,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
     public class RecordingService : IRecordingService
     {
-        private readonly IRecordingServiceStorage storage;
+        private readonly IRecordingServiceRepository repository;
         private readonly ICheckpointServiceClientFactory checkpointServiceClientFactory;
         private readonly IAutoMapperProvider mapper;
         private readonly ISystemClock clock;
         private RecordingSession activeSession;
 
-        public RecordingService(IRecordingServiceStorage storage, ICheckpointServiceClientFactory checkpointServiceClientFactory, IAutoMapperProvider mapper, ISystemClock clock)
+        public RecordingService(IRecordingServiceRepository repository, ICheckpointServiceClientFactory checkpointServiceClientFactory, IAutoMapperProvider mapper, ISystemClock clock)
         {
-            this.storage = storage;
+            this.repository = repository;
             this.checkpointServiceClientFactory = checkpointServiceClientFactory;
             this.mapper = mapper;
             this.clock = clock;
@@ -43,7 +43,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         private void Initialize()
         {
-            var dto = storage.GetActiveRecordingSession();
+            var dto = repository.GetActiveRecordingSession();
             if (dto != null)
                 activeSession = Create(dto);
         }
@@ -65,13 +65,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 IsRunning = true,
                 StartTime = DateTime.UtcNow
             };
-            storage.SaveSession(dto);
+            repository.SaveSession(dto);
             return activeSession = Create(dto);
         }
 
         public RecordingSession GetOrCreateRecordingSession(Id<RecordingSessionDto> id)
         {
-            var dto = storage.GetSession(id);
+            var dto = repository.GetSession(id);
             if (dto == null)
             {
                 
@@ -83,14 +83,14 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private RecordingSession Create(RecordingSessionDto dto)
         {
             var client = dto.CheckpointServiceAddress != null ? checkpointServiceClientFactory.CreateClient(dto.CheckpointServiceAddress) : null;
-            return activeSession = new RecordingSession(dto.Id, client, storage, mapper, clock);
+            return activeSession = new RecordingSession(dto.Id, client, repository, mapper, clock);
         }
     }
 
     public class RecordingSession : IDisposable, IObservable<Checkpoint>
     {
         private readonly ICheckpointServiceClient client;
-        private readonly IRecordingServiceStorage storage;
+        private readonly IRecordingServiceRepository repository;
         private readonly IAutoMapperProvider mapper;
         private readonly ISystemClock clock;
         private ICheckpointSubscription subscription;
@@ -98,17 +98,17 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly Subject<Checkpoint> chekpoints = new();
         private readonly SemaphoreSlim sync = new(1);
 
-        public RecordingSession(Id<RecordingSessionDto> id, ICheckpointServiceClient client, IRecordingServiceStorage storage, IAutoMapperProvider mapper, ISystemClock clock)
+        public RecordingSession(Id<RecordingSessionDto> id, ICheckpointServiceClient client, IRecordingServiceRepository repository, IAutoMapperProvider mapper, ISystemClock clock)
         {
             this.client = client;
-            this.storage = storage;
+            this.repository = repository;
             this.mapper = mapper;
             this.clock = clock;
             Id = id;
-            var dto = storage.GetSession(id);
+            var dto = repository.GetSession(id);
             if (client != null)
             {
-                storage.UpdateRecordingSession(Id, dto =>
+                repository.UpdateRecordingSession(Id, dto =>
                 {
                     dto.Start(clock.UtcNow.UtcDateTime);
                 });
@@ -131,7 +131,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public void Stop()
         {
             disposable.DisposeSafe();
-            storage.UpdateRecordingSession(this.Id, dto =>
+            repository.UpdateRecordingSession(this.Id, dto =>
             {
                 dto.Stop(clock.UtcNow.UtcDateTime);
             });
@@ -142,13 +142,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             using var _ = sync.UseOnce();
             var dto = mapper.Map<CheckpointDto>(checkpoint);
             dto.RecordingSessionId = Id;
-            storage.UpsertCheckpoint(dto);
+            repository.UpsertCheckpoint(dto);
         }
 
         public IDisposable Subscribe(IObserver<Checkpoint> observer)
         {
             using var _ = sync.UseOnce();
-            var cps = mapper.Map<List<Checkpoint>>(storage.GetCheckpoints(Id));
+            var cps = mapper.Map<List<Checkpoint>>(repository.GetCheckpoints(Id));
             return cps.ToObservable()
                 .ObserveOn(TaskPoolScheduler.Default)
                 .Concat(chekpoints)
@@ -156,7 +156,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         }
     }
 
-    public interface IRecordingServiceStorage
+    public interface IRecordingServiceRepository: IRepository
     {
         RecordingSessionDto GetActiveRecordingSession();
         RecordingSessionDto GetSession(Id<RecordingSessionDto> sessionId);

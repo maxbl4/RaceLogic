@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BraaapWeb.Client;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using Newtonsoft.Json;
 
 namespace maxbl4.Race.Tests.Infrastructure

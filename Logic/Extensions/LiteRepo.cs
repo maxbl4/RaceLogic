@@ -9,7 +9,7 @@ namespace maxbl4.Race.Logic.Extensions
             return new LiteRepository(connectionString).WithUtcDate();
         }
 
-        public static LiteRepository WithUtcDate(ConnectionString connectionString)
+        public static ILiteRepository WithUtcDate(ConnectionString connectionString)
         {
             return new LiteRepository(connectionString).WithUtcDate();
         }

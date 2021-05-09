@@ -9,11 +9,11 @@ namespace maxbl4.Race.Tests.DataService.Services
         [Fact]
         public void Should_parse_order()
         {
-            StorageService.TryParseOrder(null, out _).Should().BeFalse();
-            StorageService.TryParseOrder("", out _).Should().BeFalse();
-            StorageService.TryParseOrder("A", out var order).Should().BeTrue();
+            DataServiceRepository.TryParseOrder(null, out _).Should().BeFalse();
+            DataServiceRepository.TryParseOrder("", out _).Should().BeFalse();
+            DataServiceRepository.TryParseOrder("A", out var order).Should().BeTrue();
             order.Should().Be(("A", false));
-            StorageService.TryParseOrder("-B", out order).Should().BeTrue();
+            DataServiceRepository.TryParseOrder("-B", out order).Should().BeTrue();
             order.Should().Be(("B", true));
         }
     }
