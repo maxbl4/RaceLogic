@@ -38,7 +38,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             var messageHub = new ChannelMessageHub();
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
             var upstreamDataStorage = new UpstreamDataRepository(storageService);
-            var eventRepository = new EventRepository(storageService);
+            var eventRepository = new EventRepository(storageService, upstreamDataStorage);
             var recordingRepository = new RecordingServiceRepository(storageService);
             var upstreamDataSyncService = new UpstreamDataSyncService(Options.Create(upstreamDataSyncServiceOptions), new FakeMainClient(), 
                 upstreamDataStorage, messageHub);

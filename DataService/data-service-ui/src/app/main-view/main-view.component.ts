@@ -43,7 +43,7 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "../ser
                       <tr *ngFor="let e of events.get(c.id!)">
                         <td>{{e.id}}</td>
                         <td>{{e.date}}</td>
-                        <td>{{e.name}}</td>
+                        <td><a [routerLink]="['/event', e.id]">{{e.name}}</a></td>
                         <td>{{e.description}}</td>
                         <td>{{e.basePrice}}</td>
                         <td>{{e.paymentMultiplier}}</td>
@@ -103,7 +103,6 @@ export class MainViewComponent implements OnInit {
         this.championships.set(id, x);
         for (let c of x){
           this.dataClient.listClasses(c.id).subscribe(e => {
-            console.log(e);
             this.classes.set(c.id!, e);
           });
         }
@@ -113,5 +112,4 @@ export class MainViewComponent implements OnInit {
       });
     }
   }
-
 }

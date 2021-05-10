@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.UpstreamData;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,25 @@ namespace maxbl4.Race.DataService.Controllers
     {
         private readonly UpstreamDataSyncService syncService;
         private readonly IUpstreamDataRepository syncStorage;
+        private readonly IEventRepository eventRepository;
 
-        public DataController(UpstreamDataSyncService syncService, IUpstreamDataRepository syncStorage)
+        public DataController(UpstreamDataSyncService syncService, IUpstreamDataRepository syncStorage, IEventRepository eventRepository)
         {
             this.syncService = syncService;
             this.syncStorage = syncStorage;
+            this.eventRepository = eventRepository;
+        }
+
+        [HttpGet("event")]
+        public ActionResult<EventDto> GetEvent([FromQuery] Id<EventDto> value)
+        {
+            return eventRepository.GetEvent(value);
+        }
+        
+        [HttpGet("sessions")]
+        public ActionResult<List<SessionDto>> ListSessions([FromQuery] Id<EventDto> value)
+        {
+            return eventRepository.ListSessions(value);
         }
         
         [HttpPost("upstream/purge")]

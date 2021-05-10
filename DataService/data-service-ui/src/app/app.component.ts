@@ -6,7 +6,7 @@ import {MediaMatcher} from "@angular/cdk/layout";
   template: `
     <mat-toolbar color="primary" class="fixed-top navbar navbar-dark">
         <span class="d-flex flex-shrink-0">
-            <a class="navbar-brand" routerLink="">Checkpoint Service</a>
+            <a class="navbar-brand" routerLink="">BRAAAP</a>
         </span>
       <mat-divider></mat-divider>
       <button mat-icon-button (click)="sidenav.toggle()"

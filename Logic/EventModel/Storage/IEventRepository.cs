@@ -10,5 +10,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         IEnumerable<RiderClassRegistrationDto> GetRegistrations(Id<ClassDto> classId, Id<EventDto> eventId);
         List<RiderClassRegistrationDto> GetRegistrations(Id<SessionDto> sessionId);
         Dictionary<string, List<Id<RiderClassRegistrationDto>>> GetRiderIdentifiers(Id<SessionDto> sessionId);
+        EventDto GetEvent(Id<EventDto> id);
+        List<SessionDto> ListSessions(Id<EventDto> id);
     }
 }

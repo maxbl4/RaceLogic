@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NJsonSchema;
 using NJsonSchema.Generation.TypeMappers;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace maxbl4.Race.DataService
 {
@@ -63,6 +65,7 @@ namespace maxbl4.Race.DataService
             {
                 options.SerializerSettings.MetadataPropertyHandling = MetadataPropertyHandling.Ignore;
                 options.SerializerSettings.DateParseHandling = DateParseHandling.None;
+                options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                 options.SerializerSettings.Converters.Add(new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal });
             });
             services.AddSignalR().AddNewtonsoftJsonProtocol();

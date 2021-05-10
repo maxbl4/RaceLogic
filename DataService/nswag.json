@@ -10,7 +10,7 @@
   },
   "codeGenerators": {
     "openApiToTypeScriptClient": {
-      
+      "className": "{controller}Client",
       "moduleName": "",
       "namespace": "",
       "typeScriptVersion": 2.7,
@@ -21,11 +21,11 @@
       "useSingletonProvider": true,
       "injectionTokenType": "InjectionToken",
       "rxJsVersion": 6.0,
-      "dateTimeType": "MomentJS",
-      "nullValue": "Undefined",
+      "dateTimeType": "Luxon",
+      "nullValue": "Null",
       "generateClientClasses": true,
       "generateClientInterfaces": false,
-      "generateOptionalParameters": false,
+      "generateOptionalParameters": true,
       "exportTypes": true,
       "wrapDtoExceptions": false,
       "exceptionClass": "ApiException",
@@ -65,6 +65,7 @@
       "typeNameGeneratorType": null,
       "propertyNameGeneratorType": null,
       "enumNameGeneratorType": null,
+      "checksumCacheEnabled": false,
       "serviceHost": null,
       "serviceSchemes": null,
       "output": "data-service-ui/src/app/service/data-service-client.ts",

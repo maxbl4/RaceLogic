@@ -25,6 +25,7 @@ namespace maxbl4.Race.Logic.UpstreamData
         IEnumerable<ClassDto> ListClasses(Id<ChampionshipDto>? championshipId = null);
         IEnumerable<EventDto> ListEvents(Id<ChampionshipDto>? championshipId = null);
         IEnumerable<SessionDto> ListSessions(Id<EventDto>? eventId = null);
+        T Get<T>(Id<T> id) where T : IHasId<T>;
     }
 
     public class UpstreamDataRepository: IRepository, IUpstreamDataRepository
@@ -138,6 +139,11 @@ namespace maxbl4.Race.Logic.UpstreamData
             if (eventId != null && eventId != Id<EventDto>.Empty)
                 query = query.Where(x => x.EventId == eventId);
             return query.ToEnumerable();
+        }
+
+        public T Get<T>(Id<T> id) where T : IHasId<T>
+        {
+            return Query<T>().Where(x => x.Id == id).FirstOrDefault();
         }
         
         private ILiteQueryable<T> Query<T>()

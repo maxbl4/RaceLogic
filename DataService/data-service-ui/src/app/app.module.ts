@@ -10,11 +10,13 @@ import {FormsModule} from "@angular/forms";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import { MainViewComponent } from './main-view/main-view.component';
 import {DemoMaterialModule} from "./material-module";
+import { EventViewComponent } from './event-view/event-view.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MainViewComponent
+    MainViewComponent,
+    EventViewComponent
   ],
   imports: [
     BrowserModule,
