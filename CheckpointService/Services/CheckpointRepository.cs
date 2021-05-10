@@ -32,6 +32,7 @@ namespace maxbl4.Race.CheckpointService.Services
             StorageService = storageService;
             this.messageHub = messageHub;
             this.systemClock = systemClock;
+            SetupIndexes(storageService.Repo);
         }
 
         public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
@@ -87,13 +88,13 @@ namespace maxbl4.Race.CheckpointService.Services
 
         public IStorageService StorageService { get; }
 
-        void IRepository.ValidateDatabase(ILiteRepository repo)
-        {
-            repo.Query<Checkpoint>().OrderBy(x => x.Id).FirstOrDefault();
-            repo.Query<Tag>().OrderBy(x => x.Id).FirstOrDefault();
-        }
+        // void IRepository.ValidateDatabase(ILiteRepository repo)
+        // {
+        //     repo.Query<Checkpoint>().OrderBy(x => x.Id).FirstOrDefault();
+        //     repo.Query<Tag>().OrderBy(x => x.Id).FirstOrDefault();
+        // }
 
-        void IRepository.SetupIndexes(ILiteRepository repo)
+        private void SetupIndexes(ILiteRepository repo)
         {
             repo.Database.GetCollection<Checkpoint>().EnsureIndex(x => x.Timestamp);
             repo.Database.GetCollection<Tag>().EnsureIndex(x => x.DiscoveryTime);

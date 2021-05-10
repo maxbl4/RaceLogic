@@ -65,7 +65,8 @@ namespace maxbl4.Race.Tests.CheckpointService.Storage
         {
             var opts = new RfidOptions();
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
-            var repo = new CheckpointRepository(Options.Create(new ServiceOptions
+            var repo = new CheckpointRepository(Options
+                    .Create(new ServiceOptions
                     {
                         StorageConnectionString = storageConnectionString,
                         InitialRfidOptions = opts

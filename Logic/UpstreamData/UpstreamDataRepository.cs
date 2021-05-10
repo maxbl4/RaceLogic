@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using LiteDB;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
@@ -8,7 +9,7 @@ using maxbl4.Race.Logic.ServiceBase;
 
 namespace maxbl4.Race.Logic.UpstreamData
 {
-    public interface IUpstreamDataRepository: IRepository
+    public interface IUpstreamDataRepository
     {
         DateTime GetLastSyncTimestamp();
         void PurgeExistingData();
@@ -24,25 +25,31 @@ namespace maxbl4.Race.Logic.UpstreamData
         IEnumerable<ClassDto> ListClasses(Id<ChampionshipDto>? championshipId = null);
         IEnumerable<EventDto> ListEvents(Id<ChampionshipDto>? championshipId = null);
         IEnumerable<SessionDto> ListSessions(Id<EventDto>? eventId = null);
-        string Name<T>();
     }
 
-    public class UpstreamDataRepository: IUpstreamDataRepository
+    public class UpstreamDataRepository: IRepository, IUpstreamDataRepository
     {
         public UpstreamDataRepository(IStorageService storageService)
         {
             StorageService = storageService;
+            SetupIndexes(storageService.Repo);
         }
 
         public IStorageService StorageService { get; }
 
-        void IRepository.ValidateDatabase(ILiteRepository repo)
+        private void SetupIndexes(ILiteRepository repo)
         {
-        }
-
-        void IRepository.SetupIndexes(ILiteRepository repo)
-        {
-            
+            repo.Database.GetCollection<ClassDto>(Name<ClassDto>()).EnsureIndex(x => x.ChampionshipId);
+            repo.Database.GetCollection<EventDto>(Name<EventDto>()).EnsureIndex(x => x.ChampionshipId);
+            repo.Database.GetCollection<EventDto>(Name<EventDto>()).EnsureIndex(x => x.EndOfRegistration);
+            repo.Database.GetCollection<SessionDto>(Name<SessionDto>()).EnsureIndex(x => x.EventId);
+            repo.Database.GetCollection<SessionDto>(Name<SessionDto>()).EnsureIndex(x => x.ClassIds);
+            repo.Database.GetCollection<RiderClassRegistrationDto>(Name<RiderClassRegistrationDto>()).EnsureIndex(x => x.ClassId);
+            repo.Database.GetCollection<RiderClassRegistrationDto>(Name<RiderClassRegistrationDto>()).EnsureIndex(x => x.RiderProfileId);
+            repo.Database.GetCollection<RiderClassRegistrationDto>(Name<RiderClassRegistrationDto>()).EnsureIndex(x => x.ChampionshipDtoId);
+            repo.Database.GetCollection<RiderEventRegistrationDto>(Name<RiderEventRegistrationDto>()).EnsureIndex(x => x.ClassId);
+            repo.Database.GetCollection<RiderEventRegistrationDto>(Name<RiderEventRegistrationDto>()).EnsureIndex(x => x.EventId);
+            repo.Database.GetCollection<RiderEventRegistrationDto>(Name<RiderEventRegistrationDto>()).EnsureIndex(x => x.RiderClassRegistrationId);
         }
 
         public DateTime GetLastSyncTimestamp()
@@ -63,47 +70,47 @@ namespace maxbl4.Race.Logic.UpstreamData
 
         public void UpsertSeries(IEnumerable<SeriesDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<SeriesDto>());
+            Upsert(entities);
         }
 
         public void UpsertChampionships(IEnumerable<ChampionshipDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<ChampionshipDto>());
+            Upsert(entities);
         }
 
         public void UpsertClasses(IEnumerable<ClassDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<ClassDto>());
+            Upsert(entities);
         }
 
         public void UpsertEvents(IEnumerable<EventDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<EventDto>());
+            Upsert(entities);
         }
         
         public void UpsertSessions(IEnumerable<SessionDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<SessionDto>());
+            Upsert(entities);
         }
 
         public void UpsertRiderRegistrations(IEnumerable<RiderClassRegistrationDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<RiderClassRegistrationDto>());
+            Upsert(entities);
         }
         
         public void UpsertEventRegistrations(IEnumerable<RiderEventRegistrationDto> entities)
         {
-            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<RiderEventRegistrationDto>());
+            Upsert(entities);
         }
 
         public IEnumerable<SeriesDto> ListSeries()
         {
-            return StorageService.Repo.Query<SeriesDto>(Name<SessionDto>()).ToEnumerable();
+            return Query<SeriesDto>().ToEnumerable();
         }
         
         public IEnumerable<ChampionshipDto> ListChampionships(Id<SeriesDto>? seriesId = null)
         {
-            var query = StorageService.Repo.Query<ChampionshipDto>(Name<ChampionshipDto>());
+            var query = Query<ChampionshipDto>();
             if (seriesId != null && seriesId != Id<SeriesDto>.Empty)
                 query = query.Where(x => x.SeriesId == seriesId);
             return query.ToEnumerable();
@@ -111,7 +118,7 @@ namespace maxbl4.Race.Logic.UpstreamData
         
         public IEnumerable<ClassDto> ListClasses(Id<ChampionshipDto>? championshipId = null)
         {
-            var query = StorageService.Repo.Query<ClassDto>(Name<ClassDto>());
+            var query = Query<ClassDto>();
             if (championshipId != null && championshipId != Id<ChampionshipDto>.Empty)
                 query = query.Where(x => x.ChampionshipId == championshipId);
             return query.ToEnumerable();
@@ -119,7 +126,7 @@ namespace maxbl4.Race.Logic.UpstreamData
         
         public IEnumerable<EventDto> ListEvents(Id<ChampionshipDto>? championshipId = null)
         {
-            var query = StorageService.Repo.Query<EventDto>(Name<EventDto>());
+            var query = Query<EventDto>();
             if (championshipId != null && championshipId != Id<ChampionshipDto>.Empty)
                 query = query.Where(x => x.ChampionshipId == championshipId);
             return query.ToEnumerable();
@@ -127,13 +134,23 @@ namespace maxbl4.Race.Logic.UpstreamData
         
         public IEnumerable<SessionDto> ListSessions(Id<EventDto>? eventId = null)
         {
-            var query = StorageService.Repo.Query<SessionDto>(Name<SessionDto>());
+            var query = Query<SessionDto>();
             if (eventId != null && eventId != Id<EventDto>.Empty)
                 query = query.Where(x => x.EventId == eventId);
             return query.ToEnumerable();
         }
+        
+        private ILiteQueryable<T> Query<T>()
+        {
+            return StorageService.Repo.Query<T>(Name<T>());
+        }
+        
+        private void Upsert<T>(IEnumerable<T> entities) where T: IHasId<T>
+        {
+            StorageService.Repo.Upsert(entities.ApplyTraits(skipTimestamp:true), Name<T>());
+        }
 
-        public string Name<T>()
+        private string Name<T>()
         {
             return typeof(T).Name + "Upstream";
         }

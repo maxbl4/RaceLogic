@@ -8,6 +8,7 @@ using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.WsHub;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
 using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
@@ -38,6 +39,7 @@ namespace maxbl4.Race.CheckpointService
             BsonMapper.Global.RegisterIdBsonMappers();
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, ChannelMessageHub>();
+            services.AddSingleton<IStorageService, StorageService>();
             services.AddSingleton<CheckpointRepository>();
             services.AddSingleton<SubscriptionManager>();
             services.AddSingleton<IHostedService, SubscriptionService>();
@@ -52,6 +54,7 @@ namespace maxbl4.Race.CheckpointService
                 .AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
             var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();
+            services.Configure<StorageServiceOptions>(x => x.StorageConnectionString = options.StorageConnectionString);
             if (options?.PauseInStartupMs > 0)
                 Thread.Sleep(options.PauseInStartupMs);
         }

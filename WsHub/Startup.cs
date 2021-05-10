@@ -1,6 +1,7 @@
 using System.Reactive.PlatformServices;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic;
+using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.WsHub.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -30,6 +31,7 @@ namespace maxbl4.Race.WsHub
             services.AddSingleton<ISystemClock, DefaultSystemClock>();
             services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<IAuthService, AuthService>();
+            services.AddSingleton<IStorageService, StorageService>();
             services.AddSingleton<WsHubRepository>();
             services.AddAuthentication(Constants.WsHub.Authentication.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, WsAccessTokenAuthenticationHandler>(
@@ -39,6 +41,8 @@ namespace maxbl4.Race.WsHub
             services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024)
                 .AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
+            var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();
+            services.Configure<StorageServiceOptions>(x => x.StorageConnectionString = options.StorageConnectionString);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

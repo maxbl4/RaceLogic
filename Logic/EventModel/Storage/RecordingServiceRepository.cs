@@ -14,6 +14,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         public RecordingServiceRepository(IStorageService storageService)
         {
             StorageService = storageService;
+            SetupIndexes(storageService.Repo);
         }
         
         public RecordingSessionDto GetActiveRecordingSession()
@@ -51,11 +52,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
 
         public IStorageService StorageService { get; }
 
-        void IRepository.ValidateDatabase(ILiteRepository repo)
-        {
-        }
-
-        void IRepository.SetupIndexes(ILiteRepository repo)
+        private void SetupIndexes(ILiteRepository repo)
         {
             repo.Database.GetCollection<RecordingSessionDto>().EnsureIndex(x => x.IsRunning);
             repo.Database.GetCollection<CheckpointDto>().EnsureIndex(x => x.RecordingSessionId);

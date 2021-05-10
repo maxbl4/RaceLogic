@@ -14,14 +14,6 @@ namespace maxbl4.Race.DataService.Services
 
         public IStorageService StorageService { get; }
 
-        void IRepository.ValidateDatabase(ILiteRepository repo)
-        {
-        }
-
-        void IRepository.SetupIndexes(ILiteRepository repo)
-        {
-        }
-
         public T Get<T>(BsonValue key, string collectionName = null)
         {
             return StorageService.Repo.Database.GetCollection<T>(collectionName).FindById(key);

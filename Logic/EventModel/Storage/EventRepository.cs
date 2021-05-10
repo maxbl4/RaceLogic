@@ -30,14 +30,5 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         }
 
         public IStorageService StorageService { get; }
-
-        void IRepository.ValidateDatabase(ILiteRepository repo)
-        {
-        }
-
-        void IRepository.SetupIndexes(ILiteRepository repo)
-        {
-            
-        }
     }
 }

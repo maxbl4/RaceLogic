@@ -11,16 +11,17 @@ namespace maxbl4.Race.WsHub.Services
         public WsHubRepository(IStorageService storageService)
         {
             StorageService = storageService;
+            SetupIndexes(storageService.Repo);
         }
 
         public IStorageService StorageService { get; }
 
-        void IRepository.ValidateDatabase(ILiteRepository repo)
-        {
-            repo.Query<AuthToken>().OrderBy(x => x.Token).FirstOrDefault();
-        }
+        // void IRepository.ValidateDatabase(ILiteRepository repo)
+        // {
+        //     repo.Query<AuthToken>().OrderBy(x => x.Token).FirstOrDefault();
+        // }
 
-        void IRepository.SetupIndexes(ILiteRepository repo)
+        private void SetupIndexes(ILiteRepository repo)
         {
             repo.Database.GetCollection<AuthToken>().EnsureIndex(x => x.Updated);
             repo.Database.GetCollection<AuthToken>().EnsureIndex(x => x.ServiceName);

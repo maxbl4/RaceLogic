@@ -17,8 +17,6 @@ namespace maxbl4.Race.Logic.ServiceBase
     public interface IRepository
     {
         IStorageService StorageService { get; }
-        void ValidateDatabase(ILiteRepository repo);
-        void SetupIndexes(ILiteRepository repo);
     }
 
     public class StorageServiceOptions
@@ -34,9 +32,6 @@ namespace maxbl4.Race.Logic.ServiceBase
         Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>;
         List<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null) where T : IHasId<T>;
         T Get<T>(Id<T> id) where T : IHasId<T>;
-        void Initialize();
-        T RegisterRepository<T>(Func<StorageService, T> consumer) where T: IRepository;
-        T GetRepository<T>() where T: IRepository;
     }
     
     public class StorageUpdated
@@ -57,10 +52,6 @@ namespace maxbl4.Race.Logic.ServiceBase
         {
             connectionString = options.Value.StorageConnectionString;
             this.messageHub = messageHub;
-        }
-
-        public void Initialize()
-        {
             var cs = new ConnectionString(connectionString);
             logger.SwallowError(() => InitializeInt(cs), ex =>
             {
@@ -68,18 +59,6 @@ namespace maxbl4.Race.Logic.ServiceBase
                 cs = TryRotateDatabase(cs);
                 InitializeInt(cs);
             });
-        } 
-
-        public T RegisterRepository<T>(Func<StorageService, T> consumer) where T: IRepository
-        {
-            var t = consumer(this);
-            consumers[typeof(T)] = t;
-            return t;
-        }
-
-        public T GetRepository<T>() where T: IRepository
-        {
-            return (T)consumers[typeof(T)];
         }
 
         public void Dispose()
@@ -92,7 +71,6 @@ namespace maxbl4.Race.Logic.ServiceBase
         {
             return Repo.FirstOrDefault<T>(x => x.Id == id);
         }
-        
         
         public Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>
         {
@@ -137,30 +115,12 @@ namespace maxbl4.Race.Logic.ServiceBase
             connectionString.Filename = new RollingFileInfo(connectionString.Filename).CurrentFile;
             logger.Information($"Using storage file {connectionString.Filename}");
             Repo = LiteRepo.WithUtcDate(connectionString);
-            SetupIndexes();
-            ValidateDatabase();
         }
 
         private ConnectionString TryRotateDatabase(ConnectionString connectionString)
         {
             connectionString.Filename = new RollingFileInfo(connectionString.Filename).NextFile;
             return connectionString;
-        }
-
-        private void ValidateDatabase()
-        {
-            foreach (var consumer in consumers.Values)
-            {
-                consumer.ValidateDatabase(Repo);
-            }
-        }
-
-        private void SetupIndexes()
-        {
-            foreach (var consumer in consumers.Values)
-            {
-                consumer.SetupIndexes(Repo);
-            }
         }
     }
 }
