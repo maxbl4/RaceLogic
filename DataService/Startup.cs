@@ -8,7 +8,11 @@ using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.AutoMapper;
+using maxbl4.Race.Logic.CheckpointService.Client;
+using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
@@ -44,6 +48,12 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<IStorageService, StorageService>();
             services.AddSingleton<DataServiceRepository>();
             services.AddSingleton<IUpstreamDataRepository, UpstreamDataRepository>();
+            services.AddSingleton<IEventRepository, EventRepository>();
+            services.AddSingleton<IRecordingServiceRepository, RecordingServiceRepository>();
+            services.AddSingleton<IRecordingService, RecordingService>();
+            services.AddSingleton<ICheckpointServiceClientFactory, CheckpointServiceClientFactory>();
+            services.AddSingleton<IAutoMapperProvider, AutoMapperProvider>();
+            services.AddSingleton<TimingSessionService>();
             services.AddSingleton<UpstreamDataSyncService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddControllers(o =>

@@ -14,11 +14,11 @@ namespace maxbl4.Race.Logic.UpstreamData
     {
         private readonly UpstreamDataSyncServiceOptions options;
         private readonly IMainClient mainClient;
-        private readonly UpstreamDataRepository repository;
+        private readonly IUpstreamDataRepository repository;
         private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
 
-        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, UpstreamDataRepository repository,
+        public UpstreamDataSyncService(IOptions<UpstreamDataSyncServiceOptions> options, IMainClient mainClient, IUpstreamDataRepository repository,
             IMessageHub messageHub)
         {
             this.options = options.Value;

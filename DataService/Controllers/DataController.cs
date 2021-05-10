@@ -13,9 +13,9 @@ namespace maxbl4.Race.DataService.Controllers
     public class DataController: ControllerBase
     {
         private readonly UpstreamDataSyncService syncService;
-        private readonly UpstreamDataRepository syncStorage;
+        private readonly IUpstreamDataRepository syncStorage;
 
-        public DataController(UpstreamDataSyncService syncService, UpstreamDataRepository syncStorage)
+        public DataController(UpstreamDataSyncService syncService, IUpstreamDataRepository syncStorage)
         {
             this.syncService = syncService;
             this.syncStorage = syncStorage;
