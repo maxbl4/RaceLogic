@@ -39,7 +39,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     
     public class TimingSession : IHasName, IHasTimestamp, IHasSeed
     {
-        private readonly Id<TimingSessionDto> id;
+        public Id<TimingSessionDto> Id { get; set; }
         private readonly IEventRepository eventRepository;
         private readonly IRecordingService recordingService;
         private readonly IMessageHub messageHub;
@@ -60,7 +60,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public TimingSession(Id<TimingSessionDto> id, IEventRepository eventRepository, IRecordingService recordingService, IMessageHub messageHub, ISystemClock clock)
         {
-            this.id = id;
+            this.Id = id;
             this.eventRepository = eventRepository;
             this.recordingService = recordingService;
             this.messageHub = messageHub;
@@ -81,7 +81,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                         return;
                 }
             }
-            var timingSession = eventRepository.StorageService.Get(id);
+            var timingSession = eventRepository.StorageService.Get(Id);
             var session = eventRepository.StorageService.Get(timingSession.SessionId);
             var recordingSession = recordingService.GetOrCreateRecordingSession(timingSession.RecordingSessionId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
@@ -95,7 +95,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void Start(DateTime? startTime = null)
         {
-            eventRepository.StorageService.Update(id, x =>
+            eventRepository.StorageService.Update(Id, x =>
             {
                 x.Start(startTime ?? clock.UtcNow.UtcDateTime);
             });

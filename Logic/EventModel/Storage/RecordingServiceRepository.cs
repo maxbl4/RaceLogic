@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using LiteDB;
@@ -25,6 +26,28 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         public RecordingSessionDto GetSession(Id<RecordingSessionDto> sessionId)
         {
             return StorageService.Get(sessionId);
+        }
+
+        public IEnumerable<RecordingSessionDto> ListSessions(Id<EventDto> eventId)
+        {
+            return StorageService.List<RecordingSessionDto>(x => x.EventId == eventId);
+        }
+
+        public RecordingSessionDto GetOrCreateRecordingSession(Id<EventDto> eventId)
+        {
+            var items = StorageService.List<RecordingSessionDto>(x => x.EventId == eventId).ToList();
+            var active = items.FirstOrDefault(x => x.IsRunning);
+            if (active != null) 
+                return active;
+            if (items.Count > 0)
+                return items.OrderByDescending(x => x.StartTime).First();
+            active = new RecordingSessionDto
+            {
+                EventId = eventId,
+                CheckpointServiceAddress = "http://localhost:6000"
+            };
+            StorageService.Save(active);
+            return active;
         }
 
         public void SaveSession(RecordingSessionDto dto)

@@ -27,10 +27,10 @@ namespace maxbl4.Race.Logic.ServiceBase
     public interface IStorageService
     {
         ILiteRepository Repo { get; }
-        List<T> List<T, K>(Expression<Func<T, bool>> predicate = null, Expression<Func<T, K>> orderBy = null, int? skip = null, int? limit = null) where T : IHasId<T>;
+        IEnumerable<T> List<T, K>(Expression<Func<T, bool>> predicate = null, Expression<Func<T, K>> orderBy = null, int? skip = null, int? limit = null) where T : IHasId<T>;
         Id<T> Save<T>(T entity) where T : IHasId<T>;
         Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>;
-        List<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null) where T : IHasId<T>;
+        IEnumerable<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null) where T : IHasId<T>;
         T Get<T>(Id<T> id) where T : IHasId<T>;
     }
     
@@ -79,13 +79,13 @@ namespace maxbl4.Race.Logic.ServiceBase
             return Save(dto);
         }
 
-        public List<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
+        public IEnumerable<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null)
             where T : IHasId<T>
         {
             return List<T, object>(predicate, null, skip, limit);
         }
 
-        public List<T> List<T, K>(Expression<Func<T, bool>> predicate = null,
+        public IEnumerable<T> List<T, K>(Expression<Func<T, bool>> predicate = null,
             Expression<Func<T, K>> orderBy = null, int? skip = null, int? limit = null)
             where T : IHasId<T>
         {
@@ -97,10 +97,10 @@ namespace maxbl4.Race.Logic.ServiceBase
                 ILiteQueryableResult<T> result = null;
                 if (skip != null) result = query.Skip(skip.Value);
                 if (limit != null) result = query.Limit(limit.Value);
-                return result.ToList();
+                return result.ToEnumerable();
             }
 
-            return query.ToList();
+            return query.ToEnumerable();
         }
 
         public Id<T> Save<T>(T entity) where T : IHasId<T>

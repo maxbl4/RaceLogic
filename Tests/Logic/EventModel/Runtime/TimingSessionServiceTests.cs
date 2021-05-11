@@ -60,7 +60,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             storageService.Repo.Query<CheckpointDto>().Count().Should().Be(2);
             recordingRepository.GetActiveRecordingSession().Should().NotBeNull();
             
-            var timingSessionService = new TimingSessionService(eventRepository, recordingService, MessageHub, new AutoMapperProvider(),
+            var timingSessionService = new TimingSessionService(eventRepository, recordingService, recordingRepository, MessageHub, new AutoMapperProvider(),
                 new DefaultSystemClock());
 
             var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");

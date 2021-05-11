@@ -140,6 +140,332 @@ export class DataClient {
         return _observableOf<SessionDto[]>(<any>null);
     }
 
+    getSession(value?: string | undefined): Observable<SessionDto> {
+        let url_ = this.baseUrl + "/data/session?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetSession(<any>response_);
+                } catch (e) {
+                    return <Observable<SessionDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<SessionDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetSession(response: HttpResponseBase): Observable<SessionDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SessionDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<SessionDto>(<any>null);
+    }
+
+    listTimingSessions(value?: string | undefined): Observable<TimingSessionDto[]> {
+        let url_ = this.baseUrl + "/data/timing-sessions?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListTimingSessions(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListTimingSessions(<any>response_);
+                } catch (e) {
+                    return <Observable<TimingSessionDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<TimingSessionDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processListTimingSessions(response: HttpResponseBase): Observable<TimingSessionDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(TimingSessionDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<TimingSessionDto[]>(<any>null);
+    }
+
+    getTimingSession(value?: string | undefined): Observable<TimingSessionDto> {
+        let url_ = this.baseUrl + "/data/timing-session?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTimingSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTimingSession(<any>response_);
+                } catch (e) {
+                    return <Observable<TimingSessionDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<TimingSessionDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetTimingSession(response: HttpResponseBase): Observable<TimingSessionDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TimingSessionDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<TimingSessionDto>(<any>null);
+    }
+
+    listRecordingSessions(value?: string | undefined): Observable<RecordingSessionDto[]> {
+        let url_ = this.baseUrl + "/data/recording-sessions?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListRecordingSessions(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListRecordingSessions(<any>response_);
+                } catch (e) {
+                    return <Observable<RecordingSessionDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<RecordingSessionDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processListRecordingSessions(response: HttpResponseBase): Observable<RecordingSessionDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(RecordingSessionDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<RecordingSessionDto[]>(<any>null);
+    }
+
+    getRecordingSession(value?: string | undefined): Observable<RecordingSessionDto> {
+        let url_ = this.baseUrl + "/data/recording-session?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetRecordingSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetRecordingSession(<any>response_);
+                } catch (e) {
+                    return <Observable<RecordingSessionDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<RecordingSessionDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetRecordingSession(response: HttpResponseBase): Observable<RecordingSessionDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RecordingSessionDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<RecordingSessionDto>(<any>null);
+    }
+
+    startTimingSession(value?: string | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/data/timing-session-start?";
+        if (value === null)
+            throw new Error("The parameter 'value' cannot be null.");
+        else if (value !== undefined)
+            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processStartTimingSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processStartTimingSession(<any>response_);
+                } catch (e) {
+                    return <Observable<string>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<string>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processStartTimingSession(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<string>(<any>null);
+    }
+
     purgeUpstreamData(): Observable<FileResponse> {
         let url_ = this.baseUrl + "/data/upstream/purge";
         url_ = url_.replace(/[?&]$/, "");
@@ -925,7 +1251,7 @@ export class EventDto implements IEventDto {
         data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
         data["created"] = this.created ? this.created.toString() : <any>null;
         data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data;
+        return data; 
     }
 }
 
@@ -973,7 +1299,7 @@ export class SessionDto implements ISessionDto {
     init(_data?: any) {
         if (_data) {
             this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
-            this.minLap = _data["minLap"] ? Duration.fromISOTime(_data["minLap"].toString()) : <any>null;
+            this.minLap = _data["minLap"] ? Duration.fromISO(_data["minLap"].toString()) : <any>null;
             this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
             this.finishCriteria = _data["finishCriteria"] ? FinishCriteriaDto.fromJS(_data["finishCriteria"]) : <any>null;
             if (Array.isArray(_data["classIds"])) {
@@ -1019,7 +1345,7 @@ export class SessionDto implements ISessionDto {
         data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
         data["created"] = this.created ? this.created.toString() : <any>null;
         data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data;
+        return data; 
     }
 }
 
@@ -1063,7 +1389,7 @@ export class FinishCriteriaDto implements IFinishCriteriaDto {
 
     init(_data?: any) {
         if (_data) {
-            this.duration = _data["duration"] ? Duration.fromISOTime(_data["duration"].toString()) : <any>null;
+            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>null;
             this.totalLaps = _data["totalLaps"] !== undefined ? _data["totalLaps"] : <any>null;
             this.lapsAfterDuration = _data["lapsAfterDuration"] !== undefined ? _data["lapsAfterDuration"] : <any>null;
             this.skipStartingCheckpoint = _data["skipStartingCheckpoint"] !== undefined ? _data["skipStartingCheckpoint"] : <any>null;
@@ -1099,7 +1425,7 @@ export class FinishCriteriaDto implements IFinishCriteriaDto {
         data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
         data["created"] = this.created ? this.created.toString() : <any>null;
         data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data;
+        return data; 
     }
 }
 
@@ -1113,6 +1439,166 @@ export interface IFinishCriteriaDto {
     id?: string;
     name?: string | null;
     description?: string | null;
+    isSeed?: boolean;
+    created?: DateTime;
+    updated?: DateTime;
+}
+
+export class TimingSessionDto implements ITimingSessionDto {
+    sessionId?: string;
+    recordingSessionId?: string;
+    eventId?: string;
+    isRunning?: boolean;
+    startTime?: DateTime;
+    stopTime?: DateTime;
+    id?: string;
+    name?: string | null;
+    description?: string | null;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: DateTime;
+    updated?: DateTime;
+
+    constructor(data?: ITimingSessionDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.sessionId = _data["sessionId"] !== undefined ? _data["sessionId"] : <any>null;
+            this.recordingSessionId = _data["recordingSessionId"] !== undefined ? _data["recordingSessionId"] : <any>null;
+            this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
+            this.isRunning = _data["isRunning"] !== undefined ? _data["isRunning"] : <any>null;
+            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
+            this.stopTime = _data["stopTime"] ? DateTime.fromISO(_data["stopTime"].toString()) : <any>null;
+            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
+            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
+            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): TimingSessionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TimingSessionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["sessionId"] = this.sessionId !== undefined ? this.sessionId : <any>null;
+        data["recordingSessionId"] = this.recordingSessionId !== undefined ? this.recordingSessionId : <any>null;
+        data["eventId"] = this.eventId !== undefined ? this.eventId : <any>null;
+        data["isRunning"] = this.isRunning !== undefined ? this.isRunning : <any>null;
+        data["startTime"] = this.startTime ? this.startTime.toString() : <any>null;
+        data["stopTime"] = this.stopTime ? this.stopTime.toString() : <any>null;
+        data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["description"] = this.description !== undefined ? this.description : <any>null;
+        data["published"] = this.published !== undefined ? this.published : <any>null;
+        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
+        data["created"] = this.created ? this.created.toString() : <any>null;
+        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        return data; 
+    }
+}
+
+export interface ITimingSessionDto {
+    sessionId?: string;
+    recordingSessionId?: string;
+    eventId?: string;
+    isRunning?: boolean;
+    startTime?: DateTime;
+    stopTime?: DateTime;
+    id?: string;
+    name?: string | null;
+    description?: string | null;
+    published?: boolean;
+    isSeed?: boolean;
+    created?: DateTime;
+    updated?: DateTime;
+}
+
+export class RecordingSessionDto implements IRecordingSessionDto {
+    eventId?: string;
+    id?: string;
+    name?: string | null;
+    checkpointServiceAddress?: string | null;
+    description?: string | null;
+    isRunning?: boolean;
+    startTime?: DateTime;
+    stopTime?: DateTime;
+    isSeed?: boolean;
+    created?: DateTime;
+    updated?: DateTime;
+
+    constructor(data?: IRecordingSessionDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
+            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
+            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
+            this.checkpointServiceAddress = _data["checkpointServiceAddress"] !== undefined ? _data["checkpointServiceAddress"] : <any>null;
+            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
+            this.isRunning = _data["isRunning"] !== undefined ? _data["isRunning"] : <any>null;
+            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
+            this.stopTime = _data["stopTime"] ? DateTime.fromISO(_data["stopTime"].toString()) : <any>null;
+            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+        }
+    }
+
+    static fromJS(data: any): RecordingSessionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RecordingSessionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["eventId"] = this.eventId !== undefined ? this.eventId : <any>null;
+        data["id"] = this.id !== undefined ? this.id : <any>null;
+        data["name"] = this.name !== undefined ? this.name : <any>null;
+        data["checkpointServiceAddress"] = this.checkpointServiceAddress !== undefined ? this.checkpointServiceAddress : <any>null;
+        data["description"] = this.description !== undefined ? this.description : <any>null;
+        data["isRunning"] = this.isRunning !== undefined ? this.isRunning : <any>null;
+        data["startTime"] = this.startTime ? this.startTime.toString() : <any>null;
+        data["stopTime"] = this.stopTime ? this.stopTime.toString() : <any>null;
+        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
+        data["created"] = this.created ? this.created.toString() : <any>null;
+        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        return data; 
+    }
+}
+
+export interface IRecordingSessionDto {
+    eventId?: string;
+    id?: string;
+    name?: string | null;
+    checkpointServiceAddress?: string | null;
+    description?: string | null;
+    isRunning?: boolean;
+    startTime?: DateTime;
+    stopTime?: DateTime;
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
@@ -1164,7 +1650,7 @@ export class SeriesDto implements ISeriesDto {
         data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
         data["created"] = this.created ? this.created.toString() : <any>null;
         data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data;
+        return data; 
     }
 }
 
@@ -1227,7 +1713,7 @@ export class ChampionshipDto implements IChampionshipDto {
         data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
         data["created"] = this.created ? this.created.toString() : <any>null;
         data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data;
+        return data; 
     }
 }
 
@@ -1294,7 +1780,7 @@ export class ClassDto implements IClassDto {
         data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
         data["created"] = this.created ? this.created.toString() : <any>null;
         data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data;
+        return data; 
     }
 }
 

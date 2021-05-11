@@ -11,12 +11,16 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import { MainViewComponent } from './main-view/main-view.component';
 import {DemoMaterialModule} from "./material-module";
 import { EventViewComponent } from './event-view/event-view.component';
+import { SessionViewComponent } from './session-view/session-view.component';
+import { TimingSessionViewComponent } from './timing-session-view/timing-session-view.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainViewComponent,
-    EventViewComponent
+    EventViewComponent,
+    SessionViewComponent,
+    TimingSessionViewComponent
   ],
   imports: [
     BrowserModule,

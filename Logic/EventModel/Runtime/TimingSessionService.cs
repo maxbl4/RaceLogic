@@ -18,14 +18,16 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly ISystemClock clock;
         private readonly IEventRepository eventRepository;
         private readonly IRecordingService recordingService;
+        private readonly IRecordingServiceRepository recordingRepository;
         private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
 
-        public TimingSessionService(IEventRepository eventRepository, IRecordingService recordingService, IMessageHub messageHub, 
+        public TimingSessionService(IEventRepository eventRepository, IRecordingService recordingService, IRecordingServiceRepository recordingRepository, IMessageHub messageHub, 
             IAutoMapperProvider autoMapperProvider, ISystemClock clock)
         {
             this.eventRepository = eventRepository;
             this.recordingService = recordingService;
+            this.recordingRepository = recordingRepository;
             this.messageHub = messageHub;
             this.autoMapperProvider = autoMapperProvider;
             this.clock = clock;
@@ -45,14 +47,16 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         }
 
         public TimingSession CreateSession(string name, Id<EventDto> eventId, Id<SessionDto> sessionId,
-            Id<RecordingSessionDto> recordingSessionSessionId)
+            Id<RecordingSessionDto>? recordingSessionSessionId = null)
         {
+            if (recordingSessionSessionId == null)
+                recordingSessionSessionId = recordingRepository.GetOrCreateRecordingSession(eventId).Id;
             var dto = new TimingSessionDto
             {
                 Name = name,
                 EventId = eventId,
                 SessionId = sessionId,
-                RecordingSessionId = recordingSessionSessionId
+                RecordingSessionId = recordingSessionSessionId.Value
             };
             eventRepository.StorageService.Save(dto);
             return new TimingSession(dto.Id, eventRepository, recordingService, messageHub, clock);

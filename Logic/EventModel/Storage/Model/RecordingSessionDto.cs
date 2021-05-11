@@ -6,7 +6,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage.Model
 {
     public class RecordingSessionDto : IHasId<RecordingSessionDto>, IHasRunning, IHasSeed, IHasTimestamp, IHasName
     {
-        public Id<SessionDto> SessionId { get; set; }
+        public Id<EventDto> EventId { get; set; }
         public Id<RecordingSessionDto> Id { get; set; }
         public string Name { get; set; }
         public string CheckpointServiceAddress { get; set; }

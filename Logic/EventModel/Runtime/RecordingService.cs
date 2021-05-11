@@ -164,5 +164,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         void UpdateRecordingSession(Id<RecordingSessionDto> id, Action<RecordingSessionDto> modifier);
         void UpsertCheckpoint(CheckpointDto checkpoint);
         IEnumerable<CheckpointDto> GetCheckpoints(Id<RecordingSessionDto> sessionId);
+        IEnumerable<RecordingSessionDto> ListSessions(Id<EventDto> eventId);
+        RecordingSessionDto GetOrCreateRecordingSession(Id<EventDto> eventId);
     }
 }

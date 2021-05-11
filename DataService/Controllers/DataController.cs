@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Model;
 using maxbl4.Race.Logic.UpstreamData;
 using Microsoft.AspNetCore.Mvc;
+using Serilog.Events;
 
 namespace maxbl4.Race.DataService.Controllers
 {
@@ -14,32 +16,79 @@ namespace maxbl4.Race.DataService.Controllers
     public class DataController: ControllerBase
     {
         private readonly UpstreamDataSyncService syncService;
-        private readonly IUpstreamDataRepository syncStorage;
+        private readonly IUpstreamDataRepository upstreamRepository;
         private readonly IEventRepository eventRepository;
+        private readonly IRecordingServiceRepository recordingRepository;
+        private readonly TimingSessionService timingSessionService;
 
-        public DataController(UpstreamDataSyncService syncService, IUpstreamDataRepository syncStorage, IEventRepository eventRepository)
+        public DataController(UpstreamDataSyncService syncService, 
+            IUpstreamDataRepository upstreamRepository, 
+            IEventRepository eventRepository,
+            IRecordingServiceRepository recordingRepository,
+            TimingSessionService timingSessionService)
         {
             this.syncService = syncService;
-            this.syncStorage = syncStorage;
+            this.upstreamRepository = upstreamRepository;
             this.eventRepository = eventRepository;
+            this.recordingRepository = recordingRepository;
+            this.timingSessionService = timingSessionService;
         }
 
         [HttpGet("event")]
         public ActionResult<EventDto> GetEvent([FromQuery] Id<EventDto> value)
         {
-            return eventRepository.GetEvent(value);
+            return eventRepository.GetWithUpstream(value);
         }
         
         [HttpGet("sessions")]
         public ActionResult<List<SessionDto>> ListSessions([FromQuery] Id<EventDto> value)
         {
-            return eventRepository.ListSessions(value);
+            return eventRepository.ListSessions(value).ToList();
         }
+        
+        [HttpGet("session")]
+        public ActionResult<SessionDto> GetSession([FromQuery] Id<SessionDto> value)
+        {
+            return eventRepository.GetWithUpstream(value);
+        }
+        
+        [HttpGet("timing-sessions")]
+        public ActionResult<List<TimingSessionDto>> ListTimingSessions([FromQuery] Id<SessionDto> value)
+        {
+            return eventRepository.ListTimingSessions(value).ToList();
+        }
+        
+        [HttpGet("timing-session")]
+        public ActionResult<TimingSessionDto> GetTimingSession([FromQuery] Id<TimingSessionDto> value)
+        {
+            return eventRepository.GetWithUpstream(value);
+        }
+        
+        [HttpGet("recording-sessions")]
+        public ActionResult<List<RecordingSessionDto>> ListRecordingSessions([FromQuery] Id<EventDto> value)
+        {
+            return recordingRepository.ListSessions(value).ToList();
+        }
+        
+        [HttpGet("recording-session")]
+        public ActionResult<RecordingSessionDto> GetRecordingSession([FromQuery] Id<RecordingSessionDto> value)
+        {
+            return recordingRepository.GetSession(value);
+        }
+        
+        [HttpPost("timing-session-start")]
+        public ActionResult<Id<TimingSessionDto>> StartTimingSession([FromQuery] Id<SessionDto> value)
+        {
+            var session = eventRepository.GetWithUpstream(value);
+            var t = timingSessionService.CreateSession(session.Name, session.EventId, value);
+            return t.Id;
+        }
+        
         
         [HttpPost("upstream/purge")]
         public ActionResult PurgeUpstreamData()
         {
-            syncStorage.PurgeExistingData();
+            upstreamRepository.PurgeExistingData();
             return Ok();
         }
 
@@ -52,25 +101,25 @@ namespace maxbl4.Race.DataService.Controllers
         [HttpGet("series")]
         public ActionResult<List<SeriesDto>> ListSeries()
         {
-            return syncStorage.ListSeries().ToList();
+            return upstreamRepository.ListSeries().ToList();
         }
         
         [HttpGet("championships")]
         public ActionResult<List<ChampionshipDto>> ListChampionships([FromQuery]Id<SeriesDto> value)
         {
-            return syncStorage.ListChampionships(value).ToList();
+            return upstreamRepository.ListChampionships(value).ToList();
         }
         
         [HttpGet("classes")]
         public ActionResult<List<ClassDto>> ListClasses([FromQuery]Id<ChampionshipDto> value)
         {
-            return syncStorage.ListClasses(value).ToList();
+            return upstreamRepository.ListClasses(value).ToList();
         }
         
         [HttpGet("events")]
         public ActionResult<List<EventDto>> ListEvents([FromQuery]Id<ChampionshipDto> value)
         {
-            return syncStorage.ListEvents(value).ToList();
+            return upstreamRepository.ListEvents(value).ToList();
         }
     }
 }
