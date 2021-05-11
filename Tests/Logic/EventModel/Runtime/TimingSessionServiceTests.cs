@@ -65,7 +65,6 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
 
             var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");
             var session = upstreamDataStorage.ListSessions(ev.Id).First(x => x.Name == "Эксперт и Опен");
-            storageService.Save(session);
             var timingSession = timingSessionService.CreateSession("timing sess", session.EventId, session.Id, recordingSession.Id);
             timingSession.Start(tagSub.Now.AddSeconds(-10));
             await Task.Delay(100);

@@ -19,7 +19,7 @@ import {Observable} from "rxjs";
       </thead>
       <tbody>
       <tr *ngFor="let s of timingSessions|async">
-        <td><a [routerLink]="['session', s.id]">{{s.name}}</a></td>
+        <td><a [routerLink]="['timing', s.id]">{{s.name}}</a></td>
         <td>{{s.startTime?.toFormat("HH:mm")}}</td>
         <td>{{s.stopTime?.toFormat("HH:mm")}}</td>
       </tr>
@@ -41,14 +41,14 @@ export class SessionViewComponent implements OnInit {
       this.id = params.get("sessionId")!;
       this.dataClient.getSession(this.id).subscribe(x => {
         this.sessionDto = x;
-        this.timingSessions = this.dataClient.listTimingSessions(x.eventId);
+        this.timingSessions = this.dataClient.listTimingSessions(this.id);
       });
     });
   }
 
   startTimingSession() {
     this.dataClient.startTimingSession(this.id).subscribe(x => {
-      this.router.navigate(['timing', x]);
+      this.router.navigate(['timing', x], {relativeTo: this.route});
     });
   }
 }

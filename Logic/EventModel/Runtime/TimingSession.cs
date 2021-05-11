@@ -82,7 +82,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 }
             }
             var timingSession = eventRepository.StorageService.Get(Id);
-            var session = eventRepository.StorageService.Get(timingSession.SessionId);
+            var session = eventRepository.GetWithUpstream(timingSession.SessionId);
             var recordingSession = recordingService.GetOrCreateRecordingSession(timingSession.RecordingSessionId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
             RawCheckpoints.Clear();
