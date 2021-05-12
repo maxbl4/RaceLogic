@@ -11,6 +11,7 @@ using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.RoundTiming;
 using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
+using Serilog;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
@@ -39,6 +40,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     
     public class TimingSession : IHasName, IHasTimestamp, IHasSeed
     {
+        private static readonly ILogger logger = Log.ForContext<TimingSession>(); 
         public Id<TimingSessionDto> Id { get; set; }
         private readonly IEventRepository eventRepository;
         private readonly IRecordingService recordingService;
@@ -72,29 +74,35 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void Initialize(StorageUpdated msg = null)
         {
+            logger.Information("Initialize {EntityType}", msg?.Entity?.GetType()?.Name);
             if (msg != null)
             {
                 switch (msg.Entity)
                 {
-                    case RecordingSessionDto r:
-                    case CheckpointDto c:
+                    //case RecordingSessionDto:
+                    case CheckpointDto:
+                    //case TimingSessionDto:
                         return;
                 }
             }
             var timingSession = eventRepository.StorageService.Get(Id);
+            if (!timingSession.IsRunning)
+                return;
+            logger.Information("Initialize updating subscription");
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
-            var recordingSession = recordingService.GetOrCreateRecordingSession(timingSession.RecordingSessionId);
+            recordingService.StartRecording(session.EventId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
             RawCheckpoints.Clear();
             AggCheckpoints.Clear();
             checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
             checkpointAggregator.Subscribe(Track.Append);
             checkpointAggregator.AggregatedCheckpoints.Subscribe(AggCheckpoints.Add);
-            recordingSession.Subscribe(checkpointAggregator);
+            recordingService.Subscribe(checkpointAggregator, timingSession.StartTime);
         }
 
         public void Start(DateTime? startTime = null)
         {
+            logger.Information("Start");
             eventRepository.StorageService.Update(Id, x =>
             {
                 x.Start(startTime ?? clock.UtcNow.UtcDateTime);
@@ -103,6 +111,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void AppendCheckpoint(Checkpoint checkpoint)
         {
+            logger.Information("AppendCheckpoint");
             RawCheckpoints.Add(checkpoint);
             checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
         }

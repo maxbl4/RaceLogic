@@ -54,25 +54,28 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
 
             storageService.Repo.Query<CheckpointDto>().Count().Should().Be(0);
 
-            var recordingService = new RecordingService(recordingRepository, cpf, new AutoMapperProvider(), new DefaultSystemClock());
-            var recordingSession = recordingService.StartRecordingSession("My session", "cps address");
-            tagSub.SendTags((1, "11"), (2, "12"));
-            storageService.Repo.Query<CheckpointDto>().Count().Should().Be(2);
-            recordingRepository.GetActiveRecordingSession().Should().NotBeNull();
+            var recordingService = new RecordingService(Options.Create(new RecordingServiceOptions{CheckpointServiceAddress = "http://localhost:6000"}), recordingRepository, cpf, new AutoMapperProvider(), new DefaultSystemClock());
             
             var timingSessionService = new TimingSessionService(eventRepository, recordingService, recordingRepository, MessageHub, new AutoMapperProvider(),
                 new DefaultSystemClock());
 
             var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");
+            
             var session = upstreamDataStorage.ListSessions(ev.Id).First(x => x.Name == "Эксперт и Опен");
-            var timingSession = timingSessionService.CreateSession("timing sess", session.EventId, session.Id, recordingSession.Id);
+            var timingSession = timingSessionService.CreateSession("timing sess", session.Id);
             timingSession.Start(tagSub.Now.AddSeconds(-10));
             await Task.Delay(100);
+            tagSub.SendTags((1, "11"), (2, "12"));
+            await Task.Delay(100);
+            storageService.Repo.Query<CheckpointDto>().Count().Should().Be(2);
+            recordingRepository.GetActiveRecordingSession().Should().NotBeNull();
+            
             timingSession.Track.Rating.Should().HaveCount(2);
             timingSession.Track.Rating[0].RiderId.Should().Be("11");
             timingSession.Track.Rating[1].RiderId.Should().Be("12");
+            
 
-            recordingSession.Stop();
+            recordingService.StopRecording();
             recordingRepository.GetActiveRecordingSession().Should().BeNull();
         }
     }

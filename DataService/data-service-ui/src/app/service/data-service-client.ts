@@ -362,58 +362,6 @@ export class DataClient {
         return _observableOf<RecordingSessionDto[]>(<any>null);
     }
 
-    getRecordingSession(value?: string | undefined): Observable<RecordingSessionDto> {
-        let url_ = this.baseUrl + "/data/recording-session?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetRecordingSession(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetRecordingSession(<any>response_);
-                } catch (e) {
-                    return <Observable<RecordingSessionDto>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<RecordingSessionDto>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processGetRecordingSession(response: HttpResponseBase): Observable<RecordingSessionDto> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = RecordingSessionDto.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<RecordingSessionDto>(<any>null);
-    }
-
     startTimingSession(value?: string | undefined): Observable<string> {
         let url_ = this.baseUrl + "/data/timing-session-start?";
         if (value === null)

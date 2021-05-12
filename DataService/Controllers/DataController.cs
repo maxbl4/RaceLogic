@@ -15,17 +15,17 @@ namespace maxbl4.Race.DataService.Controllers
     [Route("data")]
     public class DataController: ControllerBase
     {
-        private readonly UpstreamDataSyncService syncService;
+        private readonly IUpstreamDataSyncService syncService;
         private readonly IUpstreamDataRepository upstreamRepository;
         private readonly IEventRepository eventRepository;
         private readonly IRecordingServiceRepository recordingRepository;
-        private readonly TimingSessionService timingSessionService;
+        private readonly ITimingSessionService timingSessionService;
 
-        public DataController(UpstreamDataSyncService syncService, 
+        public DataController(IUpstreamDataSyncService syncService, 
             IUpstreamDataRepository upstreamRepository, 
             IEventRepository eventRepository,
             IRecordingServiceRepository recordingRepository,
-            TimingSessionService timingSessionService)
+            ITimingSessionService timingSessionService)
         {
             this.syncService = syncService;
             this.upstreamRepository = upstreamRepository;
@@ -70,17 +70,11 @@ namespace maxbl4.Race.DataService.Controllers
             return recordingRepository.ListSessions(value).ToList();
         }
         
-        [HttpGet("recording-session")]
-        public ActionResult<RecordingSessionDto> GetRecordingSession([FromQuery] Id<RecordingSessionDto> value)
-        {
-            return recordingRepository.GetSession(value);
-        }
-        
         [HttpPost("timing-session-start")]
         public ActionResult<Id<TimingSessionDto>> StartTimingSession([FromQuery] Id<SessionDto> value)
         {
             var session = eventRepository.GetWithUpstream(value);
-            var t = timingSessionService.CreateSession(session.Name, session.EventId, value);
+            var t = timingSessionService.CreateSession(session.Name, value);
             return t.Id;
         }
         

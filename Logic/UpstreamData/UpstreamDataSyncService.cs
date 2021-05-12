@@ -10,7 +10,12 @@ using Microsoft.Extensions.Options;
 
 namespace maxbl4.Race.Logic.UpstreamData
 {
-    public class UpstreamDataSyncService
+    public interface IUpstreamDataSyncService
+    {
+        Task<bool> Download(bool forceFullSync = false);
+    }
+
+    public class UpstreamDataSyncService : IUpstreamDataSyncService
     {
         private readonly UpstreamDataSyncServiceOptions options;
         private readonly IMainClient mainClient;

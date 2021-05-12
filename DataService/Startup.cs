@@ -55,8 +55,9 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<IRecordingService, RecordingService>();
             services.AddSingleton<ICheckpointServiceClientFactory, CheckpointServiceClientFactory>();
             services.AddSingleton<IAutoMapperProvider, AutoMapperProvider>();
-            services.AddSingleton<TimingSessionService>();
-            services.AddSingleton<UpstreamDataSyncService>();
+            services.AddSingleton<ITimingSessionService, TimingSessionService>();
+            services.AddSingleton<IUpstreamDataSyncService, UpstreamDataSyncService>();
+            services.AddSingleton<IHostedService, BootstrapService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddControllers(o =>
             {

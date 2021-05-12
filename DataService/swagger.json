@@ -201,37 +201,6 @@
         }
       }
     },
-    "/data/recording-session": {
-      "get": {
-        "tags": [
-          "Data"
-        ],
-        "operationId": "Data_GetRecordingSession",
-        "parameters": [
-          {
-            "name": "Value",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecordingSessionDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/data/timing-session-start": {
       "post": {
         "tags": [

@@ -23,9 +23,9 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return StorageService.Repo.Query<RecordingSessionDto>().Where(x => x.IsRunning).FirstOrDefault();
         }
 
-        public RecordingSessionDto GetSession(Id<RecordingSessionDto> sessionId)
+        public RecordingSessionDto GetSessionForEvent(Id<EventDto> eventId)
         {
-            return StorageService.Get(sessionId);
+            return StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.EventId == eventId);
         }
 
         public IEnumerable<RecordingSessionDto> ListSessions(Id<EventDto> eventId)
@@ -35,19 +35,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
 
         public RecordingSessionDto GetOrCreateRecordingSession(Id<EventDto> eventId)
         {
-            var items = StorageService.List<RecordingSessionDto>(x => x.EventId == eventId).ToList();
-            var active = items.FirstOrDefault(x => x.IsRunning);
-            if (active != null) 
-                return active;
-            if (items.Count > 0)
-                return items.OrderByDescending(x => x.StartTime).First();
-            active = new RecordingSessionDto
-            {
-                EventId = eventId,
-                CheckpointServiceAddress = "http://localhost:6000"
-            };
-            StorageService.Save(active);
-            return active;
+            return StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.EventId == eventId);
         }
 
         public void SaveSession(RecordingSessionDto dto)
@@ -65,10 +53,10 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             StorageService.Save(checkpoint);
         }
 
-        public IEnumerable<CheckpointDto> GetCheckpoints(Id<RecordingSessionDto> sessionId)
+        public IEnumerable<CheckpointDto> GetCheckpoints(Id<RecordingSessionDto> sessionId, DateTime from)
         {
             return StorageService.Repo.Query<CheckpointDto>()
-                .Where(x => x.RecordingSessionId == sessionId)
+                .Where(x => x.RecordingSessionId == sessionId && x.Timestamp >= from)
                 .ToEnumerable()
                 .OrderBy(x => x.Timestamp);
         }
