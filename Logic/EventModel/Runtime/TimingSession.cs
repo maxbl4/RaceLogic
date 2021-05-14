@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Reactive.PlatformServices;
+using System.Reactive.Subjects;
+using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
@@ -47,13 +50,14 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly IMessageHub messageHub;
         private readonly ISystemClock clock;
         private TimestampAggregator<Checkpoint> checkpointAggregator;
+        private CompositeDisposable disposable;
 
         public Id<SessionDto> SessionId { get; private set; }
         public DateTime StartTime { get; private set; }
-        public List<Checkpoint> RawCheckpoints { get; } = new();
-        public List<Checkpoint> AggCheckpoints { get; } = new();
         public ITrackOfCheckpoints Track { get; private set; }
-        public ConcurrentDictionary<string, List<Id<RiderProfileDto>>> RiderIdMap { get; set; }
+
+        public ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; set; } =
+            new();
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsSeed { get; set; }
@@ -89,15 +93,17 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             if (!timingSession.IsRunning)
                 return;
             logger.Information("Initialize updating subscription");
+            disposable?.DisposeSafe();
+            disposable = new CompositeDisposable();
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
+            RiderIdMap = new ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>>(eventRepository.GetRiderIdentifiers(timingSession.SessionId));
             recordingService.StartRecording(session.EventId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
-            RawCheckpoints.Clear();
-            AggCheckpoints.Clear();
             checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
-            checkpointAggregator.Subscribe(Track.Append);
-            checkpointAggregator.AggregatedCheckpoints.Subscribe(AggCheckpoints.Add);
-            recordingService.Subscribe(checkpointAggregator, timingSession.StartTime);
+            disposable.Add(checkpointAggregator.Subscribe(Track.Append));
+            var subject = new Subject<Checkpoint>();
+            disposable.Add(subject.Subscribe(x => ResolveRiderId(x, checkpointAggregator)));
+            disposable.Add(recordingService.Subscribe(subject, timingSession.StartTime));
         }
 
         public void Start(DateTime? startTime = null)
@@ -109,19 +115,27 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             });
         }
 
-        public void AppendCheckpoint(Checkpoint checkpoint)
+        public void ManualCheckpoint(Checkpoint checkpoint)
         {
-            logger.Information("AppendCheckpoint");
-            RawCheckpoints.Add(checkpoint);
-            checkpointAggregator.OnNext(ResolveRiderId(checkpoint));
+            logger.Information("ManualCheckpoint");
+            //TODO: Use correct recording session id
+            //recordingService.AppendCheckpoint(Reco);
+            ResolveRiderId(checkpoint, checkpointAggregator);
         }
 
-        private Checkpoint ResolveRiderId(Checkpoint rawCheckpoint)
+        private void ResolveRiderId(Checkpoint rawCheckpoint, IObserver<Checkpoint> observer)
         {
-            var resolvedId = RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderId)
-                ? riderId.ToString()
-                : rawCheckpoint.RiderId;
-            return rawCheckpoint.WithRiderId(resolvedId);
+            if (RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderIds))
+            {
+                foreach (var riderId in riderIds)
+                {
+                    observer.OnNext(rawCheckpoint.WithRiderId(riderId.ToString()));
+                }
+            }
+            else
+            {
+                observer.OnNext(rawCheckpoint.WithRiderId(rawCheckpoint.RiderId));
+            }
         }
     }
 }

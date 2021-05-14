@@ -10,5 +10,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         void StopRecording();
         void StartRecording(Id<EventDto> eventId);
         IDisposable Subscribe(IObserver<Checkpoint> observer, DateTime from);
+        void AppendCheckpoint(Id<RecordingSessionDto> sessionId, Checkpoint checkpoint);
     }
 }

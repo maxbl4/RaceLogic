@@ -107,21 +107,22 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             var client = checkpointServiceClientFactory.CreateClient(options.Value.CheckpointServiceAddress);
             disposable = new CompositeDisposable(
                 subscription = client.CreateSubscription(dto.StartTime),
-                subscription.Checkpoints.Subscribe(OnCheckpoint)
+                subscription.Checkpoints.Subscribe(x => AppendCheckpoint(activeSession?.Id ?? Id<RecordingSessionDto>.Empty, x))
             );
             subscription.Start();
             //client.SetRfidStatus(true);
         }
         
-        private void OnCheckpoint(Checkpoint checkpoint)
+        public void AppendCheckpoint(Id<RecordingSessionDto> sessionId, Checkpoint checkpoint)
         {
             using var _ = sync.UseOnce();
             logger.Information("OnCheckpoint {riderId} {timestamp}", checkpoint.RiderId, checkpoint.Timestamp);
-            if (activeSession == null) return;
+            if (sessionId == Id<RecordingSessionDto>.Empty) return;
             var dto = mapper.Map<CheckpointDto>(checkpoint);
-            dto.RecordingSessionId = activeSession.Id;
+            dto.RecordingSessionId = sessionId;
             repository.UpsertCheckpoint(dto);
-            checkpoints.OnNext(checkpoint);
+            if (sessionId == activeSession?.Id)
+                checkpoints.OnNext(checkpoint);
         }
 
         public IDisposable Subscribe(IObserver<Checkpoint> observer, DateTime from)
@@ -139,22 +140,4 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             return s;
         }
     }
-    
-    // public static class SemaphoreExt
-    // {
-    //     private static int nextId = 1;
-    //     public static IDisposable UseOnce(this SemaphoreSlim semaphore, ILogger logger, [CallerMemberName]string callerName = null)
-    //     {
-    //         var id = Interlocked.Increment(ref nextId);
-    //         logger.Information("Waiting on semaphore [{id}] {callerName}", id, callerName);
-    //         if (!semaphore.Wait(5000))
-    //             Environment.Exit(100500);
-    //         logger.Information("Waiting on semaphore [{id}] {callerName} - success", id, callerName);
-    //         return Disposable.Create(() =>
-    //         {
-    //             logger.Information("Waiting on semaphore [{id}] {callerName} - release", id, callerName);
-    //             semaphore.Release();
-    //         });
-    //     }
-    // }
 }

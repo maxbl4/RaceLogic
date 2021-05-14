@@ -51,7 +51,12 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
 
         public Dictionary<string, List<Id<RiderClassRegistrationDto>>> GetRiderIdentifiers(Id<SessionDto> sessionId)
         {
-            return null;
+            var session = GetWithUpstream(sessionId);
+            var t = upstreamDataRepository.ListEventRegistrations(session.ClassIds)
+                .SelectMany(x => x.Identifiers, (dto, id) => new {RiderId = dto.RiderClassRegistrationId, Identifier = id})
+                .GroupBy(x => x.Identifier, x => x.RiderId)
+                .ToDictionary(x => x.Key, x => x.ToList());
+            return t;
         }
 
         public IStorageService StorageService { get; }
