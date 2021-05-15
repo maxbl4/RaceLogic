@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 
 namespace maxbl4.Race.Logic.RoundTiming
 {

@@ -57,6 +57,7 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<IAutoMapperProvider, AutoMapperProvider>();
             services.AddSingleton<ITimingSessionService, TimingSessionService>();
             services.AddSingleton<IUpstreamDataSyncService, UpstreamDataSyncService>();
+            services.AddSingleton<ISeedDataLoader, SeedDataLoader>();
             services.AddSingleton<IHostedService, BootstrapService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddControllers(o =>
@@ -77,6 +78,10 @@ namespace maxbl4.Race.DataService
             {
                 x.BaseUri = options.BraaapApiBaseUri;
                 x.ApiKey = options.BraaapApiKey;
+            });
+            services.Configure<SeedDataLoaderOptions>(x =>
+            {
+                x.SeedDataDirectory = options.SeedDataDirectory;
             });
             services.AddTransient<IMainClient>(_ => new MainClient(options.BraaapApiBaseUri, new HttpClient()));
             services.AddOpenApiDocument(o =>

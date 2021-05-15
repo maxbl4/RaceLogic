@@ -32,6 +32,7 @@
   </ItemGroup>  
   <ItemGroup>
     <None Include="Logic/Model/KnownRoundDefs/**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="var/**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../TestData/*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../TestData/*.litedb" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.RoundTiming;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime

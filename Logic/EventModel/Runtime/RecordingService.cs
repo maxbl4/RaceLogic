@@ -13,7 +13,7 @@ using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -41,10 +41,9 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.checkpointServiceClientFactory = checkpointServiceClientFactory;
             this.mapper = mapper;
             this.clock = clock;
-            Initialize();
         }
 
-        private void Initialize()
+        public void Initialize()
         {
             using var _ = sync.UseOnce();
             logger.Information("Initialize");

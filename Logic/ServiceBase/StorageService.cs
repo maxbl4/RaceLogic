@@ -32,6 +32,7 @@ namespace maxbl4.Race.Logic.ServiceBase
         Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>;
         IEnumerable<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null) where T : IHasId<T>;
         T Get<T>(Id<T> id) where T : IHasId<T>;
+        void RolloverDatabase();
     }
     
     public class StorageUpdated
@@ -47,17 +48,18 @@ namespace maxbl4.Race.Logic.ServiceBase
         private static readonly ILogger logger = Log.ForContext<StorageService>();
         private readonly Dictionary<Type, IRepository> consumers = new();
         public ILiteRepository Repo { get; private set; }
+        public ConnectionString ConnectionString { get; private set; }
 
         public StorageService(IOptions<StorageServiceOptions> options, IMessageHub messageHub)
         {
             connectionString = options.Value.StorageConnectionString;
             this.messageHub = messageHub;
-            var cs = new ConnectionString(connectionString);
-            logger.SwallowError(() => InitializeInt(cs), ex =>
+            ConnectionString = new ConnectionString(connectionString);
+            logger.SwallowError(() => InitializeInt(ConnectionString), ex =>
             {
                 Repo?.Dispose();
-                cs = TryRotateDatabase(cs);
-                InitializeInt(cs);
+                ConnectionString = TryRotateDatabase(ConnectionString);
+                InitializeInt(ConnectionString);
             });
         }
 
@@ -71,7 +73,19 @@ namespace maxbl4.Race.Logic.ServiceBase
         {
             return Repo.FirstOrDefault<T>(x => x.Id == id);
         }
-        
+
+        public void RolloverDatabase()
+        {
+            logger.Information("RolloverDatabase");
+            ConnectionString = TryRotateDatabase(ConnectionString);
+            logger.SwallowError(() => InitializeInt(ConnectionString), ex =>
+            {
+                Repo?.Dispose();
+                ConnectionString = TryRotateDatabase(ConnectionString);
+                InitializeInt(ConnectionString);
+            });
+        }
+
         public Id<T> Update<T>(Id<T> id, Action<T> modifier) where T : IHasId<T>
         {
             var dto = Get(id);
@@ -120,6 +134,7 @@ namespace maxbl4.Race.Logic.ServiceBase
         private ConnectionString TryRotateDatabase(ConnectionString connectionString)
         {
             connectionString.Filename = new RollingFileInfo(connectionString.Filename).NextFile;
+            logger.Information("TryRotateDatabase {filename}", connectionString.Filename);
             return connectionString;
         }
     }

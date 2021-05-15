@@ -3,8 +3,8 @@ using System.Threading;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
@@ -27,6 +27,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.messageHub = messageHub;
             this.autoMapperProvider = autoMapperProvider;
             this.clock = clock;
+        }
+
+        public void Initialize()
+        {
+            
         }
 
         public TimingSession CreateSession(string name, Id<SessionDto> sessionId)

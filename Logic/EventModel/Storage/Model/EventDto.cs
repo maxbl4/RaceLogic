@@ -2,7 +2,7 @@
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
-namespace maxbl4.Race.Logic.EventStorage.Storage.Model
+namespace maxbl4.Race.Logic.EventModel.Storage.Model
 {
     public class EventDto : IHasId<EventDto>, IHasName, IHasTimestamp, IHasPublished, IHasSeed
     {

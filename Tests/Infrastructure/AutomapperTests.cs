@@ -2,7 +2,7 @@ using System;
 using FluentAssertions;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 using Xunit;
 
 namespace maxbl4.Race.Tests.Infrastructure

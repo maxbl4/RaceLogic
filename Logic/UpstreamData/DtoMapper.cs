@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BraaapWeb.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
-using maxbl4.Race.Logic.EventStorage.Storage.Model;
+using maxbl4.Race.Logic.EventModel.Storage.Model;
 
 namespace maxbl4.Race.Logic.UpstreamData
 {

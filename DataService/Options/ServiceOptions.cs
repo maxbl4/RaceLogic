@@ -6,5 +6,6 @@
         public string BraaapApiBaseUri { get; set; }
         public string BraaapApiKey { get; set; }
         public DataServiceOptions InitialDataServiceOptions { get; set; }
+        public string SeedDataDirectory { get; set; }
     }
 }

@@ -6,8 +6,10 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
+using maxbl4.Race.Logic.UpstreamData;
 using maxbl4.Race.Tests.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -63,6 +65,15 @@ namespace maxbl4.Race.Tests
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
             var repo = new DataServiceRepository(storageService);
             storageServiceInitializer(repo);
+        }
+        
+        public void WithEventRepository(Action<StorageService, EventRepository> action)
+        {
+            Logger.Debug("Creating EventRepository with {@storageConnectionString}", storageConnectionString);
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var upstreamRepo = new UpstreamDataRepository(storageService);
+            var eventRepo = new EventRepository(storageService, upstreamRepo);
+            action(storageService, eventRepo);
         }
 
         public void WithRfidService(Action<CheckpointRepository, RfidService> action)
