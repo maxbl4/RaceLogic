@@ -2,40 +2,45 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.PlatformServices;
 using LiteDB;
 using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;
 
 namespace maxbl4.Race.Logic.EventStorage.Storage
 {
     public class RecordingServiceRepository: IRecordingServiceRepository
     {
-        public RecordingServiceRepository(IStorageService storageService)
+        private readonly ISystemClock clock;
+
+        public RecordingServiceRepository(IStorageService storageService, ISystemClock clock)
         {
+            this.clock = clock;
             StorageService = storageService;
             SetupIndexes(storageService.Repo);
         }
         
-        public RecordingSessionDto GetActiveRecordingSession()
+        public IEnumerable<RecordingSessionDto> GetActiveSessions()
         {
-            return StorageService.Repo.Query<RecordingSessionDto>().Where(x => x.IsRunning).FirstOrDefault();
+            return StorageService.List<RecordingSessionDto>(x => x.IsRunning);
         }
 
-        public RecordingSessionDto GetSessionForEvent(Id<EventDto> eventId)
+        public RecordingSessionDto GetSessionForGate(Id<GateDto> gateId)
         {
-            return StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.EventId == eventId);
-        }
-
-        public IEnumerable<RecordingSessionDto> ListSessions(Id<EventDto> eventId)
-        {
-            return StorageService.List<RecordingSessionDto>(x => x.EventId == eventId);
-        }
-
-        public RecordingSessionDto GetOrCreateRecordingSession(Id<EventDto> eventId)
-        {
-            return StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.EventId == eventId);
+            var dto = StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.GateId == gateId && x.IsRunning);
+            if (dto == null)
+            {
+                dto = new RecordingSessionDto
+                {
+                    GateId = gateId
+                };
+                dto.Start(clock.UtcNow.UtcDateTime);
+                StorageService.Save(dto);
+            }
+            return dto;
         }
 
         public void SaveSession(RecordingSessionDto dto)

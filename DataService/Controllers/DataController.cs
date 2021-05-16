@@ -64,12 +64,6 @@ namespace maxbl4.Race.DataService.Controllers
             return eventRepository.GetWithUpstream(value);
         }
         
-        [HttpGet("recording-sessions")]
-        public ActionResult<List<RecordingSessionDto>> ListRecordingSessions([FromQuery] Id<EventDto> value)
-        {
-            return recordingRepository.ListSessions(value).ToList();
-        }
-        
         [HttpPost("timing-session-start")]
         public ActionResult<Id<TimingSessionDto>> StartTimingSession([FromQuery] Id<SessionDto> value)
         {

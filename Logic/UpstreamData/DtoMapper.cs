@@ -4,6 +4,7 @@ using System.Linq;
 using BraaapWeb.Client;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
+using maxbl4.Race.Logic.EventStorage.Storage;
 
 namespace maxbl4.Race.Logic.UpstreamData
 {
@@ -19,6 +20,7 @@ namespace maxbl4.Race.Logic.UpstreamData
             return new SeriesDto
             {
                 Id = entity.SeriesId,
+                OrganizationId = WellknownDtoIdentifiers.OrganizationId,
                 Name = entity.Name,
                 Description = entity.Description,
                 Published = entity.Published,
@@ -38,6 +40,7 @@ namespace maxbl4.Race.Logic.UpstreamData
             return new ChampionshipDto
             {
                 Id = entity.ChampionshipId,
+                OrganizationId = WellknownDtoIdentifiers.OrganizationId,
                 SeriesId = entity.SeriesId,
                 Name = entity.Name,
                 Description = entity.Description,
@@ -84,6 +87,7 @@ namespace maxbl4.Race.Logic.UpstreamData
             return new EventDto
             {
                 Id = entity.EventId,
+                OrganizationId = WellknownDtoIdentifiers.OrganizationId,
                 ChampionshipId = entity.ChampionshipId,
                 Name = entity.Name,
                 Description = entity.Description,

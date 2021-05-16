@@ -37,13 +37,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public TimingSession CreateSession(string name, Id<SessionDto> sessionId)
         {
             var session = eventRepository.GetWithUpstream(sessionId);
-            var recordingSessionSessionId = recordingRepository.GetSessionForEvent(session.EventId)?.Id ?? Id<RecordingSessionDto>.Empty;
             var dto = new TimingSessionDto
             {
                 Name = name,
                 EventId = session.EventId,
                 SessionId = sessionId,
-                RecordingSessionId = recordingSessionSessionId
             };
             eventRepository.StorageService.Save(dto);
             return new TimingSession(dto.Id, eventRepository, recordingService, messageHub, clock);

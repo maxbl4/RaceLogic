@@ -7,6 +7,7 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Model
     public class SeriesDto : IHasId<SeriesDto>, IHasName, IHasTimestamp, IHasSeed, IHasPublished
     {
         public Id<SeriesDto> Id { get; set; }
+        public Id<OrganizationDto> OrganizationId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public bool Published { get; set; }

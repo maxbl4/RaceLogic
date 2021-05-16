@@ -39,7 +39,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
             var upstreamDataStorage = new UpstreamDataRepository(storageService);
             var eventRepository = new EventRepository(storageService, upstreamDataStorage);
-            var recordingRepository = new RecordingServiceRepository(storageService);
+            var recordingRepository = new RecordingServiceRepository(storageService, SystemClock);
             var upstreamDataSyncService = new UpstreamDataSyncService(Options.Create(upstreamDataSyncServiceOptions), new FakeMainClient(), 
                 upstreamDataStorage, messageHub);
             var downloadResult = await upstreamDataSyncService.Download(true);
@@ -54,7 +54,8 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
 
             storageService.Repo.Query<CheckpointDto>().Count().Should().Be(0);
 
-            var recordingService = new RecordingService(Options.Create(new RecordingServiceOptions{CheckpointServiceAddress = "http://localhost:6000"}), recordingRepository, cpf, new AutoMapperProvider(), new DefaultSystemClock());
+            var recordingService = new RecordingService(Options.Create(new RecordingServiceOptions{CheckpointServiceAddress = "http://localhost:6000"}), recordingRepository, eventRepository, cpf, new AutoMapperProvider(), 
+                messageHub, SystemClock);
             
             var timingSessionService = new TimingSessionService(eventRepository, recordingService, recordingRepository, MessageHub, new AutoMapperProvider(),
                 new DefaultSystemClock());

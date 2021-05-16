@@ -969,10 +969,6 @@
             "type": "string",
             "nullable": true
           },
-          "checkpointServiceAddress": {
-            "type": "string",
-            "nullable": true
-          },
           "description": {
             "type": "string",
             "nullable": true

@@ -8,13 +8,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 {
     public interface IRecordingServiceRepository: IRepository
     {
-        RecordingSessionDto GetActiveRecordingSession();
         void SaveSession(RecordingSessionDto dto);
         void UpdateRecordingSession(Id<RecordingSessionDto> id, Action<RecordingSessionDto> modifier);
         void UpsertCheckpoint(CheckpointDto checkpoint);
         IEnumerable<CheckpointDto> GetCheckpoints(Id<RecordingSessionDto> sessionId, DateTime @from);
-        IEnumerable<RecordingSessionDto> ListSessions(Id<EventDto> eventId);
-        RecordingSessionDto GetOrCreateRecordingSession(Id<EventDto> eventId);
-        RecordingSessionDto GetSessionForEvent(Id<EventDto> eventId);
+        IEnumerable<RecordingSessionDto> GetActiveSessions();
+        RecordingSessionDto GetSessionForGate(Id<GateDto> gateId);
     }
 }

@@ -4,9 +4,19 @@ using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventModel.Storage.Model
 {
+    public class OrganizationDto : IHasId<OrganizationDto>, IHasName, IHasTimestamp
+    {
+        public Id<OrganizationDto> Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime Created { get; set; }
+        public DateTime Updated { get; set; }
+    }
+    
     public class GateDto: IHasId<GateDto>, IHasName, IHasTimestamp
     {
         public Id<GateDto> Id { get; set; }
+        public Id<OrganizationDto> OrganizationId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string CheckpointServiceAddress { get; set; }

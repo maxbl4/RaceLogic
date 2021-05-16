@@ -1480,7 +1480,6 @@ export class RecordingSessionDto implements IRecordingSessionDto {
     eventId?: string;
     id?: string;
     name?: string | null;
-    checkpointServiceAddress?: string | null;
     description?: string | null;
     isRunning?: boolean;
     startTime?: DateTime;
@@ -1503,7 +1502,6 @@ export class RecordingSessionDto implements IRecordingSessionDto {
             this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
             this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
             this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.checkpointServiceAddress = _data["checkpointServiceAddress"] !== undefined ? _data["checkpointServiceAddress"] : <any>null;
             this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
             this.isRunning = _data["isRunning"] !== undefined ? _data["isRunning"] : <any>null;
             this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
@@ -1526,7 +1524,6 @@ export class RecordingSessionDto implements IRecordingSessionDto {
         data["eventId"] = this.eventId !== undefined ? this.eventId : <any>null;
         data["id"] = this.id !== undefined ? this.id : <any>null;
         data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["checkpointServiceAddress"] = this.checkpointServiceAddress !== undefined ? this.checkpointServiceAddress : <any>null;
         data["description"] = this.description !== undefined ? this.description : <any>null;
         data["isRunning"] = this.isRunning !== undefined ? this.isRunning : <any>null;
         data["startTime"] = this.startTime ? this.startTime.toString() : <any>null;
@@ -1542,7 +1539,6 @@ export interface IRecordingSessionDto {
     eventId?: string;
     id?: string;
     name?: string | null;
-    checkpointServiceAddress?: string | null;
     description?: string | null;
     isRunning?: boolean;
     startTime?: DateTime;

@@ -10,6 +10,7 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Model
         public string Regulations { get; set; }
         public string ResultsTemplate { get; set; }
         public Id<ChampionshipDto> ChampionshipId { get; set; }
+        public Id<OrganizationDto> OrganizationId { get; set; }
 
         public DateTime StartOfRegistration { get; set; }
         public DateTime EndOfRegistration { get; set; }
