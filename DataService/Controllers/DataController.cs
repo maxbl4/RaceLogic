@@ -35,41 +35,61 @@ namespace maxbl4.Race.DataService.Controllers
         }
 
         [HttpGet("event")]
-        public ActionResult<EventDto> GetEvent([FromQuery] Id<EventDto> value)
+        public ActionResult<EventDto> GetEvent(Id<EventDto> id)
         {
-            return eventRepository.GetWithUpstream(value);
+            return eventRepository.GetWithUpstream(id);
         }
         
         [HttpGet("sessions")]
-        public ActionResult<List<SessionDto>> ListSessions([FromQuery] Id<EventDto> value)
+        public ActionResult<List<SessionDto>> ListSessions(Id<EventDto> id)
         {
-            return eventRepository.ListSessions(value).ToList();
+            return eventRepository.ListSessions(id).ToList();
         }
         
         [HttpGet("session")]
-        public ActionResult<SessionDto> GetSession([FromQuery] Id<SessionDto> value)
+        public ActionResult<SessionDto> GetSession(Id<SessionDto> id)
         {
-            return eventRepository.GetWithUpstream(value);
+            return eventRepository.GetWithUpstream(id);
         }
         
         [HttpGet("timing-sessions")]
-        public ActionResult<List<TimingSessionDto>> ListTimingSessions([FromQuery] Id<SessionDto> value)
+        public ActionResult<List<TimingSessionDto>> ListTimingSessions(Id<SessionDto> id)
         {
-            return eventRepository.ListTimingSessions(value).ToList();
+            return eventRepository.ListTimingSessions(id).ToList();
         }
         
         [HttpGet("timing-session")]
-        public ActionResult<TimingSessionDto> GetTimingSession([FromQuery] Id<TimingSessionDto> value)
+        public ActionResult<TimingSessionDto> GetTimingSession(Id<TimingSessionDto> id)
         {
-            return eventRepository.GetWithUpstream(value);
+            return eventRepository.GetWithUpstream(id);
+        }
+        
+        [HttpDelete("timing-session")]
+        public ActionResult DeleteTimingSession(Id<TimingSessionDto> id)
+        {
+            eventRepository.StorageService.Delete(id);
+            return Ok();
+        }
+        
+        [HttpPut("timing-session")]
+        public ActionResult<Id<TimingSessionDto>> AddTimingSession(TimingSessionDto timingSessionDto)
+        {
+            var t = timingSessionService.CreateSession(timingSessionDto.Name, timingSessionDto.SessionId);
+            return t.Id;
         }
         
         [HttpPost("timing-session-start")]
-        public ActionResult<Id<TimingSessionDto>> StartTimingSession([FromQuery] Id<SessionDto> value)
+        public ActionResult StartTimingSession(Id<TimingSessionDto> id)
         {
-            var session = eventRepository.GetWithUpstream(value);
-            var t = timingSessionService.CreateSession(session.Name, value);
-            return t.Id;
+            timingSessionService.StartSession(id);
+            return Ok();
+        }
+        
+        [HttpPost("timing-session-stop")]
+        public ActionResult StopTimingSession(Id<TimingSessionDto> id)
+        {
+            timingSessionService.StopSession(id);
+            return Ok();
         }
         
         

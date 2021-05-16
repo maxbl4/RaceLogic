@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {DataClient, EventDto, SessionDto} from "../service/data-service-client";
+import {DataClient, EventDto, SessionDto} from "@app/service/data-service-client";
 import {GridOptions} from "ag-grid-community";
 import {Observable} from "rxjs";
 

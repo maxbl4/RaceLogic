@@ -53,6 +53,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         async Task Heartbeat()
         {
+            await Task.Yield();
             while (isRunning)
             {
                 using var _ = sync.UseOnce();

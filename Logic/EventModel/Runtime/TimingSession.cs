@@ -55,6 +55,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public Id<SessionDto> SessionId { get; private set; }
         public DateTime StartTime { get; private set; }
         public ITrackOfCheckpoints Track { get; private set; }
+        public bool UseRfid { get; set; }
 
         public ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; set; } =
             new();
@@ -71,12 +72,16 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.recordingService = recordingService;
             this.messageHub = messageHub;
             this.clock = clock;
-            messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Initialize());
-            messageHub.Subscribe<StorageUpdated>(Initialize);
-            Initialize();
+            messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Reload());
+            messageHub.Subscribe<StorageUpdated>(x => Reload(false, x));
         }
 
-        public void Initialize(StorageUpdated msg = null)
+        public void Reload()
+        {
+            Reload(true);
+        }
+
+        private void Reload(bool force, StorageUpdated msg = null)
         {
             logger.Information("Initialize {EntityType}", msg?.Entity?.GetType()?.Name);
             if (msg != null)
@@ -90,20 +95,20 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 }
             }
             var timingSession = eventRepository.StorageService.Get(Id);
-            if (!timingSession.IsRunning)
+            if (!timingSession.IsRunning && !force)
                 return;
             logger.Information("Initialize updating subscription");
             disposable?.DisposeSafe();
             disposable = new CompositeDisposable();
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
             RiderIdMap = new ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>>(eventRepository.GetRiderIdentifiers(timingSession.SessionId));
-            recordingService.StartRecording(session.EventId);
+            //recordingService.StartRecording(session.EventId);
             Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
             checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
             disposable.Add(checkpointAggregator.Subscribe(Track.Append));
             var subject = new Subject<Checkpoint>();
             disposable.Add(subject.Subscribe(x => ResolveRiderId(x, checkpointAggregator)));
-            disposable.Add(recordingService.Subscribe(subject, timingSession.StartTime));
+            //disposable.Add(recordingService.Subscribe(subject, timingSession.StartTime));
         }
 
         public void Start(DateTime? startTime = null)

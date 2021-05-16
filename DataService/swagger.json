@@ -14,11 +14,11 @@
         "operationId": "Data_GetEvent",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -45,11 +45,11 @@
         "operationId": "Data_ListSessions",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -79,11 +79,11 @@
         "operationId": "Data_GetSession",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -110,11 +110,11 @@
         "operationId": "Data_ListTimingSessions",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -144,11 +144,11 @@
         "operationId": "Data_GetTimingSession",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -165,21 +165,19 @@
             }
           }
         }
-      }
-    },
-    "/data/recording-sessions": {
-      "get": {
+      },
+      "delete": {
         "tags": [
           "Data"
         ],
-        "operationId": "Data_ListRecordingSessions",
+        "operationId": "Data_DeleteTimingSession",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -188,12 +186,41 @@
           "200": {
             "description": "",
             "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_AddTimingSession",
+        "requestBody": {
+          "x-name": "timingSessionDto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimingSessionDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/RecordingSessionDto"
-                  }
+                  "type": "string",
+                  "format": "uuid"
                 }
               }
             }
@@ -209,11 +236,11 @@
         "operationId": "Data_StartTimingSession",
         "parameters": [
           {
-            "name": "Value",
+            "name": "id",
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "guid"
+              "format": "uuid"
             },
             "x-position": 1
           }
@@ -222,10 +249,42 @@
           "200": {
             "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
                   "type": "string",
-                  "format": "uuid"
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/timing-session-stop": {
+      "post": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_StopTimingSession",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -743,6 +802,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "startOfRegistration": {
             "type": "string",
             "format": "date-time"
@@ -917,6 +980,9 @@
           "isRunning": {
             "type": "boolean"
           },
+          "useRfid": {
+            "type": "boolean"
+          },
           "startTime": {
             "type": "string",
             "format": "date-time"
@@ -953,55 +1019,15 @@
           }
         }
       },
-      "RecordingSessionDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "eventId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "isRunning": {
-            "type": "boolean"
-          },
-          "startTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "stopTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "isSeed": {
-            "type": "boolean"
-          },
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
       "SeriesDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
             "type": "string",
             "format": "uuid"
           },
@@ -1034,6 +1060,10 @@
         "additionalProperties": false,
         "properties": {
           "seriesId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
             "type": "string",
             "format": "uuid"
           },

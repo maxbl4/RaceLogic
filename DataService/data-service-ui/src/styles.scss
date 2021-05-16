@@ -64,3 +64,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   /* Support for IE. */
   font-feature-settings: 'liga';
 }
+
+ngb-modal-backdrop, ngb-modal-window {
+  z-index: 900!important;
+  padding-top: 67px;
+}

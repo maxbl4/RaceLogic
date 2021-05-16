@@ -33,6 +33,9 @@ namespace maxbl4.Race.Logic.ServiceBase
         IEnumerable<T> List<T>(Expression<Func<T, bool>> predicate = null, int? skip = null, int? limit = null) where T : IHasId<T>;
         T Get<T>(Id<T> id) where T : IHasId<T>;
         void RolloverDatabase();
+
+        void Delete<T>(Id<T> id)
+            where T : IHasId<T>;
     }
     
     public class StorageUpdated
@@ -72,6 +75,12 @@ namespace maxbl4.Race.Logic.ServiceBase
             where T : IHasId<T>
         {
             return Repo.FirstOrDefault<T>(x => x.Id == id);
+        }
+        
+        public void Delete<T>(Id<T> id)
+            where T : IHasId<T>
+        {
+            Repo.Delete<T>(id);
         }
 
         public void RolloverDatabase()

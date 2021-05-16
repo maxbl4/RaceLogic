@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "../service/data-service-client";
+import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/service/data-service-client";
 
 @Component({
   selector: 'app-main-view',

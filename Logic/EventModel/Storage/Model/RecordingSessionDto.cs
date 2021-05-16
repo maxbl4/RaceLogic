@@ -25,6 +25,7 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Model
         public Id<RecordingSessionDto> RecordingSessionId { get; set; }
         public Id<EventDto> EventId { get; set; }
         public bool IsRunning { get; set; }
+        public bool UseRfid { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime StopTime { get; set; }
         public Id<TimingSessionDto> Id { get; set; }

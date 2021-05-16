@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {MainViewComponent} from "./main-view/main-view.component";
-import {EventViewComponent} from "./event-view/event-view.component";
-import {SessionViewComponent} from "./session-view/session-view.component";
-import {TimingSessionViewComponent} from "./timing-session-view/timing-session-view.component";
+import {MainViewComponent} from "@app/main-view/main-view.component";
+import {EventViewComponent} from "@app/event-view/event-view.component";
+import {SessionViewComponent} from "@app/session-view/session-view.component";
+import {TimingSessionViewComponent} from "@app/timing-session-view/timing-session-view.component";
 
 const routes: Routes = [
   {path: '', pathMatch: 'prefix', redirectTo: 'main'},

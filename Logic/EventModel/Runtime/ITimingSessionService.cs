@@ -7,5 +7,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     {
         TimingSession CreateSession(string name, Id<SessionDto> sessionId);
         void Initialize();
+        void StartSession(Id<TimingSessionDto> id);
+        void StopSession(Id<TimingSessionDto> id);
     }
 }

@@ -5,6 +5,7 @@ using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
+using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
@@ -32,6 +33,22 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public void Initialize()
         {
             
+        }
+
+        public void StartSession(Id<TimingSessionDto> id)
+        {
+            eventRepository.StorageService.Update(id, x =>
+            {
+                x.Start(clock.UtcNow.UtcDateTime);
+            });
+        }
+        
+        public void StopSession(Id<TimingSessionDto> id)
+        {
+            eventRepository.StorageService.Update(id, x =>
+            {
+                x.Stop(clock.UtcNow.UtcDateTime);
+            });
         }
 
         public TimingSession CreateSession(string name, Id<SessionDto> sessionId)

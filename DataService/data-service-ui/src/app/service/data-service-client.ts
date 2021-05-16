@@ -29,12 +29,12 @@ export class DataClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getEvent(value?: string | undefined): Observable<EventDto> {
+    getEvent(id?: string | undefined): Observable<EventDto> {
         let url_ = this.baseUrl + "/data/event?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -81,12 +81,12 @@ export class DataClient {
         return _observableOf<EventDto>(<any>null);
     }
 
-    listSessions(value?: string | undefined): Observable<SessionDto[]> {
+    listSessions(id?: string | undefined): Observable<SessionDto[]> {
         let url_ = this.baseUrl + "/data/sessions?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -140,12 +140,12 @@ export class DataClient {
         return _observableOf<SessionDto[]>(<any>null);
     }
 
-    getSession(value?: string | undefined): Observable<SessionDto> {
+    getSession(id?: string | undefined): Observable<SessionDto> {
         let url_ = this.baseUrl + "/data/session?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -192,12 +192,12 @@ export class DataClient {
         return _observableOf<SessionDto>(<any>null);
     }
 
-    listTimingSessions(value?: string | undefined): Observable<TimingSessionDto[]> {
+    listTimingSessions(id?: string | undefined): Observable<TimingSessionDto[]> {
         let url_ = this.baseUrl + "/data/timing-sessions?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -251,12 +251,12 @@ export class DataClient {
         return _observableOf<TimingSessionDto[]>(<any>null);
     }
 
-    getTimingSession(value?: string | undefined): Observable<TimingSessionDto> {
+    getTimingSession(id?: string | undefined): Observable<TimingSessionDto> {
         let url_ = this.baseUrl + "/data/timing-session?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -303,87 +303,78 @@ export class DataClient {
         return _observableOf<TimingSessionDto>(<any>null);
     }
 
-    listRecordingSessions(value?: string | undefined): Observable<RecordingSessionDto[]> {
-        let url_ = this.baseUrl + "/data/recording-sessions?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+    deleteTimingSession(id?: string | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Accept": "application/json"
+                "Accept": "application/octet-stream"
             })
         };
 
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processListRecordingSessions(response_);
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeleteTimingSession(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processListRecordingSessions(<any>response_);
+                    return this.processDeleteTimingSession(<any>response_);
                 } catch (e) {
-                    return <Observable<RecordingSessionDto[]>><any>_observableThrow(e);
+                    return <Observable<FileResponse>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<RecordingSessionDto[]>><any>_observableThrow(response_);
+                return <Observable<FileResponse>><any>_observableThrow(response_);
         }));
     }
 
-    protected processListRecordingSessions(response: HttpResponseBase): Observable<RecordingSessionDto[]> {
+    protected processDeleteTimingSession(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(RecordingSessionDto.fromJS(item));
-            }
-            else {
-                result200 = <any>null;
-            }
-            return _observableOf(result200);
-            }));
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<RecordingSessionDto[]>(<any>null);
+        return _observableOf<FileResponse>(<any>null);
     }
 
-    startTimingSession(value?: string | undefined): Observable<string> {
-        let url_ = this.baseUrl + "/data/timing-session-start?";
-        if (value === null)
-            throw new Error("The parameter 'value' cannot be null.");
-        else if (value !== undefined)
-            url_ += "Value=" + encodeURIComponent("" + value) + "&";
+    addTimingSession(timingSessionDto: TimingSessionDto): Observable<string> {
+        let url_ = this.baseUrl + "/data/timing-session";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(timingSessionDto);
+
         let options_ : any = {
+            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processStartTimingSession(response_);
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processAddTimingSession(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processStartTimingSession(<any>response_);
+                    return this.processAddTimingSession(<any>response_);
                 } catch (e) {
                     return <Observable<string>><any>_observableThrow(e);
                 }
@@ -392,7 +383,7 @@ export class DataClient {
         }));
     }
 
-    protected processStartTimingSession(response: HttpResponseBase): Observable<string> {
+    protected processAddTimingSession(response: HttpResponseBase): Observable<string> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -412,6 +403,106 @@ export class DataClient {
             }));
         }
         return _observableOf<string>(<any>null);
+    }
+
+    startTimingSession(id?: string | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session-start?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processStartTimingSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processStartTimingSession(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processStartTimingSession(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    stopTimingSession(id?: string | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session-stop?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processStopTimingSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processStopTimingSession(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processStopTimingSession(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
     }
 
     purgeUpstreamData(): Observable<FileResponse> {
@@ -1130,17 +1221,18 @@ export class StoreClient {
 }
 
 export class EventDto implements IEventDto {
-    date?: string | null;
-    regulations?: string | null;
-    resultsTemplate?: string | null;
+    date?: string | undefined;
+    regulations?: string | undefined;
+    resultsTemplate?: string | undefined;
     championshipId?: string;
+    organizationId?: string;
     startOfRegistration?: DateTime;
     endOfRegistration?: DateTime;
     basePrice?: number;
     paymentMultiplier?: number;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1157,21 +1249,22 @@ export class EventDto implements IEventDto {
 
     init(_data?: any) {
         if (_data) {
-            this.date = _data["date"] !== undefined ? _data["date"] : <any>null;
-            this.regulations = _data["regulations"] !== undefined ? _data["regulations"] : <any>null;
-            this.resultsTemplate = _data["resultsTemplate"] !== undefined ? _data["resultsTemplate"] : <any>null;
-            this.championshipId = _data["championshipId"] !== undefined ? _data["championshipId"] : <any>null;
-            this.startOfRegistration = _data["startOfRegistration"] ? DateTime.fromISO(_data["startOfRegistration"].toString()) : <any>null;
-            this.endOfRegistration = _data["endOfRegistration"] ? DateTime.fromISO(_data["endOfRegistration"].toString()) : <any>null;
-            this.basePrice = _data["basePrice"] !== undefined ? _data["basePrice"] : <any>null;
-            this.paymentMultiplier = _data["paymentMultiplier"] !== undefined ? _data["paymentMultiplier"] : <any>null;
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.date = _data["date"];
+            this.regulations = _data["regulations"];
+            this.resultsTemplate = _data["resultsTemplate"];
+            this.championshipId = _data["championshipId"];
+            this.organizationId = _data["organizationId"];
+            this.startOfRegistration = _data["startOfRegistration"] ? DateTime.fromISO(_data["startOfRegistration"].toString()) : <any>undefined;
+            this.endOfRegistration = _data["endOfRegistration"] ? DateTime.fromISO(_data["endOfRegistration"].toString()) : <any>undefined;
+            this.basePrice = _data["basePrice"];
+            this.paymentMultiplier = _data["paymentMultiplier"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1184,37 +1277,39 @@ export class EventDto implements IEventDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["date"] = this.date !== undefined ? this.date : <any>null;
-        data["regulations"] = this.regulations !== undefined ? this.regulations : <any>null;
-        data["resultsTemplate"] = this.resultsTemplate !== undefined ? this.resultsTemplate : <any>null;
-        data["championshipId"] = this.championshipId !== undefined ? this.championshipId : <any>null;
-        data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toString() : <any>null;
-        data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toString() : <any>null;
-        data["basePrice"] = this.basePrice !== undefined ? this.basePrice : <any>null;
-        data["paymentMultiplier"] = this.paymentMultiplier !== undefined ? this.paymentMultiplier : <any>null;
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["published"] = this.published !== undefined ? this.published : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["date"] = this.date;
+        data["regulations"] = this.regulations;
+        data["resultsTemplate"] = this.resultsTemplate;
+        data["championshipId"] = this.championshipId;
+        data["organizationId"] = this.organizationId;
+        data["startOfRegistration"] = this.startOfRegistration ? this.startOfRegistration.toString() : <any>undefined;
+        data["endOfRegistration"] = this.endOfRegistration ? this.endOfRegistration.toString() : <any>undefined;
+        data["basePrice"] = this.basePrice;
+        data["paymentMultiplier"] = this.paymentMultiplier;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
 
 export interface IEventDto {
-    date?: string | null;
-    regulations?: string | null;
-    resultsTemplate?: string | null;
+    date?: string | undefined;
+    regulations?: string | undefined;
+    resultsTemplate?: string | undefined;
     championshipId?: string;
+    organizationId?: string;
     startOfRegistration?: DateTime;
     endOfRegistration?: DateTime;
     basePrice?: number;
     paymentMultiplier?: number;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1225,11 +1320,11 @@ export class SessionDto implements ISessionDto {
     eventId?: string;
     minLap?: Duration;
     startTime?: DateTime;
-    finishCriteria?: FinishCriteriaDto | null;
-    classIds?: string[] | null;
+    finishCriteria?: FinishCriteriaDto | undefined;
+    classIds?: string[] | undefined;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1246,25 +1341,22 @@ export class SessionDto implements ISessionDto {
 
     init(_data?: any) {
         if (_data) {
-            this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
-            this.minLap = _data["minLap"] ? Duration.fromISO(_data["minLap"].toString()) : <any>null;
-            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
-            this.finishCriteria = _data["finishCriteria"] ? FinishCriteriaDto.fromJS(_data["finishCriteria"]) : <any>null;
+            this.eventId = _data["eventId"];
+            this.minLap = _data["minLap"] ? Duration.fromISO(_data["minLap"].toString()) : <any>undefined;
+            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>undefined;
+            this.finishCriteria = _data["finishCriteria"] ? FinishCriteriaDto.fromJS(_data["finishCriteria"]) : <any>undefined;
             if (Array.isArray(_data["classIds"])) {
                 this.classIds = [] as any;
                 for (let item of _data["classIds"])
                     this.classIds!.push(item);
             }
-            else {
-                this.classIds = <any>null;
-            }
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1277,22 +1369,22 @@ export class SessionDto implements ISessionDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["eventId"] = this.eventId !== undefined ? this.eventId : <any>null;
-        data["minLap"] = this.minLap ? this.minLap.toString() : <any>null;
-        data["startTime"] = this.startTime ? this.startTime.toString() : <any>null;
-        data["finishCriteria"] = this.finishCriteria ? this.finishCriteria.toJSON() : <any>null;
+        data["eventId"] = this.eventId;
+        data["minLap"] = this.minLap ? this.minLap.toString() : <any>undefined;
+        data["startTime"] = this.startTime ? this.startTime.toString() : <any>undefined;
+        data["finishCriteria"] = this.finishCriteria ? this.finishCriteria.toJSON() : <any>undefined;
         if (Array.isArray(this.classIds)) {
             data["classIds"] = [];
             for (let item of this.classIds)
                 data["classIds"].push(item);
         }
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["published"] = this.published !== undefined ? this.published : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
@@ -1301,11 +1393,11 @@ export interface ISessionDto {
     eventId?: string;
     minLap?: Duration;
     startTime?: DateTime;
-    finishCriteria?: FinishCriteriaDto | null;
-    classIds?: string[] | null;
+    finishCriteria?: FinishCriteriaDto | undefined;
+    classIds?: string[] | undefined;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1314,14 +1406,14 @@ export interface ISessionDto {
 
 export class FinishCriteriaDto implements IFinishCriteriaDto {
     duration?: Duration;
-    totalLaps?: number | null;
+    totalLaps?: number | undefined;
     lapsAfterDuration?: number;
     skipStartingCheckpoint?: boolean;
     forceFinishOnly?: boolean;
     individualTiming?: boolean;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
@@ -1337,18 +1429,18 @@ export class FinishCriteriaDto implements IFinishCriteriaDto {
 
     init(_data?: any) {
         if (_data) {
-            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>null;
-            this.totalLaps = _data["totalLaps"] !== undefined ? _data["totalLaps"] : <any>null;
-            this.lapsAfterDuration = _data["lapsAfterDuration"] !== undefined ? _data["lapsAfterDuration"] : <any>null;
-            this.skipStartingCheckpoint = _data["skipStartingCheckpoint"] !== undefined ? _data["skipStartingCheckpoint"] : <any>null;
-            this.forceFinishOnly = _data["forceFinishOnly"] !== undefined ? _data["forceFinishOnly"] : <any>null;
-            this.individualTiming = _data["individualTiming"] !== undefined ? _data["individualTiming"] : <any>null;
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
+            this.totalLaps = _data["totalLaps"];
+            this.lapsAfterDuration = _data["lapsAfterDuration"];
+            this.skipStartingCheckpoint = _data["skipStartingCheckpoint"];
+            this.forceFinishOnly = _data["forceFinishOnly"];
+            this.individualTiming = _data["individualTiming"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1361,32 +1453,32 @@ export class FinishCriteriaDto implements IFinishCriteriaDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["duration"] = this.duration ? this.duration.toString() : <any>null;
-        data["totalLaps"] = this.totalLaps !== undefined ? this.totalLaps : <any>null;
-        data["lapsAfterDuration"] = this.lapsAfterDuration !== undefined ? this.lapsAfterDuration : <any>null;
-        data["skipStartingCheckpoint"] = this.skipStartingCheckpoint !== undefined ? this.skipStartingCheckpoint : <any>null;
-        data["forceFinishOnly"] = this.forceFinishOnly !== undefined ? this.forceFinishOnly : <any>null;
-        data["individualTiming"] = this.individualTiming !== undefined ? this.individualTiming : <any>null;
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
+        data["totalLaps"] = this.totalLaps;
+        data["lapsAfterDuration"] = this.lapsAfterDuration;
+        data["skipStartingCheckpoint"] = this.skipStartingCheckpoint;
+        data["forceFinishOnly"] = this.forceFinishOnly;
+        data["individualTiming"] = this.individualTiming;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
 
 export interface IFinishCriteriaDto {
     duration?: Duration;
-    totalLaps?: number | null;
+    totalLaps?: number | undefined;
     lapsAfterDuration?: number;
     skipStartingCheckpoint?: boolean;
     forceFinishOnly?: boolean;
     individualTiming?: boolean;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
@@ -1397,11 +1489,12 @@ export class TimingSessionDto implements ITimingSessionDto {
     recordingSessionId?: string;
     eventId?: string;
     isRunning?: boolean;
+    useRfid?: boolean;
     startTime?: DateTime;
     stopTime?: DateTime;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1418,19 +1511,20 @@ export class TimingSessionDto implements ITimingSessionDto {
 
     init(_data?: any) {
         if (_data) {
-            this.sessionId = _data["sessionId"] !== undefined ? _data["sessionId"] : <any>null;
-            this.recordingSessionId = _data["recordingSessionId"] !== undefined ? _data["recordingSessionId"] : <any>null;
-            this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
-            this.isRunning = _data["isRunning"] !== undefined ? _data["isRunning"] : <any>null;
-            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
-            this.stopTime = _data["stopTime"] ? DateTime.fromISO(_data["stopTime"].toString()) : <any>null;
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.sessionId = _data["sessionId"];
+            this.recordingSessionId = _data["recordingSessionId"];
+            this.eventId = _data["eventId"];
+            this.isRunning = _data["isRunning"];
+            this.useRfid = _data["useRfid"];
+            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>undefined;
+            this.stopTime = _data["stopTime"] ? DateTime.fromISO(_data["stopTime"].toString()) : <any>undefined;
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1443,19 +1537,20 @@ export class TimingSessionDto implements ITimingSessionDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["sessionId"] = this.sessionId !== undefined ? this.sessionId : <any>null;
-        data["recordingSessionId"] = this.recordingSessionId !== undefined ? this.recordingSessionId : <any>null;
-        data["eventId"] = this.eventId !== undefined ? this.eventId : <any>null;
-        data["isRunning"] = this.isRunning !== undefined ? this.isRunning : <any>null;
-        data["startTime"] = this.startTime ? this.startTime.toString() : <any>null;
-        data["stopTime"] = this.stopTime ? this.stopTime.toString() : <any>null;
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["published"] = this.published !== undefined ? this.published : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["sessionId"] = this.sessionId;
+        data["recordingSessionId"] = this.recordingSessionId;
+        data["eventId"] = this.eventId;
+        data["isRunning"] = this.isRunning;
+        data["useRfid"] = this.useRfid;
+        data["startTime"] = this.startTime ? this.startTime.toString() : <any>undefined;
+        data["stopTime"] = this.stopTime ? this.stopTime.toString() : <any>undefined;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
@@ -1465,84 +1560,13 @@ export interface ITimingSessionDto {
     recordingSessionId?: string;
     eventId?: string;
     isRunning?: boolean;
+    useRfid?: boolean;
     startTime?: DateTime;
     stopTime?: DateTime;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
-    isSeed?: boolean;
-    created?: DateTime;
-    updated?: DateTime;
-}
-
-export class RecordingSessionDto implements IRecordingSessionDto {
-    eventId?: string;
-    id?: string;
-    name?: string | null;
-    description?: string | null;
-    isRunning?: boolean;
-    startTime?: DateTime;
-    stopTime?: DateTime;
-    isSeed?: boolean;
-    created?: DateTime;
-    updated?: DateTime;
-
-    constructor(data?: IRecordingSessionDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.eventId = _data["eventId"] !== undefined ? _data["eventId"] : <any>null;
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.isRunning = _data["isRunning"] !== undefined ? _data["isRunning"] : <any>null;
-            this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>null;
-            this.stopTime = _data["stopTime"] ? DateTime.fromISO(_data["stopTime"].toString()) : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
-        }
-    }
-
-    static fromJS(data: any): RecordingSessionDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new RecordingSessionDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["eventId"] = this.eventId !== undefined ? this.eventId : <any>null;
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["isRunning"] = this.isRunning !== undefined ? this.isRunning : <any>null;
-        data["startTime"] = this.startTime ? this.startTime.toString() : <any>null;
-        data["stopTime"] = this.stopTime ? this.stopTime.toString() : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
-        return data; 
-    }
-}
-
-export interface IRecordingSessionDto {
-    eventId?: string;
-    id?: string;
-    name?: string | null;
-    description?: string | null;
-    isRunning?: boolean;
-    startTime?: DateTime;
-    stopTime?: DateTime;
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
@@ -1550,8 +1574,9 @@ export interface IRecordingSessionDto {
 
 export class SeriesDto implements ISeriesDto {
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    organizationId?: string;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1568,13 +1593,14 @@ export class SeriesDto implements ISeriesDto {
 
     init(_data?: any) {
         if (_data) {
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.id = _data["id"];
+            this.organizationId = _data["organizationId"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1587,21 +1613,23 @@ export class SeriesDto implements ISeriesDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["published"] = this.published !== undefined ? this.published : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["id"] = this.id;
+        data["organizationId"] = this.organizationId;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
 
 export interface ISeriesDto {
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    organizationId?: string;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1610,9 +1638,10 @@ export interface ISeriesDto {
 
 export class ChampionshipDto implements IChampionshipDto {
     seriesId?: string;
+    organizationId?: string;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1629,14 +1658,15 @@ export class ChampionshipDto implements IChampionshipDto {
 
     init(_data?: any) {
         if (_data) {
-            this.seriesId = _data["seriesId"] !== undefined ? _data["seriesId"] : <any>null;
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.seriesId = _data["seriesId"];
+            this.organizationId = _data["organizationId"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1649,23 +1679,25 @@ export class ChampionshipDto implements IChampionshipDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["seriesId"] = this.seriesId !== undefined ? this.seriesId : <any>null;
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["published"] = this.published !== undefined ? this.published : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["seriesId"] = this.seriesId;
+        data["organizationId"] = this.organizationId;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
 
 export interface IChampionshipDto {
     seriesId?: string;
+    organizationId?: string;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1676,8 +1708,8 @@ export class ClassDto implements IClassDto {
     championshipId?: string;
     numberGroupId?: string;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -1694,15 +1726,15 @@ export class ClassDto implements IClassDto {
 
     init(_data?: any) {
         if (_data) {
-            this.championshipId = _data["championshipId"] !== undefined ? _data["championshipId"] : <any>null;
-            this.numberGroupId = _data["numberGroupId"] !== undefined ? _data["numberGroupId"] : <any>null;
-            this.id = _data["id"] !== undefined ? _data["id"] : <any>null;
-            this.name = _data["name"] !== undefined ? _data["name"] : <any>null;
-            this.description = _data["description"] !== undefined ? _data["description"] : <any>null;
-            this.published = _data["published"] !== undefined ? _data["published"] : <any>null;
-            this.isSeed = _data["isSeed"] !== undefined ? _data["isSeed"] : <any>null;
-            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>null;
-            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>null;
+            this.championshipId = _data["championshipId"];
+            this.numberGroupId = _data["numberGroupId"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.published = _data["published"];
+            this.isSeed = _data["isSeed"];
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
         }
     }
 
@@ -1715,15 +1747,15 @@ export class ClassDto implements IClassDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["championshipId"] = this.championshipId !== undefined ? this.championshipId : <any>null;
-        data["numberGroupId"] = this.numberGroupId !== undefined ? this.numberGroupId : <any>null;
-        data["id"] = this.id !== undefined ? this.id : <any>null;
-        data["name"] = this.name !== undefined ? this.name : <any>null;
-        data["description"] = this.description !== undefined ? this.description : <any>null;
-        data["published"] = this.published !== undefined ? this.published : <any>null;
-        data["isSeed"] = this.isSeed !== undefined ? this.isSeed : <any>null;
-        data["created"] = this.created ? this.created.toString() : <any>null;
-        data["updated"] = this.updated ? this.updated.toString() : <any>null;
+        data["championshipId"] = this.championshipId;
+        data["numberGroupId"] = this.numberGroupId;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["published"] = this.published;
+        data["isSeed"] = this.isSeed;
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
         return data; 
     }
 }
@@ -1732,8 +1764,8 @@ export interface IClassDto {
     championshipId?: string;
     numberGroupId?: string;
     id?: string;
-    name?: string | null;
-    description?: string | null;
+    name?: string | undefined;
+    description?: string | undefined;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;

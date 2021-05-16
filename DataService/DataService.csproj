@@ -27,10 +27,6 @@
       <ProjectReference Include="..\Logic\Logic.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="data-service-ui\src\app\service" />
-    </ItemGroup>
-
     <Target Name="NSwag" AfterTargets="Build">
         <Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe_Net50) aspnetcore2openapi /assembly:$(TargetPath) /output:swagger.json" />
         <Exec Command="$(NSwagExe_Net50) run nswag.json /variables:Configuration=$(Configuration)" />

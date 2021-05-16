@@ -34,6 +34,7 @@ import {MediaMatcher} from "@angular/cdk/layout";
         </div>
       </mat-sidenav-content>
     </mat-sidenav-container>
+    <ngx-ui-loader></ngx-ui-loader>
   `,
   styles: []
 })
