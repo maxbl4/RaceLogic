@@ -21,8 +21,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
     
     public interface ISeedDataLoader
     {
-        void Load();
-        void ResetAllData();
+        void Load(bool forceOverwrite);
     }
 
     public class SeedDataLoader : ISeedDataLoader
@@ -39,9 +38,15 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             this.messageHub = messageHub;
         }
         
-        public void Load()
+        public void Load(bool forceOverwrite)
         {
             logger.Information("Load");
+            var seed = storageService.List<SeedDataDto>().FirstOrDefault();
+            if (seed != null && !forceOverwrite)
+            {
+                logger.Information("Load already loaded {at}", seed.Updated);
+                return;
+            }
             if (options.LoadHardcodedDefaults)
                 LoadHardcodedDefaults();
             var types = Assembly.GetAssembly(typeof(EventDto)).GetTypes().Where(x => x.IsAssignableTo(typeof(IHasTraits))).ToList();
@@ -66,6 +71,7 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
                 }
                 logger.Information("Inserted {count} documents", data.AsArray.Count);
             }
+            storageService.Save(seed ?? new SeedDataDto());
         }
 
         private void LoadHardcodedDefaults()
@@ -73,14 +79,6 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             storageService.Save(new OrganizationDto { Id = WellknownDtoIdentifiers.OrganizationId, Name = "braaap.ru"});
             storageService.Save(new GateDto { Id = WellknownDtoIdentifiers.GateId, OrganizationId = WellknownDtoIdentifiers.OrganizationId, 
                 Name = "Основные ворота", CheckpointServiceAddress = "http://localhost:6000", RfidSupported = true});
-        }
-
-        public void ResetAllData()
-        {
-            logger.Information("ResetAllData");
-            messageHub.Publish(new ResetAllDataMessage());
-            storageService.RolloverDatabase();
-            Load();
         }
     }
     

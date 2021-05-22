@@ -21,7 +21,7 @@ namespace maxbl4.Race.DataService.Services
         
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            seedDataLoader.Load();
+            seedDataLoader.Load(false);
             recordingService.Initialize();
             timingSessionService.Initialize();
             return Task.CompletedTask;

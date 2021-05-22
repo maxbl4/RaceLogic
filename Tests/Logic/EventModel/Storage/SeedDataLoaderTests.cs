@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
+using JsonSerializer = LiteDB.JsonSerializer;
 
 namespace maxbl4.Race.Tests.Logic.EventModel.Storage
 {
@@ -35,12 +36,19 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Storage
             {
                 var loader = new SeedDataLoader(Options.Create(options), service, new ChannelMessageHub());
                 Path.GetFileName(service.ConnectionString.Filename).Should().Be("_Test.litedb");
-                loader.ResetAllData();
-                Path.GetFileName(service.ConnectionString.Filename).Should().Be("_Test_001.litedb");
-                var gates = service.List<GateDto>().ToList();
-                gates.Should().HaveCount(1);
-                gates[0].Name.Should().Be("Основные ворота");
-                gates[0].Created.Should().BeCloseTo(DateTime.UtcNow, 5000);
+                loader.Load(false);
+                var events = service.List<EventDto>().ToList();
+                events.Should().HaveCount(1);
+                var ev = events[0];
+                ev.Id.Should().Be(new Guid("08d91d00795fca4b870eae38900278be"));
+                ev.Name.Should().Be("Тестовая гонка");
+                ev.Created.Should().BeCloseTo(DateTime.UtcNow, 5000);
+                ev.Name = "some";
+                service.Save(ev);
+                loader.Load(false);
+                service.List<EventDto>().Single().Name.Should().Be("some");
+                loader.Load(true);
+                service.List<EventDto>().Single().Name.Should().Be("Тестовая гонка");
             });
         }
     }
