@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.MessageHub;
+using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
@@ -18,58 +22,89 @@ using Serilog;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
-    /// SessionDataProvider:
-    ///  - Planned start/stop
-    ///  - Duration, finish criteria, minimal lap (checkpoint deduplication interval)
-    ///  - Notify when data changed
-    /// RiderDataManager:
-    ///  - Persistent storage of rider data (CRUD)
-    ///  - Load and notify updates for timing session
-    /// CheckpointService:
-    ///  - Store and stream tags
-    /// RaceLogService:
-    ///  - Final storage of raw checkpoints (RIFD and Number)
-    ///  - Manual input of Number checkpoint
-    ///  - Checkpoints should have GateId
-    /// TimingSessionService:
-    ///  - Subscribes to SessionData, RiderData, RaceLog
-    ///  - Map RFID/Number checkpoints to Riders
-    ///  - Deduplicate checkpoints
-    ///  - Incrementally update Rating on each new Checkpoint
-    ///  - Recalculate deduplication on update of RiderData or deduplication settings
-    ///  - Notify subscribers of new Rating throttled to 500ms
+    public record RatingUpdatedMessage(List<RoundPosition> Rating, Id<TimingSessionDto> TimingSessionId);
     
+    public class TimingCheckpointHandler: IDisposable
+    {
+        private readonly Id<TimingSessionDto> timingSessionId;
+        private readonly IMessageHub messageHub;
+        private readonly CompositeDisposable disposable;
+        private Subject<RatingUpdatedMessage> ratingUpdates = new();
+        public ReadOnlyDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; }
+        public TimingCheckpointHandler(DateTime startTime, Id<TimingSessionDto> timingSessionId, SessionDto session, 
+            IDictionary<string, List<Id<RiderClassRegistrationDto>>> riderIdMap, IMessageHub messageHub)
+        {
+            this.timingSessionId = timingSessionId;
+            this.messageHub = messageHub;
+            RiderIdMap = new ReadOnlyDictionary<string, List<Id<RiderClassRegistrationDto>>>(riderIdMap);
+            disposable = new CompositeDisposable();
+            Track = new TrackOfCheckpoints(startTime, new FinishCriteria(session.FinishCriteria));
+            CheckpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
+            disposable.Add(CheckpointAggregator.Subscribe(Track.Append));
+            ratingUpdates
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .ObserveOn(TaskPoolScheduler.Default)
+                .Subscribe(messageHub.Publish);
+        }
+
+        public TimestampAggregator<Checkpoint> CheckpointAggregator { get; }
+
+        public TrackOfCheckpoints Track { get; }
+
+        public void AppendCheckpoint(Checkpoint cp)
+        {
+            CheckpointAggregator.OnNext(cp);
+            ratingUpdates.OnNext(new RatingUpdatedMessage(Track.Rating, timingSessionId));
+        }
+
+        private void ResolveRiderId(Checkpoint rawCheckpoint, IObserver<Checkpoint> observer)
+        {
+            if (RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderIds))
+            {
+                foreach (var riderId in riderIds)
+                {
+                    observer.OnNext(rawCheckpoint.WithRiderId(riderId.ToString()));
+                }
+            }
+            else
+            {
+                observer.OnNext(rawCheckpoint.WithRiderId(rawCheckpoint.RiderId));
+            }
+        }
+
+        public void Dispose()
+        {
+            disposable.DisposeSafe();
+        }
+    }
     
-    
-    public class TimingSession : IHasName, IHasTimestamp, IHasSeed
+    public class TimingSession
     {
         private static readonly ILogger logger = Log.ForContext<TimingSession>(); 
-        public Id<TimingSessionDto> Id { get; set; }
+        public Id<TimingSessionDto> Id { get; }
         private readonly IEventRepository eventRepository;
         private readonly IRecordingService recordingService;
+        private readonly IRecordingServiceRepository recordingServiceRepository;
+        private readonly IAutoMapperProvider autoMapper;
         private readonly IMessageHub messageHub;
         private readonly ISystemClock clock;
         private TimestampAggregator<Checkpoint> checkpointAggregator;
         private CompositeDisposable disposable;
-
+        private TimingCheckpointHandler checkpointHandler;
         public Id<SessionDto> SessionId { get; private set; }
-        public DateTime StartTime { get; private set; }
-        public ITrackOfCheckpoints Track { get; private set; }
         public bool UseRfid { get; set; }
 
-        public ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; set; } =
-            new();
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsSeed { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime Updated { get; set; }
-
-        public TimingSession(Id<TimingSessionDto> id, IEventRepository eventRepository, IRecordingService recordingService, IMessageHub messageHub, ISystemClock clock)
+        public TimingSession(Id<TimingSessionDto> id, 
+            IEventRepository eventRepository, 
+            IRecordingService recordingService, IRecordingServiceRepository recordingServiceRepository,
+            IAutoMapperProvider autoMapper,
+            IMessageHub messageHub, ISystemClock clock)
         {
             this.Id = id;
             this.eventRepository = eventRepository;
             this.recordingService = recordingService;
+            this.recordingServiceRepository = recordingServiceRepository;
+            this.autoMapper = autoMapper;
             this.messageHub = messageHub;
             this.clock = clock;
             messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Reload());
@@ -101,15 +136,19 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             disposable?.DisposeSafe();
             disposable = new CompositeDisposable();
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
-            RiderIdMap = new ConcurrentDictionary<string, List<Id<RiderClassRegistrationDto>>>(eventRepository.GetRiderIdentifiers(timingSession.SessionId));
-            //recordingService.StartRecording(session.EventId);
-            Track = new TrackOfCheckpoints(StartTime, new FinishCriteria(session.FinishCriteria));
-            checkpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
-            disposable.Add(checkpointAggregator.Subscribe(Track.Append));
-            var subject = new Subject<Checkpoint>();
-            disposable.Add(subject.Subscribe(x => ResolveRiderId(x, checkpointAggregator)));
-            //disposable.Add(recordingService.Subscribe(subject, timingSession.StartTime));
+            GateId = eventRepository.GetGateId(timingSession.SessionId);
+            checkpointHandler = new TimingCheckpointHandler(timingSession.StartTime, Id, session,
+                eventRepository.GetRiderIdentifiers(timingSession.SessionId), messageHub);
+            disposable.Add(checkpointHandler);
+            var cps = recordingServiceRepository
+                .GetCheckpoints(timingSession.GateId, timingSession.StartTime, timingSession.StopTime);
+            foreach (var cp in cps)
+            {
+                recordingService.AppendCheckpoint(GateId, autoMapper.Map<Checkpoint>(cp));
+            }
         }
+
+        public Id<GateDto> GateId { get; set; }
 
         public void Start(DateTime? startTime = null)
         {
@@ -123,24 +162,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public void ManualCheckpoint(Checkpoint checkpoint)
         {
             logger.Information("ManualCheckpoint");
-            //TODO: Use correct recording session id
-            //recordingService.AppendCheckpoint(Reco);
-            ResolveRiderId(checkpoint, checkpointAggregator);
-        }
-
-        private void ResolveRiderId(Checkpoint rawCheckpoint, IObserver<Checkpoint> observer)
-        {
-            if (RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderIds))
-            {
-                foreach (var riderId in riderIds)
-                {
-                    observer.OnNext(rawCheckpoint.WithRiderId(riderId.ToString()));
-                }
-            }
-            else
-            {
-                observer.OnNext(rawCheckpoint.WithRiderId(rawCheckpoint.RiderId));
-            }
+            recordingService.AppendCheckpoint(GateId, checkpoint);
         }
     }
 }

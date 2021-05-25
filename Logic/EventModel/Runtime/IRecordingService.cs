@@ -8,8 +8,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
     public interface IRecordingService
     {
         void Initialize();
-        Id<RecordingSessionDto> StartRfid(Id<GateDto> gateId);
+        void StartRfid(Id<GateDto> gateId);
         void StopRfid(Id<GateDto> gateId);
-        Id<RecordingSessionDto> AppendCheckpoint(Id<GateDto> gateId, Checkpoint checkpoint);
+        void AppendCheckpoint(Id<GateDto> gateId, Checkpoint checkpoint);
     }
 }

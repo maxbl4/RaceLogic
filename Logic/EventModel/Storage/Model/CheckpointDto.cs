@@ -7,7 +7,7 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Model
 {
     public class CheckpointDto : IHasId<CheckpointDto>, IHasSeed, ICheckpoint
     {
-        public Id<RecordingSessionDto> RecordingSessionId { get; set; }
+        public Id<GateDto> GateId { get; set; }
 
         public DateTime Timestamp { get; set; }
         public string RiderId { get; set; }

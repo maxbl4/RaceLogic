@@ -82,36 +82,45 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 if (clock.UtcNow.UtcDateTime - session.Updated > TimeSpan.FromHours(2))
                 {
                     logger.Information("Initialize stopping outdated session {id} from {time}", session.Id, session.Updated);
-                    session.Stop(clock.UtcNow.UtcDateTime);
-                    repository.SaveSession(session);
+                    StopRfid(session.GateId);
                 }else
                 {
                     logger.Information("Initialize restarting saved session {id}", session.Id);
-                    if (session.UseRfid)
-                    {
-                        var gate = eventRepository.StorageService.Get(session.GateId);
-                        StartRfidInt(session, gate);
-                    }
+                    StartRfid(session.GateId);
                 }
             }
             var __ = Heartbeat();
         }
 
-        public Id<RecordingSessionDto> StartRfid(Id<GateDto> gateId)
+        public void StartRfid(Id<GateDto> gateId)
         {
             using var _ = sync.UseOnce();
             var gate = eventRepository.StorageService.Get(gateId);
             if (gate == null)
                 throw new KeyNotFoundException($"StartRfid gate {gateId} not found");
-            var dto = repository.GetSessionForGate(gateId);
-            if (!dto.IsRunning)
+            var dto = repository.GetActiveSessionForGate(gateId);
+            if (dto != null) return;
+            dto = new RecordingSessionDto();
+            dto.Start(clock.UtcNow.UtcDateTime);
+            repository.SaveSession(dto);
+            if (rfidSessions.TryGetValue(gate.Id, out var rfidSession))
+                rfidSession.Dispose();
+
+            if (!gate.RfidSupported) return;
+
+            var client = checkpointServiceClientFactory.CreateClient(gate.CheckpointServiceAddress);
+            rfidSessions[gate.Id] = rfidSession = new RfidSession
             {
-                dto.Start(clock.UtcNow.UtcDateTime);
-                dto.UseRfid = true;
-                repository.SaveSession(dto);
-            }
-            StartRfidInt(dto, gate);
-            return dto.Id;
+                RecordingSession = dto,
+                Client = client
+            };
+            rfidSession.Disposable = new CompositeDisposable(
+                rfidSession.Subscription = client.CreateSubscription(dto.StartTime),
+                rfidSession.Subscription.Checkpoints.Subscribe(x => AppendCheckpoint(gate.Id, x))
+            );
+            rfidSession.Subscription.Start();
+            client.SetRfidStatus(true);
+            return;
         }
 
         public void StopRfid(Id<GateDto> gateId)
@@ -120,7 +129,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             var gate = eventRepository.StorageService.Get(gateId);
             if (gate == null)
                 throw new KeyNotFoundException($"StopRfid gate {gateId} not found");
-            var dto = repository.GetSessionForGate(gateId);
             if (rfidSessions.TryGetValue(gateId, out var rfidSession))
             {
                 logger.Information("StopRfid stopping rfid for gate {gateId}", gateId);
@@ -128,7 +136,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 rfidSessions.Remove(gateId);
             }else
                 logger.Warning("StopRfid rfid was not running gate {gateId}", gateId);
-            if (dto.IsRunning)
+            var dto = repository.GetActiveSessionForGate(gateId);
+            if (dto?.IsRunning == true)
             {
                 logger.Information("StopRfid stopping {recordId} for gate {gateId}", dto.Id, gateId);
                 dto.Stop(clock.UtcNow.UtcDateTime);
@@ -137,39 +146,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 logger.Warning("StopRfid {recordId} for gate {gateId} was not running", dto.Id, gateId);
         }
 
-        private void StartRfidInt(RecordingSessionDto dto, GateDto gate)
-        {
-            if (rfidSessions.TryGetValue(gate.Id, out var rfidSession))
-                rfidSession.Dispose();
-
-            var client = checkpointServiceClientFactory.CreateClient(gate.CheckpointServiceAddress);
-            rfidSessions[gate.Id] = rfidSession = new RfidSession
-            {
-                RecordingSession = dto
-            };
-            rfidSession.Disposable = new CompositeDisposable(
-                rfidSession.Subscription = client.CreateSubscription(dto.StartTime),
-                rfidSession.Subscription.Checkpoints.Subscribe(x => AppendCheckpoint(gate.Id, x))
-            );
-            rfidSession.Subscription.Start();
-            client.SetRfidStatus(true);
-        }
-
-        public Id<RecordingSessionDto> AppendCheckpoint(Id<GateDto> gateId, Checkpoint checkpoint)
+        public void AppendCheckpoint(Id<GateDto> gateId, Checkpoint checkpoint)
         {
             using var _ = sync.UseOnce();
             logger.Information("OnCheckpoint {riderId} {timestamp}", checkpoint.RiderId, checkpoint.Timestamp);
-            RecordingSessionDto dto;
-            if (rfidSessions.TryGetValue(gateId, out var rfidSession))
-                dto = rfidSession.RecordingSession;
-            else
-                dto = repository.GetSessionForGate(gateId);
             
             var cp = mapper.Map<CheckpointDto>(checkpoint);
-            cp.RecordingSessionId = dto.Id;
+            cp.GateId = gateId;
             repository.UpsertCheckpoint(cp);
             messageHub.Publish(cp);
-            return dto.Id;
         }
 
         public void Dispose()
@@ -188,10 +173,12 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             public ICheckpointSubscription Subscription { get; set; }
             public Subject<Checkpoint> Checkpoints { get; } = new();
             public RecordingSessionDto RecordingSession { get; set; }
+            public ICheckpointServiceClient Client { get; set; }
 
             public void Dispose()
             {
                 Disposable?.DisposeSafe();
+                Client.SetRfidStatus(false);
             }
         }
     }

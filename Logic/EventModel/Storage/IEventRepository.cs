@@ -14,5 +14,6 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         T GetWithUpstream<T>(Id<T> id) where T : IHasId<T>;
         IEnumerable<SessionDto> ListSessions(Id<EventDto> id);
         IEnumerable<TimingSessionDto> ListTimingSessions(Id<SessionDto> id);
+        Id<GateDto> GetGateId(Id<SessionDto> sessionId);
     }
 }

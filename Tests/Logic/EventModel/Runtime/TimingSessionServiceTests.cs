@@ -71,9 +71,9 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             storageService.Repo.Query<CheckpointDto>().Count().Should().Be(2);
             //recordingRepository.GetActiveRecordingSession().Should().NotBeNull();
             
-            timingSession.Track.Rating.Should().HaveCount(2);
-            timingSession.Track.Rating[0].RiderId.Should().Be("11");
-            timingSession.Track.Rating[1].RiderId.Should().Be("12");
+            // timingSession.Track.Rating.Should().HaveCount(2);
+            // timingSession.Track.Rating[0].RiderId.Should().Be("11");
+            // timingSession.Track.Rating[1].RiderId.Should().Be("12");
             
 
             //recordingService.StopRecording();

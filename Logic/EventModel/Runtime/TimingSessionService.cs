@@ -1,4 +1,5 @@
-﻿using System.Reactive.PlatformServices;
+﻿using System.Collections.Generic;
+using System.Reactive.PlatformServices;
 using System.Threading;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
@@ -18,6 +19,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly IRecordingServiceRepository recordingRepository;
         private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
+        private readonly Dictionary<Id<TimingSessionDto>, TimingSession> activeSessions = new();
 
         public TimingSessionService(IEventRepository eventRepository, IRecordingService recordingService, IRecordingServiceRepository recordingRepository, IMessageHub messageHub, 
             IAutoMapperProvider autoMapperProvider, ISystemClock clock)
@@ -61,7 +63,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 SessionId = sessionId,
             };
             eventRepository.StorageService.Save(dto);
-            return new TimingSession(dto.Id, eventRepository, recordingService, messageHub, clock);
+            return new TimingSession(dto.Id, eventRepository, recordingService, 
+                recordingRepository, autoMapperProvider, messageHub, clock);
         }
     }
 }

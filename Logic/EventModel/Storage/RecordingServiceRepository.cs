@@ -28,19 +28,9 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return StorageService.List<RecordingSessionDto>(x => x.IsRunning);
         }
 
-        public RecordingSessionDto GetSessionForGate(Id<GateDto> gateId)
+        public RecordingSessionDto GetActiveSessionForGate(Id<GateDto> gateId)
         {
-            var dto = StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.GateId == gateId && x.IsRunning);
-            if (dto == null)
-            {
-                dto = new RecordingSessionDto
-                {
-                    GateId = gateId
-                };
-                dto.Start(clock.UtcNow.UtcDateTime);
-                StorageService.Save(dto);
-            }
-            return dto;
+            return StorageService.Repo.FirstOrDefault<RecordingSessionDto>(x => x.IsRunning && x.GateId == gateId);
         }
 
         public void SaveSession(RecordingSessionDto dto)
@@ -58,10 +48,10 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             StorageService.Save(checkpoint);
         }
 
-        public IEnumerable<CheckpointDto> GetCheckpoints(Id<RecordingSessionDto> sessionId, DateTime from)
+        public IEnumerable<CheckpointDto> GetCheckpoints(Id<GateDto> gateId, DateTime from, DateTime to)
         {
             return StorageService.Repo.Query<CheckpointDto>()
-                .Where(x => x.RecordingSessionId == sessionId && x.Timestamp >= from)
+                .Where(x => x.GateId == gateId && !x.Aggregated && x.Timestamp > from && x.Timestamp <= to)
                 .ToEnumerable()
                 .OrderBy(x => x.Timestamp);
         }
@@ -71,7 +61,9 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         private void SetupIndexes(ILiteRepository repo)
         {
             repo.Database.GetCollection<RecordingSessionDto>().EnsureIndex(x => x.IsRunning);
-            repo.Database.GetCollection<CheckpointDto>().EnsureIndex(x => x.RecordingSessionId);
+            repo.Database.GetCollection<RecordingSessionDto>().EnsureIndex(x => x.GateId);
+            repo.Database.GetCollection<CheckpointDto>().EnsureIndex(x => x.GateId);
+            repo.Database.GetCollection<CheckpointDto>().EnsureIndex(x => x.Aggregated);
         }
     }
 }
