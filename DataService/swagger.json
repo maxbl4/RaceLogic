@@ -469,6 +469,26 @@
         }
       }
     },
+    "/_metadata": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "Metadata_GetTimingSessionUpdate",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimingSessionUpdate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/store": {
       "get": {
         "tags": [
@@ -969,7 +989,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "recordingSessionId": {
+          "gateId": {
             "type": "string",
             "format": "uuid"
           },
@@ -1132,6 +1152,136 @@
           "updated": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "TimingSessionUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "rating": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/RoundPosition"
+            }
+          }
+        }
+      },
+      "RoundPosition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lapCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "laps": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Lap"
+            }
+          },
+          "duration": {
+            "type": "string",
+            "format": "time-span"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished": {
+            "type": "boolean"
+          },
+          "started": {
+            "type": "boolean"
+          },
+          "riderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "startSequence": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "endSequence": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Lap": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "checkpoint": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Checkpoint"
+              }
+            ]
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "string",
+            "format": "time-span"
+          },
+          "aggDuration": {
+            "type": "string",
+            "format": "time-span"
+          },
+          "sequentialNumber": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Checkpoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "riderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastSeen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "aggregated": {
+            "type": "boolean"
+          },
+          "isManual": {
+            "type": "boolean"
+          },
+          "rps": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       }

@@ -120,7 +120,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             );
             rfidSession.Subscription.Start();
             client.SetRfidStatus(true);
-            return;
         }
 
         public void StopRfid(Id<GateDto> gateId)

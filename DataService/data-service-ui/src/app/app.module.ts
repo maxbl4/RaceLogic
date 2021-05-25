@@ -29,6 +29,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {PICK_FORMATS, PickDateAdapter} from "@app/session-view/mat-pick-date-adapter";
 import {DateAdapter, MAT_DATE_FORMATS} from "@angular/material/core";
+import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
 
 
 @NgModule({
@@ -72,7 +73,7 @@ import {DateAdapter, MAT_DATE_FORMATS} from "@angular/material/core";
     AgGridModule.withComponents([])
   ],
   providers: [
-    DataClient, StoreClient,
+    DataClient, StoreClient, WebSocketConnectionService,
     {provide: DateAdapter, useClass: PickDateAdapter},
     {provide: MAT_DATE_FORMATS, useValue: PICK_FORMATS}
   ],

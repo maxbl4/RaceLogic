@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Concurrency;
@@ -7,7 +6,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
+using System.Threading;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
+using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
@@ -77,6 +78,32 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             disposable.DisposeSafe();
         }
     }
+
+    public class LiveCheckpointFeedSubscription : IDisposable
+    {
+        private readonly CompositeDisposable disposable = new();
+        private readonly SemaphoreSlim sync = new(1);
+
+        public LiveCheckpointFeedSubscription(IObserver<CheckpointDto> observer, IRecordingServiceRepository repo, Id<GateDto> gateId, DateTime from, IMessageHub messageHub)
+        {
+            using var _ = sync.UseOnce();
+            disposable.Add(messageHub.Subscribe<CheckpointDto>(x =>
+                {
+                    using var _ = sync.UseOnce();
+                    observer.OnNext(x);
+                }));
+            var existing = repo.GetCheckpoints(gateId, from, DateTime.MaxValue);
+            foreach (var cp in existing)
+            {
+                observer.OnNext(cp);
+            }
+        }
+        
+        public void Dispose()
+        {
+            disposable.DisposeSafe();
+        }
+    }
     
     public class TimingSession
     {
@@ -88,10 +115,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly IAutoMapperProvider autoMapper;
         private readonly IMessageHub messageHub;
         private readonly ISystemClock clock;
-        private TimestampAggregator<Checkpoint> checkpointAggregator;
         private CompositeDisposable disposable;
         private TimingCheckpointHandler checkpointHandler;
-        public Id<SessionDto> SessionId { get; private set; }
         public bool UseRfid { get; set; }
 
         public TimingSession(Id<TimingSessionDto> id, 

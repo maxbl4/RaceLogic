@@ -3,6 +3,7 @@ using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
+using maxbl4.Race.Logic.RoundTiming;
 
 namespace maxbl4.Race.Logic.AutoMapper
 {
@@ -32,6 +33,7 @@ namespace maxbl4.Race.Logic.AutoMapper
             cfg.CreateMap(typeof(Id<>), typeof(Id<>));
             cfg.CreateMap<Checkpoint, CheckpointDto>().ReverseMap();
             cfg.CreateMap<RecordingSessionDto, TimingSession>().ReverseMap();
+            cfg.CreateMap<RoundPosition, WebModel.RoundPosition>().ReverseMap();
         }
     }
 }

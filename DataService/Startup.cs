@@ -7,6 +7,7 @@ using System.Reactive.PlatformServices;
 using BraaapWeb.Client;
 using LiteDB;
 using maxbl4.Infrastructure.MessageHub;
+using maxbl4.Race.DataService.Hubs;
 using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.AutoMapper;
@@ -86,6 +87,7 @@ namespace maxbl4.Race.DataService
             services.AddTransient<IMainClient>(_ => new MainClient(options.BraaapApiBaseUri, new HttpClient()));
             services.AddOpenApiDocument(o =>
             {
+                
                 foreach (var mapper in TraitsExt.GetIHasIdTypes().Select(x => new PrimitiveTypeMapper(x, x =>
                     {
                         x.Type = JsonObjectType.String;
@@ -123,7 +125,11 @@ namespace maxbl4.Race.DataService
             app.UseOpenApi();
             app.UseSwaggerUi3();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<RaceHub>("/_ws/race");
+            });
         }
     }
 }

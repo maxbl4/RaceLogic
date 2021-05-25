@@ -839,6 +839,68 @@ export class DataClient {
 @Injectable({
     providedIn: 'root'
 })
+export class MetadataClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getTimingSessionUpdate(): Observable<TimingSessionUpdate> {
+        let url_ = this.baseUrl + "/_metadata";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTimingSessionUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTimingSessionUpdate(<any>response_);
+                } catch (e) {
+                    return <Observable<TimingSessionUpdate>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<TimingSessionUpdate>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetTimingSessionUpdate(response: HttpResponseBase): Observable<TimingSessionUpdate> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TimingSessionUpdate.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<TimingSessionUpdate>(<any>null);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class StoreClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -1486,7 +1548,7 @@ export interface IFinishCriteriaDto {
 
 export class TimingSessionDto implements ITimingSessionDto {
     sessionId?: string;
-    recordingSessionId?: string;
+    gateId?: string;
     eventId?: string;
     isRunning?: boolean;
     useRfid?: boolean;
@@ -1512,7 +1574,7 @@ export class TimingSessionDto implements ITimingSessionDto {
     init(_data?: any) {
         if (_data) {
             this.sessionId = _data["sessionId"];
-            this.recordingSessionId = _data["recordingSessionId"];
+            this.gateId = _data["gateId"];
             this.eventId = _data["eventId"];
             this.isRunning = _data["isRunning"];
             this.useRfid = _data["useRfid"];
@@ -1538,7 +1600,7 @@ export class TimingSessionDto implements ITimingSessionDto {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["sessionId"] = this.sessionId;
-        data["recordingSessionId"] = this.recordingSessionId;
+        data["gateId"] = this.gateId;
         data["eventId"] = this.eventId;
         data["isRunning"] = this.isRunning;
         data["useRfid"] = this.useRfid;
@@ -1557,7 +1619,7 @@ export class TimingSessionDto implements ITimingSessionDto {
 
 export interface ITimingSessionDto {
     sessionId?: string;
-    recordingSessionId?: string;
+    gateId?: string;
     eventId?: string;
     isRunning?: boolean;
     useRfid?: boolean;
@@ -1770,6 +1832,250 @@ export interface IClassDto {
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
+}
+
+export class TimingSessionUpdate implements ITimingSessionUpdate {
+    rating?: RoundPosition[] | undefined;
+
+    constructor(data?: ITimingSessionUpdate) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["rating"])) {
+                this.rating = [] as any;
+                for (let item of _data["rating"])
+                    this.rating!.push(RoundPosition.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): TimingSessionUpdate {
+        data = typeof data === 'object' ? data : {};
+        let result = new TimingSessionUpdate();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.rating)) {
+            data["rating"] = [];
+            for (let item of this.rating)
+                data["rating"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface ITimingSessionUpdate {
+    rating?: RoundPosition[] | undefined;
+}
+
+export class RoundPosition implements IRoundPosition {
+    lapCount?: number;
+    laps?: Lap[] | undefined;
+    duration?: Duration;
+    start?: DateTime;
+    end?: DateTime;
+    finished?: boolean;
+    started?: boolean;
+    riderId?: string | undefined;
+    startSequence?: string;
+    endSequence?: string;
+
+    constructor(data?: IRoundPosition) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.lapCount = _data["lapCount"];
+            if (Array.isArray(_data["laps"])) {
+                this.laps = [] as any;
+                for (let item of _data["laps"])
+                    this.laps!.push(Lap.fromJS(item));
+            }
+            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
+            this.start = _data["start"] ? DateTime.fromISO(_data["start"].toString()) : <any>undefined;
+            this.end = _data["end"] ? DateTime.fromISO(_data["end"].toString()) : <any>undefined;
+            this.finished = _data["finished"];
+            this.started = _data["started"];
+            this.riderId = _data["riderId"];
+            this.startSequence = _data["startSequence"];
+            this.endSequence = _data["endSequence"];
+        }
+    }
+
+    static fromJS(data: any): RoundPosition {
+        data = typeof data === 'object' ? data : {};
+        let result = new RoundPosition();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["lapCount"] = this.lapCount;
+        if (Array.isArray(this.laps)) {
+            data["laps"] = [];
+            for (let item of this.laps)
+                data["laps"].push(item.toJSON());
+        }
+        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
+        data["start"] = this.start ? this.start.toString() : <any>undefined;
+        data["end"] = this.end ? this.end.toString() : <any>undefined;
+        data["finished"] = this.finished;
+        data["started"] = this.started;
+        data["riderId"] = this.riderId;
+        data["startSequence"] = this.startSequence;
+        data["endSequence"] = this.endSequence;
+        return data; 
+    }
+}
+
+export interface IRoundPosition {
+    lapCount?: number;
+    laps?: Lap[] | undefined;
+    duration?: Duration;
+    start?: DateTime;
+    end?: DateTime;
+    finished?: boolean;
+    started?: boolean;
+    riderId?: string | undefined;
+    startSequence?: string;
+    endSequence?: string;
+}
+
+export class Lap implements ILap {
+    checkpoint?: Checkpoint | undefined;
+    start?: DateTime;
+    end?: DateTime;
+    duration?: Duration;
+    aggDuration?: Duration;
+    sequentialNumber?: number;
+
+    constructor(data?: ILap) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.checkpoint = _data["checkpoint"] ? Checkpoint.fromJS(_data["checkpoint"]) : <any>undefined;
+            this.start = _data["start"] ? DateTime.fromISO(_data["start"].toString()) : <any>undefined;
+            this.end = _data["end"] ? DateTime.fromISO(_data["end"].toString()) : <any>undefined;
+            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
+            this.aggDuration = _data["aggDuration"] ? Duration.fromISO(_data["aggDuration"].toString()) : <any>undefined;
+            this.sequentialNumber = _data["sequentialNumber"];
+        }
+    }
+
+    static fromJS(data: any): Lap {
+        data = typeof data === 'object' ? data : {};
+        let result = new Lap();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["checkpoint"] = this.checkpoint ? this.checkpoint.toJSON() : <any>undefined;
+        data["start"] = this.start ? this.start.toString() : <any>undefined;
+        data["end"] = this.end ? this.end.toString() : <any>undefined;
+        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
+        data["aggDuration"] = this.aggDuration ? this.aggDuration.toString() : <any>undefined;
+        data["sequentialNumber"] = this.sequentialNumber;
+        return data; 
+    }
+}
+
+export interface ILap {
+    checkpoint?: Checkpoint | undefined;
+    start?: DateTime;
+    end?: DateTime;
+    duration?: Duration;
+    aggDuration?: Duration;
+    sequentialNumber?: number;
+}
+
+export class Checkpoint implements ICheckpoint {
+    timestamp?: DateTime;
+    riderId?: string | undefined;
+    lastSeen?: DateTime;
+    count?: number;
+    aggregated?: boolean;
+    isManual?: boolean;
+    rps?: number;
+    id?: string;
+
+    constructor(data?: ICheckpoint) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.timestamp = _data["timestamp"] ? DateTime.fromISO(_data["timestamp"].toString()) : <any>undefined;
+            this.riderId = _data["riderId"];
+            this.lastSeen = _data["lastSeen"] ? DateTime.fromISO(_data["lastSeen"].toString()) : <any>undefined;
+            this.count = _data["count"];
+            this.aggregated = _data["aggregated"];
+            this.isManual = _data["isManual"];
+            this.rps = _data["rps"];
+            this.id = _data["id"];
+        }
+    }
+
+    static fromJS(data: any): Checkpoint {
+        data = typeof data === 'object' ? data : {};
+        let result = new Checkpoint();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["timestamp"] = this.timestamp ? this.timestamp.toString() : <any>undefined;
+        data["riderId"] = this.riderId;
+        data["lastSeen"] = this.lastSeen ? this.lastSeen.toString() : <any>undefined;
+        data["count"] = this.count;
+        data["aggregated"] = this.aggregated;
+        data["isManual"] = this.isManual;
+        data["rps"] = this.rps;
+        data["id"] = this.id;
+        return data; 
+    }
+}
+
+export interface ICheckpoint {
+    timestamp?: DateTime;
+    riderId?: string | undefined;
+    lastSeen?: DateTime;
+    count?: number;
+    aggregated?: boolean;
+    isManual?: boolean;
+    rps?: number;
+    id?: string;
 }
 
 export interface FileResponse {

@@ -50,7 +50,7 @@ namespace maxbl4.Race.Logic.RoundTiming
             rating = null;
         }
 
-        public List<RoundPosition> Rating => rating ?? (rating = GetSequence().ToList());
+        public List<RoundPosition> Rating => rating ??= GetSequence().ToList();
 
         private IEnumerable<RoundPosition> GetSequence()
         {
