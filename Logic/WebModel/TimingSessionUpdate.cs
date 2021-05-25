@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
-using maxbl4.Race.Logic.RoundTiming;
 
 namespace maxbl4.Race.Logic.WebModel
 {
@@ -22,9 +18,16 @@ namespace maxbl4.Race.Logic.WebModel
         public DateTime End { get; private set; }
         public bool Finished { get; private set; }
         public bool Started => LapCount > 0;
-        public string RiderId { get; private set; }
-        public Id<Checkpoint> StartSequence { get; private set; }
-        public Id<Checkpoint> EndSequence { get; private set; }
+        public Rider Rider { get; private set; }
+    }
+    
+    public class Lap
+    {
+        public DateTime Start { get; }
+        public DateTime End { get; }
+        public TimeSpan Duration { get; }
+        public TimeSpan AggDuration { get; }
+        public int SequentialNumber { get; }
     }
 
     public class Rider: IHasPersonName
