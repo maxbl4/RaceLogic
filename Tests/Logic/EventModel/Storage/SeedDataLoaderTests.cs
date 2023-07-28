@@ -42,7 +42,7 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Storage
                 var ev = events[0];
                 ev.Id.Should().Be(new Guid("08d91d00795fca4b870eae38900278be"));
                 ev.Name.Should().Be("Тестовая гонка");
-                ev.Created.Should().BeCloseTo(DateTime.UtcNow, 5000);
+                ev.Created.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
                 ev.Name = "some";
                 service.Save(ev);
                 loader.Load(false);

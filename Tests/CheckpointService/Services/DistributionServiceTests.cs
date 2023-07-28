@@ -58,7 +58,7 @@ namespace maxbl4.Race.Tests.CheckpointService.Services
 
                 hubContext.Clients.Client("con1")
                     .SendCoreAsync(Arg.Any<string>(), Arg.Any<object[]>())
-                    .ThrowsForAnyArgs(x => new ArgumentOutOfRangeException())
+                    .ThrowsAsyncForAnyArgs(x => new ArgumentOutOfRangeException())
                     .AndDoes(info => log.Add("thrown"));
 
                 hubContext.Clients.Client("con2")

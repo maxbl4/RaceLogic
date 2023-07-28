@@ -18,8 +18,8 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Traits
             series.Updated.Should().Be(default);
             series.ApplyTraits();
             series.Id.Value.Should().NotBeEmpty();
-            series.Created.Should().BeCloseTo(DateTime.UtcNow);
-            series.Updated.Should().BeCloseTo(DateTime.UtcNow);
+            series.Created.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+            series.Updated.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
             var id = series.Id;
             var created = series.Created;
             var updated = series.Updated;
