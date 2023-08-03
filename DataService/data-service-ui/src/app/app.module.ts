@@ -1,45 +1,33 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
 import {HttpClientModule} from "@angular/common/http";
-import {AgGridModule} from "ag-grid-angular";
-import {FormsModule} from "@angular/forms";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {NgxUiLoaderHttpModule, NgxUiLoaderModule} from "ngx-ui-loader";
-import {MatToolbarModule} from "@angular/material/toolbar";
-import {MatDividerModule} from "@angular/material/divider";
-import {MatSidenavModule} from "@angular/material/sidenav";
-import {MatListModule} from "@angular/material/list";
-import {MatButtonModule} from "@angular/material/button";
-import {MatButtonToggleModule} from "@angular/material/button-toggle";
-import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
-
-import { AppRoutingModule } from '@app/app-routing.module';
-import { AppComponent } from '@app/app.component';
-import {DataClient, StoreClient} from "@app/service/data-service-client";
-import { MainViewComponent } from '@app/main-view/main-view.component';
-import { EventViewComponent } from '@app/event-view/event-view.component';
-import { SessionViewComponent } from '@app/session-view/session-view.component';
-import { TimingSessionViewComponent } from '@app/timing-session-view/timing-session-view.component';
-import { TimingSessionAddDialogComponent } from './timing-session-add-dialog/timing-session-add-dialog.component';
-import { MatCardModule} from "@angular/material/card";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatSelectModule} from "@angular/material/select";
 import {MatInputModule} from "@angular/material/input";
 import {MatDatepickerModule} from "@angular/material/datepicker";
-import {PICK_FORMATS, PickDateAdapter} from "@app/session-view/mat-pick-date-adapter";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatCardModule} from "@angular/material/card";
+import {MatListModule} from "@angular/material/list";
+import {MatSidenavModule} from "@angular/material/sidenav";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatButtonToggleModule} from "@angular/material/button-toggle";
+import {MatButtonModule} from "@angular/material/button";
+import {FormsModule} from "@angular/forms";
+import {AgGridModule} from "ag-grid-angular";
 import {DateAdapter, MAT_DATE_FORMATS} from "@angular/material/core";
-import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
-
+import {DataClient, StoreClient} from "./service/data-service-client";
+import {WebSocketConnectionService} from "./service/web-socket-connection-service";
+import {PICK_FORMATS, PickDateAdapter} from "./mat-pick-date-adapter";
 
 @NgModule({
   declarations: [
-    AppComponent,
-    MainViewComponent,
-    EventViewComponent,
-    SessionViewComponent,
-    TimingSessionViewComponent,
-    TimingSessionAddDialogComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,
@@ -70,7 +58,7 @@ import {WebSocketConnectionService} from "@app/service/web-socket-connection-ser
       delay: 100, minTime: 0, showForeground: true,
     }),
     AppRoutingModule,
-    AgGridModule.withComponents([])
+    AgGridModule
   ],
   providers: [
     DataClient, StoreClient, WebSocketConnectionService,

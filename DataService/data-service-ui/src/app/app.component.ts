@@ -1,4 +1,6 @@
-import {ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
+import {ChangeDetectorRef, Component} from '@angular/core';
+import {DataClient, SeriesDto} from "@app/service/data-service-client";
+import {Observable} from "rxjs";
 import {MediaMatcher} from "@angular/cdk/layout";
 
 @Component({
@@ -38,18 +40,18 @@ import {MediaMatcher} from "@angular/cdk/layout";
   `,
   styles: []
 })
-export class AppComponent implements OnDestroy {
+export class AppComponent {
   public mobileQuery: MediaQueryList;
   private readonly _mobileQueryListener = () => {};
 
 
   constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
-    this.mobileQuery.addListener(this._mobileQueryListener);
+    this.mobileQuery.addEventListener("change", this._mobileQueryListener);
   }
 
   ngOnDestroy(): void {
-    this.mobileQuery.removeListener(this._mobileQueryListener);
+    this.mobileQuery.removeEventListener("change", this._mobileQueryListener);
   }
 
   goto(s: string) {

@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {MainViewComponent} from "@app/main-view/main-view.component";
-import {EventViewComponent} from "@app/event-view/event-view.component";
-import {SessionViewComponent} from "@app/session-view/session-view.component";
 import {TimingSessionViewComponent} from "@app/timing-session-view/timing-session-view.component";
+import {SessionViewComponent} from "@app/session-view/session-view.component";
+import {EventViewComponent} from "@app/event-view/event-view.component";
 
 const routes: Routes = [
   {path: '', pathMatch: 'prefix', redirectTo: 'main'},
@@ -14,7 +14,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: true, relativeLinkResolution: 'legacy' })],
+  imports: [RouterModule.forRoot(routes, { useHash: true})],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

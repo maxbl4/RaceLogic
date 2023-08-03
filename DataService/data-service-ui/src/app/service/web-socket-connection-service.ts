@@ -11,6 +11,6 @@ export class WebSocketConnectionService {
   constructor() {
     this.connection = new HubConnectionBuilder().withUrl("/_ws/race").build();
     this.connection.on("TimingSessionUpdate", (ts:TimingSessionUpdate) => this.$timingSessionUpdates.next(ts));
-    this.connection.start().then(x => {});
+    this.connection.start().then(_ => {});
   }
 }

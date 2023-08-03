@@ -8,20 +8,20 @@ namespace maxbl4.Race.Logic.Scoring
     public class RoundScoringStrategy
     {
         private RoundScoringStrategy(IEnumerable<int> staticScores,
-            int firstPlacePoints, int substractBy, bool rateDnfs)
+            int firstPlacePoints, int subtractBy, bool rateDnfs)
         {
             FirstPlacePoints = firstPlacePoints;
-            SubstractBy = substractBy;
+            SubtractBy = subtractBy;
             RateDnfs = rateDnfs;
             StaticScores = new ReadOnlyCollection<int>(staticScores?.ToArray() ?? new int[0]);
         }
 
         public int FirstPlacePoints { get; }
-        public int SubstractBy { get; }
+        public int SubtractBy { get; }
 
         /// <summary>
         ///     True - assign points to riders who have started, but did not finish.
-        ///     False - assign poinst only to finishers
+        ///     False - assign points only to finishers
         /// </summary>
         public bool RateDnfs { get; }
 
@@ -90,7 +90,7 @@ namespace maxbl4.Race.Logic.Scoring
         {
             if (position < 1) return 0;
             var staticScore = StaticScores.Count >= position ? StaticScores[position - 1] : 0;
-            var dynamicScore = FirstPlacePoints - SubstractBy * (position - 1);
+            var dynamicScore = FirstPlacePoints - SubtractBy * (position - 1);
             if (dynamicScore < 0) dynamicScore = 0;
             return staticScore + dynamicScore;
         }

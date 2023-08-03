@@ -1,8 +1,8 @@
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
-@import "~bootstrap/scss/bootstrap";
-@import "~bootstrap-material-design/dist/css/bootstrap-material-design.css";
-@import "~ag-grid-community/dist/styles/ag-grid.css";
-@import "~ag-grid-community/dist/styles/ag-theme-balham.css";
+@import "node_modules/@angular/material/prebuilt-themes/indigo-pink.css";
+@import "node_modules/bootstrap/scss/bootstrap";
+@import "node_modules/bootstrap-material-design/dist/css/bootstrap-material-design.css";
+@import "node_modules/ag-grid-community/styles/ag-grid.css";
+@import "node_modules/ag-grid-community/styles/ag-theme-balham.css";
 html, body, app-root { height: 100%; }
 body { padding-top: 67px; }
 @media (max-width: 599px) {
@@ -32,7 +32,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: 400;
-  src: url(assets/MaterialIcons-Regular.eot); /* For IE6-8 */
   src: local('Material Icons'),
   local('MaterialIcons-Regular'),
   url(assets/MaterialIcons-Regular.woff2) format('woff2'),

@@ -17,7 +17,7 @@ namespace maxbl4.Race.Tests.Logic.Scoring
         {
             var calc = RoundScoringStrategy.FromStaticScores(new[] {3, 1, 5});
             calc.FirstPlacePoints.Should().Be(0);
-            calc.SubstractBy.Should().Be(0);
+            calc.SubtractBy.Should().Be(0);
             calc.GetScoreForPosition(0).Should().Be(0);
             calc.GetScoreForPosition(1).Should().Be(3);
             calc.GetScoreForPosition(2).Should().Be(1);
@@ -40,7 +40,7 @@ namespace maxbl4.Race.Tests.Logic.Scoring
             var rating = GetRating(3, 2).ToList();
             var calc = RoundScoringStrategy.FromFinishers(rating);
             calc.FirstPlacePoints.Should().Be(3);
-            calc.SubstractBy.Should().Be(1);
+            calc.SubtractBy.Should().Be(1);
             var scores = calc.Calculate(rating).ToList();
             scores[0].Points.Should().Be(3);
             scores[1].Points.Should().Be(2);
@@ -55,7 +55,7 @@ namespace maxbl4.Race.Tests.Logic.Scoring
             var rating = GetRating(3, 0).ToList();
             var calc = RoundScoringStrategy.FromFirstPlacePoints(9, 3);
             calc.FirstPlacePoints.Should().Be(9);
-            calc.SubstractBy.Should().Be(3);
+            calc.SubtractBy.Should().Be(3);
             var scores = calc.Calculate(rating, new[] {"21", "22"}).ToList();
             scores.Count.Should().Be(5);
             scores[0].Points.Should().Be(9);
