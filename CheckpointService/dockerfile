@@ -1,5 +1,4 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:5.0
-COPY ./lib/armhf/* /usr/lib/
 ADD ./bin/ /app/
 ADD ./var/ /app/var/
 WORKDIR /app

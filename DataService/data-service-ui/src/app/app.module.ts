@@ -24,10 +24,21 @@ import {DateAdapter, MAT_DATE_FORMATS} from "@angular/material/core";
 import {DataClient, StoreClient} from "./service/data-service-client";
 import {WebSocketConnectionService} from "./service/web-socket-connection-service";
 import {PICK_FORMATS, PickDateAdapter} from "./mat-pick-date-adapter";
+import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
+import {MainViewComponent} from "@app/main-view/main-view.component";
+import {EventViewComponent} from "@app/event-view/event-view.component";
+import {SessionViewComponent} from "@app/session-view/session-view.component";
+import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/timing-session-add-dialog.component";
+import {TimingSessionViewComponent} from "@app/timing-session-view/timing-session-view.component";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    MainViewComponent,
+    EventViewComponent,
+    SessionViewComponent,
+    TimingSessionViewComponent,
+    TimingSessionAddDialogComponent
   ],
   imports: [
     BrowserModule,
