@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using maxbl4.Race.Logic.WsHub.Subscriptions;
 using Microsoft.Extensions.Hosting;
 
-namespace maxbl4.Race.CheckpointService.Services
+namespace maxbl4.Race.Logic.CheckpointService
 {
     public class SubscriptionService : IHostedService
     {

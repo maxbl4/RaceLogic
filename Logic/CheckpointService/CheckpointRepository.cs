@@ -6,7 +6,6 @@ using LiteDB;
 using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.ServiceBase;
@@ -16,7 +15,7 @@ using maxbl4.Race.Logic.WsHub.Subscriptions.Storage;
 using Microsoft.Extensions.Options;
 using Serilog;
 
-namespace maxbl4.Race.CheckpointService.Services
+namespace maxbl4.Race.Logic.CheckpointService
 {
     public class CheckpointRepository : ICheckpointStorage, ISubscriptionStorage, IUpstreamOptionsStorage, IRepository
     {

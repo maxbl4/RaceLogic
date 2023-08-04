@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
-using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using Microsoft.AspNetCore.Mvc;
 
-namespace maxbl4.Race.CheckpointService.Controllers
+namespace maxbl4.Race.DataService.Controllers
 {
     [ApiController]
     [Route("options")]

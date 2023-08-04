@@ -6,6 +6,7 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
 using maxbl4.Race.Logic.ServiceBase;

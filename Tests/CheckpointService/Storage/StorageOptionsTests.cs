@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic.CheckpointService;
 using Newtonsoft.Json;
 using Xunit;
 

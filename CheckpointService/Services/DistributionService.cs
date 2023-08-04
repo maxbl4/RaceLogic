@@ -9,6 +9,7 @@ using maxbl4.Infrastructure.Extensions.LoggerExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService.Hubs;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using Microsoft.AspNetCore.SignalR;
 using Serilog;

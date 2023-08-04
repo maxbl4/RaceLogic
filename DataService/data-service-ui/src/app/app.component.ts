@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component} from '@angular/core';
 import {DataClient, SeriesDto} from "@app/service/data-service-client";
 import {Observable} from "rxjs";
 import {MediaMatcher} from "@angular/cdk/layout";
+import { OptionsService } from './service/options.service';
 
 @Component({
   selector: 'app-root',
@@ -21,12 +22,12 @@ import {MediaMatcher} from "@angular/cdk/layout";
                    (click)="mobileQuery.matches ? sidenav.toggle() : false">
         <mat-nav-list>
           <a mat-list-item routerLinkActive="text-danger" routerLink="/main">Main</a>
-          <a mat-list-item routerLinkActive="text-danger" routerLink="/main">Main 2</a>
+          <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
           <mat-divider></mat-divider>
           <a mat-list-item href="/files" (click)="goto('/files')">File Browser</a>
           <a mat-list-item (click)="portainer('9000')">Portainer</a>
           <mat-divider></mat-divider>
-          <a mat-list-item disabled>1.2.3.4</a>
+          <a mat-list-item disabled>{{optionsService.version}}</a>
         </mat-nav-list>
       </mat-sidenav>
 
@@ -45,7 +46,8 @@ export class AppComponent {
   private readonly _mobileQueryListener = () => {};
 
 
-  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher) {
+  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
+              public optionsService: OptionsService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQuery.addEventListener("change", this._mobileQueryListener);
   }

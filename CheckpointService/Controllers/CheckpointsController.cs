@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace maxbl4.Race.CheckpointService.Controllers

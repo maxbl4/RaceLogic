@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.RfidDotNet.AlienTech.ReaderSimulator;
 
 namespace maxbl4.Race.Tests.CheckpointService.RfidSimulator

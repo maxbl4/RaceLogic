@@ -6,11 +6,12 @@ using System.Net.Http;
 using System.Reactive.PlatformServices;
 using BraaapWeb.Client;
 using LiteDB;
+using maxbl4.Infrastructure.Extensions.ServiceCollectionExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.DataService.Hubs;
-using maxbl4.Race.DataService.Options;
 using maxbl4.Race.DataService.Services;
 using maxbl4.Race.Logic.AutoMapper;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
@@ -25,11 +26,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NJsonSchema;
 using NJsonSchema.Generation.TypeMappers;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using ServiceOptions = maxbl4.Race.DataService.Options.ServiceOptions;
 
 namespace maxbl4.Race.DataService
 {
@@ -50,6 +53,7 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<IMessageHub, ChannelMessageHub>();
             services.AddSingleton<IStorageService, StorageService>();
             services.AddSingleton<DataServiceRepository>();
+            services.AddSingleton<CheckpointRepository>();
             services.AddSingleton<IUpstreamDataRepository, UpstreamDataRepository>();
             services.AddSingleton<IEventRepository, EventRepository>();
             services.AddSingleton<IRecordingServiceRepository, RecordingServiceRepository>();
@@ -59,6 +63,7 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<ITimingSessionService, TimingSessionService>();
             services.AddSingleton<IUpstreamDataSyncService, UpstreamDataSyncService>();
             services.AddSingleton<ISeedDataLoader, SeedDataLoader>();
+            services.RegisterHostedService<IRfidService, RfidService>();
             services.AddSingleton<IHostedService, BootstrapService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddControllers(o =>
@@ -71,20 +76,14 @@ namespace maxbl4.Race.DataService
                 options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                 options.SerializerSettings.Converters.Add(new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal });
             });
-            services.AddSignalR().AddNewtonsoftJsonProtocol();
+            services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024)
+                .AddNewtonsoftJsonProtocol();
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
-            var options = Configuration.GetSection(nameof(ServiceOptions)).Get<ServiceOptions>();
-            services.Configure<StorageServiceOptions>(x => x.StorageConnectionString = options.StorageConnectionString);
-            services.Configure<UpstreamDataSyncServiceOptions>(x =>
-            {
-                x.BaseUri = options.BraaapApiBaseUri;
-                x.ApiKey = options.BraaapApiKey;
-            });
-            services.Configure<SeedDataLoaderOptions>(x =>
-            {
-                x.SeedDataDirectory = options.SeedDataDirectory;
-            });
-            services.AddTransient<IMainClient>(_ => new MainClient(options.BraaapApiBaseUri, new HttpClient()));
+            services.Configure<StorageServiceOptions>(Configuration.GetSection(nameof(StorageServiceOptions)));
+            services.Configure<UpstreamDataSyncServiceOptions>(Configuration.GetSection(nameof(UpstreamDataSyncServiceOptions)));
+            services.Configure<SeedDataLoaderOptions>(Configuration.GetSection(nameof(SeedDataLoaderOptions)));
+            services.AddTransient<IMainClient>(s => 
+                new MainClient(s.GetService<IOptions<UpstreamDataSyncServiceOptions>>().Value.BaseUri, new HttpClient()));
             services.AddOpenApiDocument(o =>
             {
                 

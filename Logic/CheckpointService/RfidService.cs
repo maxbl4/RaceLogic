@@ -16,7 +16,7 @@ using maxbl4.RfidDotNet.GenericSerial.Ext;
 using Serilog;
 using Tag = maxbl4.Race.Logic.CheckpointService.Model.Tag;
 
-namespace maxbl4.Race.CheckpointService.Services
+namespace maxbl4.Race.Logic.CheckpointService
 {
     public class RfidService : IRfidService
     {

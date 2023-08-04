@@ -30,6 +30,8 @@ import {EventViewComponent} from "@app/event-view/event-view.component";
 import {SessionViewComponent} from "@app/session-view/session-view.component";
 import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/timing-session-add-dialog.component";
 import {TimingSessionViewComponent} from "@app/timing-session-view/timing-session-view.component";
+import {OptionsViewComponent} from "@app/options-view/options-view.component";
+import {OptionsService} from "@app/service/options.service";
 
 @NgModule({
   declarations: [
@@ -38,7 +40,8 @@ import {TimingSessionViewComponent} from "@app/timing-session-view/timing-sessio
     EventViewComponent,
     SessionViewComponent,
     TimingSessionViewComponent,
-    TimingSessionAddDialogComponent
+    TimingSessionAddDialogComponent,
+    OptionsViewComponent
   ],
   imports: [
     BrowserModule,
@@ -69,12 +72,14 @@ import {TimingSessionViewComponent} from "@app/timing-session-view/timing-sessio
       delay: 100, minTime: 0, showForeground: true,
     }),
     AppRoutingModule,
-    AgGridModule
+    AgGridModule,
+    MatListModule
   ],
   providers: [
     DataClient, StoreClient, WebSocketConnectionService,
     {provide: DateAdapter, useClass: PickDateAdapter},
-    {provide: MAT_DATE_FORMATS, useValue: PICK_FORMATS}
+    {provide: MAT_DATE_FORMATS, useValue: PICK_FORMATS},
+    OptionsService
   ],
   bootstrap: [AppComponent]
 })

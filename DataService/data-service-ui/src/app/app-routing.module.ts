@@ -4,6 +4,7 @@ import {MainViewComponent} from "@app/main-view/main-view.component";
 import {TimingSessionViewComponent} from "@app/timing-session-view/timing-session-view.component";
 import {SessionViewComponent} from "@app/session-view/session-view.component";
 import {EventViewComponent} from "@app/event-view/event-view.component";
+import {OptionsViewComponent} from "@app/options-view/options-view.component";
 
 const routes: Routes = [
   {path: '', pathMatch: 'prefix', redirectTo: 'main'},
@@ -11,6 +12,7 @@ const routes: Routes = [
   {path: 'event/:eventId/session/:sessionId/timing/:timingSessionId', component: TimingSessionViewComponent},
   {path: 'event/:eventId/session/:sessionId', component: SessionViewComponent},
   {path: 'event/:eventId', component: EventViewComponent},
+  {path: 'options', component: OptionsViewComponent},
 ];
 
 @NgModule({

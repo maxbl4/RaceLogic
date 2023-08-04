@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using maxbl4.Race.CheckpointService.Services;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using Microsoft.AspNetCore.Mvc;
 

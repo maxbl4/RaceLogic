@@ -6,6 +6,7 @@ using LiteDB;
 using maxbl4.Infrastructure;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Model;
 using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.ServiceBase;
