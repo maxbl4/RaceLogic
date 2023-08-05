@@ -75,7 +75,6 @@ export class EventViewComponent implements OnInit {
       this.id = params.get("eventId")!;
       this.dataClient.getEvent(this.id).subscribe(x => this.eventDto = x);
       this.sessions = this.dataClient.listSessions(this.id);
-      this.dataClient.listSessions(this.id);
     });
   }
 }

@@ -11,6 +11,9 @@ import { OptionsService } from './service/options.service';
         <span class="d-flex flex-shrink-0">
             <a class="navbar-brand" routerLink="">BRAAAP</a>
         </span>
+      <div class="flex-grow-1">
+        test
+      </div>
       <mat-divider></mat-divider>
       <button mat-icon-button (click)="sidenav.toggle()"
               [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>

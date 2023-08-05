@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/service/data-service-client";
+import {formatDate} from "@app/util/formatters";
 
 @Component({
   selector: 'app-main-view',
@@ -14,8 +15,8 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/s
           <td>{{e.id}}</td>
           <td>{{e.name}}</td>
           <td>{{e.description}}</td>
-          <td>{{e.created}}</td>
-          <td>{{e.updated}}</td>
+          <td>{{formatDate(e.created)}}</td>
+          <td>{{formatDate(e.updated)}}</td>
         </tr>
         <tr *ngIf="expandedSeries.get(e.id!) == true">
           <td colspan="6">
@@ -25,8 +26,8 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/s
                   <td>{{c.id}}</td>
                   <td>{{c.name}}</td>
                   <td>{{c.description}}</td>
-                  <td>{{c.created}}</td>
-                  <td>{{c.updated}}</td>
+                  <td>{{formatDate(c.created)}}</td>
+                  <td>{{formatDate(c.updated)}}</td>
                 </tr>
                 <tr>
                   <td colspan="5">
@@ -35,8 +36,8 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/s
                         <td>{{cl.id}}</td>
                         <td>{{cl.name}}</td>
                         <td>{{cl.description}}</td>
-                        <td>{{cl.created}}</td>
-                        <td>{{cl.updated}}</td>
+                        <td>{{formatDate(cl.created)}}</td>
+                        <td>{{formatDate(cl.updated)}}</td>
                       </tr>
                     </table>
                     <table class="table table-bordered">
@@ -47,10 +48,10 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/s
                         <td>{{e.description}}</td>
                         <td>{{e.basePrice}}</td>
                         <td>{{e.paymentMultiplier}}</td>
-                        <td>{{e.startOfRegistration}}</td>
-                        <td>{{e.endOfRegistration}}</td>
-                        <td>{{e.created}}</td>
-                        <td>{{e.updated}}</td>
+                        <td>{{formatDate(e.startOfRegistration)}}</td>
+                        <td>{{formatDate(e.endOfRegistration)}}</td>
+                        <td>{{formatDate(e.created)}}</td>
+                        <td>{{formatDate(e.updated)}}</td>
                       </tr>
                     </table>
                   </td>
@@ -66,6 +67,7 @@ import {ChampionshipDto, ClassDto, DataClient, EventDto, SeriesDto} from "@app/s
   ]
 })
 export class MainViewComponent implements OnInit {
+  formatDate = formatDate;
   downloadUpstreamDataStatus = "";
   series: SeriesDto[] = [];
   championships = new Map<string, ChampionshipDto[]>();
