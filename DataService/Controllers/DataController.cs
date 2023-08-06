@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using maxbl4.Race.Logic.EventModel.Runtime;
+using maxbl4.Race.Logic.EventModel.Storage;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
@@ -18,19 +19,16 @@ namespace maxbl4.Race.DataService.Controllers
         private readonly IUpstreamDataSyncService syncService;
         private readonly IUpstreamDataRepository upstreamRepository;
         private readonly IEventRepository eventRepository;
-        private readonly IRecordingServiceRepository recordingRepository;
         private readonly ITimingSessionService timingSessionService;
 
         public DataController(IUpstreamDataSyncService syncService, 
             IUpstreamDataRepository upstreamRepository, 
             IEventRepository eventRepository,
-            IRecordingServiceRepository recordingRepository,
             ITimingSessionService timingSessionService)
         {
             this.syncService = syncService;
             this.upstreamRepository = upstreamRepository;
             this.eventRepository = eventRepository;
-            this.recordingRepository = recordingRepository;
             this.timingSessionService = timingSessionService;
         }
 
@@ -71,24 +69,17 @@ namespace maxbl4.Race.DataService.Controllers
             return Ok();
         }
         
-        [HttpPut("timing-session")]
-        public ActionResult<Id<TimingSessionDto>> AddTimingSession(TimingSessionDto timingSessionDto)
+        [HttpPut("timing-session-start")]
+        public ActionResult StartNewTimingSession(TimingSessionDto timingSessionDto)
         {
-            var t = timingSessionService.CreateSession(timingSessionDto.Name, timingSessionDto.SessionId);
-            return t.Id;
-        }
-        
-        [HttpPost("timing-session-start")]
-        public ActionResult StartTimingSession(Id<TimingSessionDto> id)
-        {
-            timingSessionService.StartSession(id);
+            timingSessionService.StartNewSession(timingSessionDto.Name, timingSessionDto.SessionId);
             return Ok();
         }
         
         [HttpPost("timing-session-stop")]
-        public ActionResult StopTimingSession(Id<TimingSessionDto> id)
+        public ActionResult StopTimingSession()
         {
-            timingSessionService.StopSession(id);
+            timingSessionService.StopSession();
             return Ok();
         }
         

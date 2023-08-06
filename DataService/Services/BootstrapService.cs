@@ -14,18 +14,15 @@ namespace maxbl4.Race.DataService.Services
     {
         private readonly ISeedDataLoader seedDataLoader;
         private readonly ITimingSessionService timingSessionService;
-        private readonly IRecordingService recordingService;
         private readonly IHubContext<RaceHub> raceHub;
         private readonly IMessageHub messageHub;
 
         public BootstrapService(ISeedDataLoader seedDataLoader, 
             ITimingSessionService timingSessionService, 
-            IRecordingService recordingService,
             IHubContext<RaceHub> raceHub, IMessageHub messageHub)
         {
             this.seedDataLoader = seedDataLoader;
             this.timingSessionService = timingSessionService;
-            this.recordingService = recordingService;
             this.raceHub = raceHub;
             this.messageHub = messageHub;
         }
@@ -34,7 +31,6 @@ namespace maxbl4.Race.DataService.Services
         {
             SetupWsProxy();
             seedDataLoader.Load(false);
-            recordingService.Initialize();
             timingSessionService.Initialize();
             return Task.CompletedTask;
         }

@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Reactive.PlatformServices;
 using System.Threading;
+using maxbl4.Infrastructure.Extensions.DisposableExt;
+using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
+using maxbl4.Race.Logic.EventModel.Storage;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
@@ -15,18 +18,14 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly IAutoMapperProvider autoMapperProvider;
         private readonly ISystemClock clock;
         private readonly IEventRepository eventRepository;
-        private readonly IRecordingService recordingService;
-        private readonly IRecordingServiceRepository recordingRepository;
         private readonly IMessageHub messageHub;
         private readonly SemaphoreSlim sync = new(1);
-        private readonly Dictionary<Id<TimingSessionDto>, TimingSession> activeSessions = new();
+        public TimingSession ActiveSession { get; private set; }
 
-        public TimingSessionService(IEventRepository eventRepository, IRecordingService recordingService, IRecordingServiceRepository recordingRepository, IMessageHub messageHub, 
+        public TimingSessionService(IEventRepository eventRepository, IMessageHub messageHub, 
             IAutoMapperProvider autoMapperProvider, ISystemClock clock)
         {
             this.eventRepository = eventRepository;
-            this.recordingService = recordingService;
-            this.recordingRepository = recordingRepository;
             this.messageHub = messageHub;
             this.autoMapperProvider = autoMapperProvider;
             this.clock = clock;
@@ -36,35 +35,33 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         {
             
         }
-
-        public void StartSession(Id<TimingSessionDto> id)
-        {
-            eventRepository.StorageService.Update(id, x =>
-            {
-                x.Start(clock.UtcNow.UtcDateTime);
-            });
-        }
         
-        public void StopSession(Id<TimingSessionDto> id)
+        public void StopSession()
         {
-            eventRepository.StorageService.Update(id, x =>
+            using var _ = sync.UseOnce();
+            if (ActiveSession == null) return;
+            eventRepository.StorageService.Update(ActiveSession.Id, x =>
             {
                 x.Stop(clock.UtcNow.UtcDateTime);
             });
+            ActiveSession.DisposeSafe();
+            ActiveSession = null;
         }
 
-        public TimingSession CreateSession(string name, Id<SessionDto> sessionId)
+        public void StartNewSession(string name, Id<SessionDto> sessionId)
         {
+            using var _ = sync.UseOnce();
             var session = eventRepository.GetWithUpstream(sessionId);
             var dto = new TimingSessionDto
             {
                 Name = name,
                 EventId = session.EventId,
                 SessionId = sessionId,
+                StartTime = clock.UtcNow.UtcDateTime
             };
             eventRepository.StorageService.Save(dto);
-            return new TimingSession(dto.Id, eventRepository, recordingService, 
-                recordingRepository, autoMapperProvider, messageHub, clock);
+            ActiveSession = new TimingSession(dto.Id, eventRepository, 
+                autoMapperProvider, messageHub, clock);
         }
     }
 }

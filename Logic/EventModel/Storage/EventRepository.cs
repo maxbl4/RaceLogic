@@ -19,16 +19,6 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             StorageService = storageService;
         }
 
-        public Id<GateDto> GetGateId(Id<SessionDto> sessionId)
-        {
-            var session = GetWithUpstream(sessionId);
-            var ev = GetWithUpstream(session.EventId);
-            return StorageService
-                .List<GateDto>(x => x.OrganizationId == ev.OrganizationId)
-                .FirstOrDefault()
-                ?.Id ?? Id<GateDto>.Empty;
-        }
-
         public T GetWithUpstream<T>(Id<T> id) where T: IHasId<T>
         {
             var ev = StorageService.Get(id) ?? upstreamDataRepository.Get(id);

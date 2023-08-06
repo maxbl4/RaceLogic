@@ -12,6 +12,7 @@ using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
+using maxbl4.Race.Logic.EventModel.Storage;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
@@ -79,39 +80,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         }
     }
 
-    public class LiveCheckpointFeedSubscription : IDisposable
-    {
-        private readonly CompositeDisposable disposable = new();
-        private readonly SemaphoreSlim sync = new(1);
-
-        public LiveCheckpointFeedSubscription(IObserver<CheckpointDto> observer, IRecordingServiceRepository repo, Id<GateDto> gateId, DateTime from, IMessageHub messageHub)
-        {
-            using var _ = sync.UseOnce();
-            disposable.Add(messageHub.Subscribe<CheckpointDto>(x =>
-                {
-                    using var _ = sync.UseOnce();
-                    observer.OnNext(x);
-                }));
-            var existing = repo.GetCheckpoints(gateId, from, DateTime.MaxValue);
-            foreach (var cp in existing)
-            {
-                observer.OnNext(cp);
-            }
-        }
-        
-        public void Dispose()
-        {
-            disposable.DisposeSafe();
-        }
-    }
-    
-    public class TimingSession
+    public class TimingSession: IDisposable
     {
         private static readonly ILogger logger = Log.ForContext<TimingSession>(); 
         public Id<TimingSessionDto> Id { get; }
         private readonly IEventRepository eventRepository;
-        private readonly IRecordingService recordingService;
-        private readonly IRecordingServiceRepository recordingServiceRepository;
         private readonly IAutoMapperProvider autoMapper;
         private readonly IMessageHub messageHub;
         private readonly ISystemClock clock;
@@ -120,15 +93,12 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public bool UseRfid { get; set; }
 
         public TimingSession(Id<TimingSessionDto> id, 
-            IEventRepository eventRepository, 
-            IRecordingService recordingService, IRecordingServiceRepository recordingServiceRepository,
+            IEventRepository eventRepository,
             IAutoMapperProvider autoMapper,
             IMessageHub messageHub, ISystemClock clock)
         {
             this.Id = id;
             this.eventRepository = eventRepository;
-            this.recordingService = recordingService;
-            this.recordingServiceRepository = recordingServiceRepository;
             this.autoMapper = autoMapper;
             this.messageHub = messageHub;
             this.clock = clock;
@@ -161,33 +131,16 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             disposable?.DisposeSafe();
             disposable = new CompositeDisposable();
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
-            GateId = eventRepository.GetGateId(timingSession.SessionId);
             checkpointHandler = new TimingCheckpointHandler(timingSession.StartTime, Id, session,
                 eventRepository.GetRiderIdentifiers(timingSession.SessionId), messageHub);
             disposable.Add(checkpointHandler);
-            var cps = recordingServiceRepository
-                .GetCheckpoints(timingSession.GateId, timingSession.StartTime, timingSession.StopTime);
-            foreach (var cp in cps)
-            {
-                recordingService.AppendCheckpoint(GateId, autoMapper.Map<Checkpoint>(cp));
-            }
         }
 
-        public Id<GateDto> GateId { get; set; }
-
-        public void Start(DateTime? startTime = null)
+        public void Dispose()
         {
-            logger.Information("Start");
-            eventRepository.StorageService.Update(Id, x =>
-            {
-                x.Start(startTime ?? clock.UtcNow.UtcDateTime);
-            });
-        }
-
-        public void ManualCheckpoint(Checkpoint checkpoint)
-        {
-            logger.Information("ManualCheckpoint");
-            recordingService.AppendCheckpoint(GateId, checkpoint);
+            messageHub.DisposeSafe();
+            disposable.DisposeSafe();
+            checkpointHandler.DisposeSafe();
         }
     }
 }

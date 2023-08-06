@@ -14,6 +14,7 @@ using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Runtime;
+using maxbl4.Race.Logic.EventModel.Storage;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -56,8 +57,6 @@ namespace maxbl4.Race.DataService
             services.AddSingleton<CheckpointRepository>();
             services.AddSingleton<IUpstreamDataRepository, UpstreamDataRepository>();
             services.AddSingleton<IEventRepository, EventRepository>();
-            services.AddSingleton<IRecordingServiceRepository, RecordingServiceRepository>();
-            services.AddSingleton<IRecordingService, RecordingService>();
             services.AddSingleton<ICheckpointServiceClientFactory, CheckpointServiceClientFactory>();
             services.AddSingleton<IAutoMapperProvider, AutoMapperProvider>();
             services.AddSingleton<ITimingSessionService, TimingSessionService>();

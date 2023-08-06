@@ -195,12 +195,14 @@
             }
           }
         }
-      },
+      }
+    },
+    "/data/timing-session-start": {
       "put": {
         "tags": [
           "Data"
         ],
-        "operationId": "Data_AddTimingSession",
+        "operationId": "Data_StartNewTimingSession",
         "requestBody": {
           "x-name": "timingSessionDto",
           "content": {
@@ -213,38 +215,6 @@
           "required": true,
           "x-position": 1
         },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/data/timing-session-start": {
-      "post": {
-        "tags": [
-          "Data"
-        ],
-        "operationId": "Data_StartTimingSession",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "x-position": 1
-          }
-        ],
         "responses": {
           "200": {
             "description": "",
@@ -266,17 +236,6 @@
           "Data"
         ],
         "operationId": "Data_StopTimingSession",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "x-position": 1
-          }
-        ],
         "responses": {
           "200": {
             "description": "",
@@ -1190,18 +1149,11 @@
             "type": "string",
             "format": "uuid"
           },
-          "gateId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "eventId": {
             "type": "string",
             "format": "uuid"
           },
           "isRunning": {
-            "type": "boolean"
-          },
-          "useRfid": {
             "type": "boolean"
           },
           "startTime": {

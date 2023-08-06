@@ -39,7 +39,6 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
             var upstreamDataStorage = new UpstreamDataRepository(storageService);
             var eventRepository = new EventRepository(storageService, upstreamDataStorage);
-            var recordingRepository = new RecordingServiceRepository(storageService, SystemClock);
             var upstreamDataSyncService = new UpstreamDataSyncService(Options.Create(upstreamDataSyncServiceOptions), new FakeMainClient(), 
                 upstreamDataStorage, messageHub);
             var downloadResult = await upstreamDataSyncService.Download(true);
@@ -54,17 +53,18 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
 
             storageService.Repo.Query<CheckpointDto>().Count().Should().Be(0);
 
-            using var recordingService = new RecordingService(Options.Create(new RecordingServiceOptions{CheckpointServiceAddress = "http://localhost:6000"}), recordingRepository, eventRepository, cpf, new AutoMapperProvider(), 
-                messageHub, SystemClock);
+            // using var recordingService = new RecordingService(Options.Create(new RecordingServiceOptions{CheckpointServiceAddress = "http://localhost:6000"}), recordingRepository, eventRepository, cpf, new AutoMapperProvider(), 
+            //     messageHub, SystemClock);
             
-            var timingSessionService = new TimingSessionService(eventRepository, recordingService, recordingRepository, MessageHub, new AutoMapperProvider(),
+            var timingSessionService = new TimingSessionService(eventRepository, MessageHub, new AutoMapperProvider(),
                 new DefaultSystemClock());
 
             var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");
             
             var session = upstreamDataStorage.ListSessions(ev.Id).First(x => x.Name == "Эксперт и Опен");
-            var timingSession = timingSessionService.CreateSession("timing sess", session.Id);
-            timingSession.Start(tagSub.Now.AddSeconds(-10));
+            timingSessionService.StartNewSession("timing sess", session.Id);
+            var timingSession = timingSessionService.ActiveSession;
+            //timingSession.Start(tagSub.Now.AddSeconds(-10));
             await Task.Delay(100);
             tagSub.SendTags((1, "11"), (2, "12"));
             await Task.Delay(100);

@@ -360,8 +360,8 @@ export class DataClient {
         return _observableOf(null as any);
     }
 
-    addTimingSession(timingSessionDto: TimingSessionDto): Observable<string> {
-        let url_ = this.baseUrl + "/data/timing-session";
+    startNewTimingSession(timingSessionDto: TimingSessionDto): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session-start";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(timingSessionDto);
@@ -372,69 +372,16 @@ export class DataClient {
             responseType: "blob",
             headers: new HttpHeaders({
                 "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processAddTimingSession(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processAddTimingSession(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<string>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<string>;
-        }));
-    }
-
-    protected processAddTimingSession(response: HttpResponseBase): Observable<string> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    startTimingSession(id?: string | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/data/timing-session-start?";
-        if (id === null)
-            throw new Error("The parameter 'id' cannot be null.");
-        else if (id !== undefined)
-            url_ += "id=" + encodeURIComponent("" + id) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
                 "Accept": "application/octet-stream"
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processStartTimingSession(response_);
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processStartNewTimingSession(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processStartTimingSession(response_ as any);
+                    return this.processStartNewTimingSession(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<FileResponse>;
                 }
@@ -443,7 +390,7 @@ export class DataClient {
         }));
     }
 
-    protected processStartTimingSession(response: HttpResponseBase): Observable<FileResponse> {
+    protected processStartNewTimingSession(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -469,12 +416,8 @@ export class DataClient {
         return _observableOf(null as any);
     }
 
-    stopTimingSession(id?: string | undefined): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/data/timing-session-stop?";
-        if (id === null)
-            throw new Error("The parameter 'id' cannot be null.");
-        else if (id !== undefined)
-            url_ += "id=" + encodeURIComponent("" + id) + "&";
+    stopTimingSession(): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session-stop";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -2055,10 +1998,8 @@ export interface IFinishCriteriaDto {
 
 export class TimingSessionDto implements ITimingSessionDto {
     sessionId?: string;
-    gateId?: string;
     eventId?: string;
     isRunning?: boolean;
-    useRfid?: boolean;
     startTime?: DateTime;
     stopTime?: DateTime;
     id?: string;
@@ -2081,10 +2022,8 @@ export class TimingSessionDto implements ITimingSessionDto {
     init(_data?: any) {
         if (_data) {
             this.sessionId = _data["sessionId"];
-            this.gateId = _data["gateId"];
             this.eventId = _data["eventId"];
             this.isRunning = _data["isRunning"];
-            this.useRfid = _data["useRfid"];
             this.startTime = _data["startTime"] ? DateTime.fromISO(_data["startTime"].toString()) : <any>undefined;
             this.stopTime = _data["stopTime"] ? DateTime.fromISO(_data["stopTime"].toString()) : <any>undefined;
             this.id = _data["id"];
@@ -2107,10 +2046,8 @@ export class TimingSessionDto implements ITimingSessionDto {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["sessionId"] = this.sessionId;
-        data["gateId"] = this.gateId;
         data["eventId"] = this.eventId;
         data["isRunning"] = this.isRunning;
-        data["useRfid"] = this.useRfid;
         data["startTime"] = this.startTime ? this.startTime.toString() : <any>undefined;
         data["stopTime"] = this.stopTime ? this.stopTime.toString() : <any>undefined;
         data["id"] = this.id;
@@ -2126,10 +2063,8 @@ export class TimingSessionDto implements ITimingSessionDto {
 
 export interface ITimingSessionDto {
     sessionId?: string;
-    gateId?: string;
     eventId?: string;
     isRunning?: boolean;
-    useRfid?: boolean;
     startTime?: DateTime;
     stopTime?: DateTime;
     id?: string;
