@@ -25,5 +25,9 @@ namespace maxbl4.Race.Logic.UpstreamData
         IEnumerable<SessionDto> ListSessions(Id<EventDto>? eventId = null);
         T Get<T>(Id<T> id) where T : IHasId<T>;
         IEnumerable<RiderEventRegistrationDto> ListEventRegistrations(IEnumerable<Id<ClassDto>> classIds);
+        IEnumerable<RiderClassRegistrationDto> ListClassRegistrations(IEnumerable<Id<ClassDto>> classIds);
+        IEnumerable<ClassDto> ListClasses(IEnumerable<Id<ClassDto>> classIds);
+        IEnumerable<ClassDto> ListClasses(Id<SessionDto> sessionId);
+        IEnumerable<RiderClassRegistrationDto> ListClassRegistrations(Id<ChampionshipDto> championshipId);
     }
 }

@@ -6,6 +6,7 @@ using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.CheckpointService;
 using maxbl4.Race.CheckpointService.Services;
 using maxbl4.Race.DataService.Services;
+using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -73,7 +74,7 @@ namespace maxbl4.Race.Tests
             Logger.Debug("Creating EventRepository with {@storageConnectionString}", storageConnectionString);
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
             var upstreamRepo = new UpstreamDataRepository(storageService);
-            var eventRepo = new EventRepository(storageService, upstreamRepo);
+            var eventRepo = new EventRepository(storageService, upstreamRepo, new AutoMapperProvider());
             action(storageService, eventRepo);
         }
 

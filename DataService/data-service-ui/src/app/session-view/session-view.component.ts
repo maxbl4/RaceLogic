@@ -14,9 +14,9 @@ import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/ti
     <table class="table table-bordered mt-3">
       <thead>
       <tr>
+        <td>Название</td>
         <td>Начало</td>
         <td>Конец</td>
-        <td>Кол-во меток</td>
         <td>_</td>
       </tr>
       </thead>
@@ -56,11 +56,12 @@ export class SessionViewComponent implements OnInit {
     const modalRef = this.modalService.open(TimingSessionAddDialogComponent);
     modalRef.componentInstance.name = 'World';
     modalRef.componentInstance.session = this.sessionDto;
-    modalRef.result.then((x: TimingSessionDto) => {
-      if (x)
+    modalRef.result.then((newTimingSession: TimingSessionDto) => {
+      if (newTimingSession)
       {
-        this.dataClient.addTimingSession(x).subscribe(x => {
-          this.router.navigate(['timing', x], {relativeTo: this.route});
+        this.dataClient.startNewTimingSession(newTimingSession).subscribe(createdSessionId => {
+          console.log(createdSessionId);
+          this.router.navigate(['timing', createdSessionId], {relativeTo: this.route});
         });
       }
     });

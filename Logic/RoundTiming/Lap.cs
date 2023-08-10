@@ -5,6 +5,10 @@ namespace maxbl4.Race.Logic.RoundTiming
 {
     public class Lap
     {
+        public Lap()
+        {
+        }
+        
         public Lap(Checkpoint checkpoint, DateTime roundStartTime)
         {
             Checkpoint = checkpoint;

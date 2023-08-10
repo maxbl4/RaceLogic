@@ -36,6 +36,10 @@ namespace maxbl4.Race.Logic.CheckpointService
 
         public List<Checkpoint> ListCheckpoints(DateTime? start = null, DateTime? end = null)
         {
+            if (start == Constants.DefaultUtcDate)
+                start = null;
+            if (end == Constants.DefaultUtcDate)
+                end = null;
             var query = StorageService.Repo.Query<Checkpoint>();
             return query.Where(x =>
                     (start == null || x.Timestamp >= start.Value) && (end == null || x.Timestamp < end.Value))

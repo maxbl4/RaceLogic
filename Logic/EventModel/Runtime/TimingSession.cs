@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.PlatformServices;
 using System.Reactive.Subjects;
 using System.Threading;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
@@ -12,133 +9,84 @@ using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
-using maxbl4.Race.Logic.EventModel.Storage;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
-using maxbl4.Race.Logic.EventStorage.Storage.Traits;
-using maxbl4.Race.Logic.RoundTiming;
-using maxbl4.Race.Logic.ServiceBase;
-using maxbl4.Race.Logic.UpstreamData;
+using maxbl4.Race.Logic.WebModel;
 using Serilog;
+using RoundPosition = maxbl4.Race.Logic.RoundTiming.RoundPosition;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime
 {
-    public record RatingUpdatedMessage(List<RoundPosition> Rating, Id<TimingSessionDto> TimingSessionId);
-    
-    public class TimingCheckpointHandler: IDisposable
-    {
-        private readonly Id<TimingSessionDto> timingSessionId;
-        private readonly IMessageHub messageHub;
-        private readonly CompositeDisposable disposable;
-        private Subject<RatingUpdatedMessage> ratingUpdates = new();
-        public ReadOnlyDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; }
-        public TimingCheckpointHandler(DateTime startTime, Id<TimingSessionDto> timingSessionId, SessionDto session, 
-            IDictionary<string, List<Id<RiderClassRegistrationDto>>> riderIdMap, IMessageHub messageHub)
-        {
-            this.timingSessionId = timingSessionId;
-            this.messageHub = messageHub;
-            RiderIdMap = new ReadOnlyDictionary<string, List<Id<RiderClassRegistrationDto>>>(riderIdMap);
-            disposable = new CompositeDisposable();
-            Track = new TrackOfCheckpoints(startTime, new FinishCriteria(session.FinishCriteria));
-            CheckpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
-            disposable.Add(CheckpointAggregator.Subscribe(Track.Append));
-            ratingUpdates
-                .Throttle(TimeSpan.FromMilliseconds(500))
-                .ObserveOn(TaskPoolScheduler.Default)
-                .Subscribe(messageHub.Publish);
-        }
-
-        public TimestampAggregator<Checkpoint> CheckpointAggregator { get; }
-
-        public TrackOfCheckpoints Track { get; }
-
-        public void AppendCheckpoint(Checkpoint cp)
-        {
-            CheckpointAggregator.OnNext(cp);
-            ratingUpdates.OnNext(new RatingUpdatedMessage(Track.Rating, timingSessionId));
-        }
-
-        private void ResolveRiderId(Checkpoint rawCheckpoint, IObserver<Checkpoint> observer)
-        {
-            if (RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderIds))
-            {
-                foreach (var riderId in riderIds)
-                {
-                    observer.OnNext(rawCheckpoint.WithRiderId(riderId.ToString()));
-                }
-            }
-            else
-            {
-                observer.OnNext(rawCheckpoint.WithRiderId(rawCheckpoint.RiderId));
-            }
-        }
-
-        public void Dispose()
-        {
-            disposable.DisposeSafe();
-        }
-    }
-
     public class TimingSession: IDisposable
     {
         private static readonly ILogger logger = Log.ForContext<TimingSession>(); 
         public Id<TimingSessionDto> Id { get; }
+        public Id<SessionDto> SessionId { get; }
+        private readonly ICheckpointStorage checkpointRepository;
         private readonly IEventRepository eventRepository;
-        private readonly IAutoMapperProvider autoMapper;
         private readonly IMessageHub messageHub;
-        private readonly ISystemClock clock;
+        private readonly IAutoMapperProvider autoMapperProvider;
         private CompositeDisposable disposable;
         private TimingCheckpointHandler checkpointHandler;
-        public bool UseRfid { get; set; }
+        private readonly SemaphoreSlim sync = new(1);
+        
+        public List<RoundPosition> Rating => checkpointHandler.Track.Rating;
 
-        public TimingSession(Id<TimingSessionDto> id, 
+        public TimingSession(Id<TimingSessionDto> id,
+            Id<SessionDto> sessionId,
+            ICheckpointStorage checkpointRepository,
             IEventRepository eventRepository,
-            IAutoMapperProvider autoMapper,
-            IMessageHub messageHub, ISystemClock clock)
+            IMessageHub messageHub, IAutoMapperProvider autoMapperProvider)
         {
             this.Id = id;
+            this.SessionId = sessionId;
+            this.checkpointRepository = checkpointRepository;
             this.eventRepository = eventRepository;
-            this.autoMapper = autoMapper;
             this.messageHub = messageHub;
-            this.clock = clock;
-            messageHub.Subscribe<UpstreamDataSyncComplete>(_ => Reload());
-            messageHub.Subscribe<StorageUpdated>(x => Reload(false, x));
+            this.autoMapperProvider = autoMapperProvider;
+            Reload();
         }
 
         public void Reload()
         {
-            Reload(true);
-        }
-
-        private void Reload(bool force, StorageUpdated msg = null)
-        {
-            logger.Information("Initialize {EntityType}", msg?.Entity?.GetType()?.Name);
-            if (msg != null)
-            {
-                switch (msg.Entity)
-                {
-                    //case RecordingSessionDto:
-                    case CheckpointDto:
-                    //case TimingSessionDto:
-                        return;
-                }
-            }
-            var timingSession = eventRepository.StorageService.Get(Id);
-            if (!timingSession.IsRunning && !force)
-                return;
-            logger.Information("Initialize updating subscription");
+            using var _ = sync.UseOnce();
             disposable?.DisposeSafe();
+            
             disposable = new CompositeDisposable();
+            var timingSession = eventRepository.StorageService.Get(Id);
+            logger.Information("Activating {name} {id}", timingSession.Name, Id);
+            
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
-            checkpointHandler = new TimingCheckpointHandler(timingSession.StartTime, Id, session,
-                eventRepository.GetRiderIdentifiers(timingSession.SessionId), messageHub);
-            disposable.Add(checkpointHandler);
+            disposable.Add(checkpointHandler = new TimingCheckpointHandler(timingSession.StartTime, Id, session,
+                eventRepository.GetRiderIdentifiers(timingSession.SessionId)));
+            var ratingUpdates = new Subject<RatingUpdatedMessage>();
+            disposable.Add(ratingUpdates);
+            disposable.Add(ratingUpdates
+                .Throttle(TimeSpan.FromMilliseconds(200))
+                .Subscribe(r =>
+                {
+                    messageHub.Publish(r);
+                    var update = TimingSessionUpdate.From(this.Id, this.Rating, autoMapperProvider);
+                    messageHub.Publish(update);
+                }));
+            var cpSubject = new Subject<Checkpoint>();
+            disposable.Add(cpSubject);
+            disposable.Add(messageHub.Subscribe<Checkpoint>(cpSubject.OnNext));
+
+            disposable.Add(checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime)
+                .ToObservable()
+                .Concat(cpSubject)
+                .Subscribe(cp =>
+                {
+                    checkpointHandler.AppendCheckpoint(cp);
+                    ratingUpdates.OnNext(new RatingUpdatedMessage(checkpointHandler.Track.Rating, Id));    
+                }));
         }
 
         public void Dispose()
         {
-            messageHub.DisposeSafe();
             disposable.DisposeSafe();
             checkpointHandler.DisposeSafe();
         }

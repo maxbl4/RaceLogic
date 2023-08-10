@@ -60,17 +60,17 @@ namespace maxbl4.Race.Logic.ServiceBase
             }
             finally
             {
-                Log.CloseAndFlush();
+                await Log.CloseAndFlushAsync();
             }
         }
 
         public static void SetupLogger(string configFileBaseName, string[] args = null)
         {
             var config = new ConfigurationBuilder()
-                .AddJsonFile($"{configFileBaseName}.json", true)
-                .AddJsonFile($"{configFileBaseName}.Development.json", true)
+                .AddJsonFile($"{configFileBaseName}.json", true, true)
+                .AddJsonFile($"{configFileBaseName}.Development.json", true, true)
                 .AddEnvironmentVariables()
-                .AddCommandLine(args ?? new string[0])
+                .AddCommandLine(args ?? Array.Empty<string>())
                 .Build();
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)

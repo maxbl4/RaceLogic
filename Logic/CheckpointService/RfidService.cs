@@ -48,7 +48,7 @@ namespace maxbl4.Race.Logic.CheckpointService
 
         public void AppendRiderId(string riderId)
         {
-            logger.Debug($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
+            logger.Verbose($"Append riderId {riderId} at {systemClock.UtcNow.UtcDateTime:u}");
             checkpoints.OnNext(new Checkpoint(riderId, systemClock.UtcNow.UtcDateTime));
         }
 

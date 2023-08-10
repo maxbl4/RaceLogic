@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,10 +13,10 @@ using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Runtime;
-using maxbl4.Race.Logic.EventModel.Storage;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
+using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
 using Microsoft.AspNetCore.Builder;
@@ -32,7 +31,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NJsonSchema;
 using NJsonSchema.Generation.TypeMappers;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using ServiceOptions = maxbl4.Race.DataService.Options.ServiceOptions;
 
 namespace maxbl4.Race.DataService
@@ -68,15 +66,9 @@ namespace maxbl4.Race.DataService
             services.AddControllers(o =>
             {
                 o.ModelBinderProviders.Insert(0, new IdBinderProvider());
-            }).AddNewtonsoftJson(options =>
-            {
-                options.SerializerSettings.MetadataPropertyHandling = MetadataPropertyHandling.Ignore;
-                options.SerializerSettings.DateParseHandling = DateParseHandling.None;
-                options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-                options.SerializerSettings.Converters.Add(new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal });
-            });
+            }).AddNewtonsoftJson(options => ConfigureJsonSerializer(options.SerializerSettings));
             services.AddSignalR(options => options.MaximumReceiveMessageSize = 1 * 1024 * 1024)
-                .AddNewtonsoftJsonProtocol();
+                .AddNewtonsoftJsonProtocol(options => ConfigureJsonSerializer(options.PayloadSerializerSettings));
             services.Configure<ServiceOptions>(Configuration.GetSection(nameof(ServiceOptions)));
             services.Configure<StorageServiceOptions>(Configuration.GetSection(nameof(StorageServiceOptions)));
             services.Configure<UpstreamDataSyncServiceOptions>(Configuration.GetSection(nameof(UpstreamDataSyncServiceOptions)));
@@ -128,6 +120,15 @@ namespace maxbl4.Race.DataService
                 endpoints.MapControllers();
                 endpoints.MapHub<RaceHub>("/_ws/race");
             });
+        }
+
+        void ConfigureJsonSerializer(JsonSerializerSettings settings)
+        {
+            settings.MetadataPropertyHandling = MetadataPropertyHandling.Ignore;
+            settings.DateParseHandling = DateParseHandling.None;
+            settings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+            settings.Converters.Add(new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal });
+            settings.Converters.Add(new TimeSpanConverter());
         }
     }
 }

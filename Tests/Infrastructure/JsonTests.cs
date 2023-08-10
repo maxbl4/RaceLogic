@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
+using maxbl4.Race.Logic.Extensions;
 using maxbl4.Race.Logic.LogManagement;
 using Newtonsoft.Json;
 using Xunit;
@@ -42,6 +43,19 @@ namespace maxbl4.Race.Tests.Infrastructure
             t.Timestamp.Should().Be(ts);
         }
 
+        [Fact]
+        public void Should_serialize_TimeSpan()
+        {
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new TimeSpanConverter());
+            var text = JsonConvert
+                .SerializeObject(new Entity { Duration = TimeSpan.FromSeconds(90) },
+                    settings);
+            text.Should().Contain("Duration\":\"PT1M30S");
+            var obj = JsonConvert.DeserializeObject<Entity>(text, settings);
+            obj.Duration.TotalSeconds.Should().Be(90);
+        }
+
         private class Entity
         {
             public string Data { get; set; }
@@ -51,6 +65,7 @@ namespace maxbl4.Race.Tests.Infrastructure
             public int? ExplicitInt { get; set; }
 
             public DateTime Timestamp { get; set; }
+            public TimeSpan Duration { get; set; }
         }
     }
 }

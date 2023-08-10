@@ -219,10 +219,10 @@
           "200": {
             "description": "",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
                   "type": "string",
-                  "format": "binary"
+                  "format": "uuid"
                 }
               }
             }
@@ -236,6 +236,17 @@
           "Data"
         ],
         "operationId": "Data_StopTimingSession",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "x-position": 1
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -244,6 +255,126 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/timing-session-resume": {
+      "post": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ResumeTimingSession",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/timing-session-rider-info": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ListRiderEventInfo",
+        "parameters": [
+          {
+            "name": "timingSessionId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RiderEventInfoDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/timing-session-rating": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_GetTimingSessionRating",
+        "parameters": [
+          {
+            "name": "timingSessionId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimingSessionUpdate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/active-timing-session-rating": {
+      "get": {
+        "tags": [
+          "Data"
+        ],
+        "operationId": "Data_ListActiveTimingSessions",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimingSessionDto"
+                  }
                 }
               }
             }
@@ -1176,6 +1307,10 @@
             "type": "string",
             "nullable": true
           },
+          "checkpointCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "published": {
             "type": "boolean"
           },
@@ -1189,6 +1324,133 @@
           "updated": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "RiderEventInfoDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "riderProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "className": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isDisqualified": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TimingSessionUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timingSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rating": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/RoundPosition"
+            }
+          }
+        }
+      },
+      "RoundPosition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lapCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "laps": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Lap"
+            }
+          },
+          "duration": {
+            "type": "string",
+            "format": "duration"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished": {
+            "type": "boolean"
+          },
+          "started": {
+            "type": "boolean"
+          },
+          "riderId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Lap": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "string",
+            "format": "duration"
+          },
+          "aggDuration": {
+            "type": "string",
+            "format": "duration"
+          },
+          "sequentialNumber": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1305,135 +1567,6 @@
           "updated": {
             "type": "string",
             "format": "date-time"
-          }
-        }
-      },
-      "TimingSessionUpdate": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "rating": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/RoundPosition"
-            }
-          }
-        }
-      },
-      "RoundPosition": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "lapCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "laps": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/Lap"
-            }
-          },
-          "duration": {
-            "type": "string",
-            "format": "duration"
-          },
-          "start": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "finished": {
-            "type": "boolean"
-          },
-          "started": {
-            "type": "boolean"
-          },
-          "rider": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Rider"
-              }
-            ]
-          }
-        }
-      },
-      "Lap": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "start": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "duration": {
-            "type": "string",
-            "format": "duration"
-          },
-          "aggDuration": {
-            "type": "string",
-            "format": "duration"
-          },
-          "sequentialNumber": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "Rider": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "firstName": {
-            "type": "string",
-            "nullable": true
-          },
-          "parentName": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastName": {
-            "type": "string",
-            "nullable": true
-          },
-          "class": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Class"
-              }
-            ]
-          },
-          "isWrongSession": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Class": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
           }
         }
       },

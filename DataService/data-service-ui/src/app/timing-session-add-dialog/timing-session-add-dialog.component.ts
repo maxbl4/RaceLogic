@@ -14,7 +14,7 @@ import {SessionDto, TimingSessionDto} from "@app/service/data-service-client";
           <mat-label>Название</mat-label>
           <input matInput type="text" placeholder="" [(ngModel)]="timingSession.name">
         </mat-form-field>
-        <mat-slide-toggle class="w-100" [(ngModel)]="timingSession.useRfid">Использовать RFID</mat-slide-toggle>
+        <mat-slide-toggle class="w-100" >Использовать RFID</mat-slide-toggle>
         <mat-form-field class="w-100">
           <mat-label>Дата бетонирования</mat-label>
           <input matInput [matDatepicker]="picker1" >
@@ -39,7 +39,6 @@ export class TimingSessionAddDialogComponent implements OnInit {
     this._session = value;
     this.timingSession.sessionId = value.id;
     this.timingSession.name = `Заезд ${value.name}`;
-    this.timingSession.useRfid = true;
   }
   timingSession: TimingSessionDto = new TimingSessionDto();
 

@@ -122,10 +122,33 @@ namespace maxbl4.Race.Logic.UpstreamData
                 query = query.Where(x => x.EventId == eventId);
             return query.ToEnumerable();
         }
+        
+        public IEnumerable<ClassDto> ListClasses(IEnumerable<Id<ClassDto>> classIds)
+        {
+            return Query<ClassDto>().Where(x => classIds.Contains(x.Id)).ToEnumerable();
+        }
+        
+        public IEnumerable<ClassDto> ListClasses(Id<SessionDto> sessionId)
+        {
+            var session = Get(sessionId);
+            if (session == null)
+                return Enumerable.Empty<ClassDto>();
+            return ListClasses(session.ClassIds);
+        }
 
         public IEnumerable<RiderEventRegistrationDto> ListEventRegistrations(IEnumerable<Id<ClassDto>> classIds)
         {
             return Query<RiderEventRegistrationDto>().Where(x => classIds.Contains(x.ClassId)).ToEnumerable();
+        }
+        
+        public IEnumerable<RiderClassRegistrationDto> ListClassRegistrations(IEnumerable<Id<ClassDto>> classIds)
+        {
+            return Query<RiderClassRegistrationDto>().Where(x => classIds.Contains(x.ClassId)).ToEnumerable();
+        }
+        
+        public IEnumerable<RiderClassRegistrationDto> ListClassRegistrations(Id<ChampionshipDto> championshipId)
+        {
+            return Query<RiderClassRegistrationDto>().Where(x => x.ChampionshipDtoId == championshipId).ToEnumerable();
         }
 
         public T Get<T>(Id<T> id) where T : IHasId<T>

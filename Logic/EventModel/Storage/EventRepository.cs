@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using LiteDB;
+using maxbl4.Infrastructure.Extensions.DictionaryExt;
+using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage.Traits;
@@ -12,10 +14,14 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
     public class EventRepository : IEventRepository
     {
         private readonly IUpstreamDataRepository upstreamDataRepository;
+        private readonly IAutoMapperProvider autoMapper;
 
-        public EventRepository(IStorageService storageService, IUpstreamDataRepository upstreamDataRepository)
+        public EventRepository(IStorageService storageService, 
+            IUpstreamDataRepository upstreamDataRepository,
+            IAutoMapperProvider autoMapper)
         {
             this.upstreamDataRepository = upstreamDataRepository;
+            this.autoMapper = autoMapper;
             StorageService = storageService;
         }
 
@@ -38,6 +44,12 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
                 .OrderBy(x => x.StartTime);
         }
         
+        public IEnumerable<TimingSessionDto> ListStoredActiveTimingSessions()
+        {
+            return StorageService.List<TimingSessionDto>(x => x.IsRunning)
+                .OrderBy(x => x.StartTime);
+        }
+        
         public IEnumerable<RiderClassRegistrationDto> GetRegistrations(Id<ClassDto> classId, Id<EventDto> eventId)
         {
             yield break;
@@ -49,11 +61,33 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return null;
         }
 
+        public List<RiderEventInfoDto> ListRiderEventInfo(Id<TimingSessionDto> timingSessionId)
+        {
+            var timingSession = StorageService.Get(timingSessionId);
+            var session = GetWithUpstream(timingSession.SessionId);
+            var ev = GetWithUpstream(session.EventId);
+            var classes = upstreamDataRepository.ListClasses(session.ClassIds)
+                .ToDictionary(x => x.Id);
+            var riders = upstreamDataRepository
+                .ListClassRegistrations(session.ClassIds);
+            return riders
+                .Select(x => autoMapper
+                    .Map<RiderEventInfoDto>(x)
+                    .SetClassName(classes.Get(x.ClassId)?.Name))
+                .ToList();
+        }
+        
+        public List<RiderClassRegistrationDto> ListClassRegistrations(Id<ChampionshipDto> championshipId)
+        {
+            return upstreamDataRepository.ListClassRegistrations(championshipId).ToList();
+        }
+
         public Dictionary<string, List<Id<RiderClassRegistrationDto>>> GetRiderIdentifiers(Id<SessionDto> sessionId)
         {
             var session = GetWithUpstream(sessionId);
             var t = upstreamDataRepository.ListEventRegistrations(session.ClassIds)
                 .SelectMany(x => x.Identifiers, (dto, id) => new {RiderId = dto.RiderClassRegistrationId, Identifier = id})
+                .Where(x => x.Identifier != null)
                 .GroupBy(x => x.Identifier, x => x.RiderId)
                 .ToDictionary(x => x.Key, x => x.ToList());
             return t;

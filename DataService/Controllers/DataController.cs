@@ -2,13 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using maxbl4.Race.Logic.EventModel.Runtime;
-using maxbl4.Race.Logic.EventModel.Storage;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.EventStorage.Storage;
 using maxbl4.Race.Logic.UpstreamData;
+using maxbl4.Race.Logic.WebModel;
 using Microsoft.AspNetCore.Mvc;
-using Serilog.Events;
 
 namespace maxbl4.Race.DataService.Controllers
 {
@@ -65,24 +64,48 @@ namespace maxbl4.Race.DataService.Controllers
         [HttpDelete("timing-session")]
         public ActionResult DeleteTimingSession(Id<TimingSessionDto> id)
         {
+            timingSessionService.StopSession(id);
             eventRepository.StorageService.Delete(id);
             return Ok();
         }
         
         [HttpPut("timing-session-start")]
-        public ActionResult StartNewTimingSession(TimingSessionDto timingSessionDto)
+        public ActionResult<Id<TimingSessionDto>> StartNewTimingSession([FromBody]TimingSessionDto timingSessionDto)
         {
-            timingSessionService.StartNewSession(timingSessionDto.Name, timingSessionDto.SessionId);
-            return Ok();
+            return timingSessionService.StartNewSession(timingSessionDto.Name, timingSessionDto.SessionId);
         }
         
         [HttpPost("timing-session-stop")]
-        public ActionResult StopTimingSession()
+        public ActionResult StopTimingSession(Id<TimingSessionDto> id)
         {
-            timingSessionService.StopSession();
+            timingSessionService.StopSession(id);
             return Ok();
         }
         
+        [HttpPost("timing-session-resume")]
+        public ActionResult ResumeTimingSession(Id<TimingSessionDto> id)
+        {
+            timingSessionService.ResumeSession(id);
+            return Ok();
+        }
+        
+        [HttpGet("timing-session-rider-info")]
+        public ActionResult<List<RiderEventInfoDto>> ListRiderEventInfo(Id<TimingSessionDto> timingSessionId)
+        {
+            return eventRepository.ListRiderEventInfo(timingSessionId);
+        }
+        
+        [HttpGet("timing-session-rating")]
+        public ActionResult<TimingSessionUpdate> GetTimingSessionRating(Id<TimingSessionDto> timingSessionId)
+        {
+            return timingSessionService.GetTimingSessionRating(timingSessionId);
+        }
+        
+        [HttpGet("active-timing-session-rating")]
+        public ActionResult<List<TimingSessionDto>> ListActiveTimingSessions()
+        {
+            return timingSessionService.ListActiveTimingSessions();
+        }
         
         [HttpPost("upstream/purge")]
         public ActionResult PurgeUpstreamData()

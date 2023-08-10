@@ -3,6 +3,7 @@ import {DataClient, SeriesDto} from "@app/service/data-service-client";
 import {Observable} from "rxjs";
 import {MediaMatcher} from "@angular/cdk/layout";
 import { OptionsService } from './service/options.service';
+import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,7 @@ import { OptionsService } from './service/options.service';
             <a class="navbar-brand" routerLink="">BRAAAP</a>
         </span>
       <div class="flex-grow-1">
-        test
+        Timing: {{activeSessionsCount}}
       </div>
       <mat-divider></mat-divider>
       <button mat-icon-button (click)="sidenav.toggle()"
@@ -47,12 +48,16 @@ import { OptionsService } from './service/options.service';
 export class AppComponent {
   public mobileQuery: MediaQueryList;
   private readonly _mobileQueryListener = () => {};
+  public activeSessionsCount: number = 0;
 
 
   constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
-              public optionsService: OptionsService) {
+              public optionsService: OptionsService,
+              private dataClient: DataClient) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQuery.addEventListener("change", this._mobileQueryListener);
+    this.dataClient.listActiveTimingSessions()
+      .subscribe(x => this.activeSessionsCount = x.length);
   }
 
   ngOnDestroy(): void {

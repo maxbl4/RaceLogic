@@ -360,7 +360,7 @@ export class DataClient {
         return _observableOf(null as any);
     }
 
-    startNewTimingSession(timingSessionDto: TimingSessionDto): Observable<FileResponse> {
+    startNewTimingSession(timingSessionDto: TimingSessionDto): Observable<string> {
         let url_ = this.baseUrl + "/data/timing-session-start";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -372,7 +372,7 @@ export class DataClient {
             responseType: "blob",
             headers: new HttpHeaders({
                 "Content-Type": "application/json",
-                "Accept": "application/octet-stream"
+                "Accept": "application/json"
             })
         };
 
@@ -383,31 +383,28 @@ export class DataClient {
                 try {
                     return this.processStartNewTimingSession(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
+                    return _observableThrow(e) as any as Observable<string>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
+                return _observableThrow(response_) as any as Observable<string>;
         }));
     }
 
-    protected processStartNewTimingSession(response: HttpResponseBase): Observable<FileResponse> {
+    protected processStartNewTimingSession(response: HttpResponseBase): Observable<string> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (response as any).error instanceof Blob ? (response as any).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
@@ -416,8 +413,12 @@ export class DataClient {
         return _observableOf(null as any);
     }
 
-    stopTimingSession(): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/data/timing-session-stop";
+    stopTimingSession(id?: string | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session-stop?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -460,6 +461,228 @@ export class DataClient {
                 fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
             }
             return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    resumeTimingSession(id?: string | undefined): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/data/timing-session-resume?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processResumeTimingSession(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processResumeTimingSession(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processResumeTimingSession(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    listRiderEventInfo(timingSessionId?: string | undefined): Observable<RiderEventInfoDto[]> {
+        let url_ = this.baseUrl + "/data/timing-session-rider-info?";
+        if (timingSessionId === null)
+            throw new Error("The parameter 'timingSessionId' cannot be null.");
+        else if (timingSessionId !== undefined)
+            url_ += "timingSessionId=" + encodeURIComponent("" + timingSessionId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListRiderEventInfo(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListRiderEventInfo(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderEventInfoDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderEventInfoDto[]>;
+        }));
+    }
+
+    protected processListRiderEventInfo(response: HttpResponseBase): Observable<RiderEventInfoDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(RiderEventInfoDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getTimingSessionRating(timingSessionId?: string | undefined): Observable<TimingSessionUpdate> {
+        let url_ = this.baseUrl + "/data/timing-session-rating?";
+        if (timingSessionId === null)
+            throw new Error("The parameter 'timingSessionId' cannot be null.");
+        else if (timingSessionId !== undefined)
+            url_ += "timingSessionId=" + encodeURIComponent("" + timingSessionId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTimingSessionRating(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTimingSessionRating(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<TimingSessionUpdate>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<TimingSessionUpdate>;
+        }));
+    }
+
+    protected processGetTimingSessionRating(response: HttpResponseBase): Observable<TimingSessionUpdate> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TimingSessionUpdate.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    listActiveTimingSessions(): Observable<TimingSessionDto[]> {
+        let url_ = this.baseUrl + "/data/active-timing-session-rating";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListActiveTimingSessions(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListActiveTimingSessions(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<TimingSessionDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<TimingSessionDto[]>;
+        }));
+    }
+
+    protected processListActiveTimingSessions(response: HttpResponseBase): Observable<TimingSessionDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(TimingSessionDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
@@ -2005,6 +2228,7 @@ export class TimingSessionDto implements ITimingSessionDto {
     id?: string;
     name?: string | undefined;
     description?: string | undefined;
+    checkpointCount?: number;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
@@ -2029,6 +2253,7 @@ export class TimingSessionDto implements ITimingSessionDto {
             this.id = _data["id"];
             this.name = _data["name"];
             this.description = _data["description"];
+            this.checkpointCount = _data["checkpointCount"];
             this.published = _data["published"];
             this.isSeed = _data["isSeed"];
             this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
@@ -2053,6 +2278,7 @@ export class TimingSessionDto implements ITimingSessionDto {
         data["id"] = this.id;
         data["name"] = this.name;
         data["description"] = this.description;
+        data["checkpointCount"] = this.checkpointCount;
         data["published"] = this.published;
         data["isSeed"] = this.isSeed;
         data["created"] = this.created ? this.created.toString() : <any>undefined;
@@ -2070,10 +2296,255 @@ export interface ITimingSessionDto {
     id?: string;
     name?: string | undefined;
     description?: string | undefined;
+    checkpointCount?: number;
     published?: boolean;
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
+}
+
+export class RiderEventInfoDto implements IRiderEventInfoDto {
+    id?: string;
+    riderProfileId?: string;
+    classId?: string;
+    firstName?: string | undefined;
+    parentName?: string | undefined;
+    lastName?: string | undefined;
+    className?: string | undefined;
+    number?: number;
+    isDisqualified?: boolean;
+
+    constructor(data?: IRiderEventInfoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.riderProfileId = _data["riderProfileId"];
+            this.classId = _data["classId"];
+            this.firstName = _data["firstName"];
+            this.parentName = _data["parentName"];
+            this.lastName = _data["lastName"];
+            this.className = _data["className"];
+            this.number = _data["number"];
+            this.isDisqualified = _data["isDisqualified"];
+        }
+    }
+
+    static fromJS(data: any): RiderEventInfoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderEventInfoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["riderProfileId"] = this.riderProfileId;
+        data["classId"] = this.classId;
+        data["firstName"] = this.firstName;
+        data["parentName"] = this.parentName;
+        data["lastName"] = this.lastName;
+        data["className"] = this.className;
+        data["number"] = this.number;
+        data["isDisqualified"] = this.isDisqualified;
+        return data;
+    }
+}
+
+export interface IRiderEventInfoDto {
+    id?: string;
+    riderProfileId?: string;
+    classId?: string;
+    firstName?: string | undefined;
+    parentName?: string | undefined;
+    lastName?: string | undefined;
+    className?: string | undefined;
+    number?: number;
+    isDisqualified?: boolean;
+}
+
+export class TimingSessionUpdate implements ITimingSessionUpdate {
+    id?: string;
+    timingSessionId?: string;
+    rating?: RoundPosition[] | undefined;
+
+    constructor(data?: ITimingSessionUpdate) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.timingSessionId = _data["timingSessionId"];
+            if (Array.isArray(_data["rating"])) {
+                this.rating = [] as any;
+                for (let item of _data["rating"])
+                    this.rating!.push(RoundPosition.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): TimingSessionUpdate {
+        data = typeof data === 'object' ? data : {};
+        let result = new TimingSessionUpdate();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["timingSessionId"] = this.timingSessionId;
+        if (Array.isArray(this.rating)) {
+            data["rating"] = [];
+            for (let item of this.rating)
+                data["rating"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface ITimingSessionUpdate {
+    id?: string;
+    timingSessionId?: string;
+    rating?: RoundPosition[] | undefined;
+}
+
+export class RoundPosition implements IRoundPosition {
+    lapCount?: number;
+    laps?: Lap[] | undefined;
+    duration?: Duration;
+    start?: DateTime;
+    end?: DateTime;
+    finished?: boolean;
+    started?: boolean;
+    riderId?: string | undefined;
+
+    constructor(data?: IRoundPosition) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.lapCount = _data["lapCount"];
+            if (Array.isArray(_data["laps"])) {
+                this.laps = [] as any;
+                for (let item of _data["laps"])
+                    this.laps!.push(Lap.fromJS(item));
+            }
+            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
+            this.start = _data["start"] ? DateTime.fromISO(_data["start"].toString()) : <any>undefined;
+            this.end = _data["end"] ? DateTime.fromISO(_data["end"].toString()) : <any>undefined;
+            this.finished = _data["finished"];
+            this.started = _data["started"];
+            this.riderId = _data["riderId"];
+        }
+    }
+
+    static fromJS(data: any): RoundPosition {
+        data = typeof data === 'object' ? data : {};
+        let result = new RoundPosition();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["lapCount"] = this.lapCount;
+        if (Array.isArray(this.laps)) {
+            data["laps"] = [];
+            for (let item of this.laps)
+                data["laps"].push(item.toJSON());
+        }
+        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
+        data["start"] = this.start ? this.start.toString() : <any>undefined;
+        data["end"] = this.end ? this.end.toString() : <any>undefined;
+        data["finished"] = this.finished;
+        data["started"] = this.started;
+        data["riderId"] = this.riderId;
+        return data;
+    }
+}
+
+export interface IRoundPosition {
+    lapCount?: number;
+    laps?: Lap[] | undefined;
+    duration?: Duration;
+    start?: DateTime;
+    end?: DateTime;
+    finished?: boolean;
+    started?: boolean;
+    riderId?: string | undefined;
+}
+
+export class Lap implements ILap {
+    start?: DateTime;
+    end?: DateTime;
+    duration?: Duration;
+    aggDuration?: Duration;
+    sequentialNumber?: number;
+
+    constructor(data?: ILap) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.start = _data["start"] ? DateTime.fromISO(_data["start"].toString()) : <any>undefined;
+            this.end = _data["end"] ? DateTime.fromISO(_data["end"].toString()) : <any>undefined;
+            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
+            this.aggDuration = _data["aggDuration"] ? Duration.fromISO(_data["aggDuration"].toString()) : <any>undefined;
+            this.sequentialNumber = _data["sequentialNumber"];
+        }
+    }
+
+    static fromJS(data: any): Lap {
+        data = typeof data === 'object' ? data : {};
+        let result = new Lap();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["start"] = this.start ? this.start.toString() : <any>undefined;
+        data["end"] = this.end ? this.end.toString() : <any>undefined;
+        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
+        data["aggDuration"] = this.aggDuration ? this.aggDuration.toString() : <any>undefined;
+        data["sequentialNumber"] = this.sequentialNumber;
+        return data;
+    }
+}
+
+export interface ILap {
+    start?: DateTime;
+    end?: DateTime;
+    duration?: Duration;
+    aggDuration?: Duration;
+    sequentialNumber?: number;
 }
 
 export class SeriesDto implements ISeriesDto {
@@ -2274,270 +2745,6 @@ export interface IClassDto {
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
-}
-
-export class TimingSessionUpdate implements ITimingSessionUpdate {
-    rating?: RoundPosition[] | undefined;
-
-    constructor(data?: ITimingSessionUpdate) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["rating"])) {
-                this.rating = [] as any;
-                for (let item of _data["rating"])
-                    this.rating!.push(RoundPosition.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): TimingSessionUpdate {
-        data = typeof data === 'object' ? data : {};
-        let result = new TimingSessionUpdate();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.rating)) {
-            data["rating"] = [];
-            for (let item of this.rating)
-                data["rating"].push(item.toJSON());
-        }
-        return data;
-    }
-}
-
-export interface ITimingSessionUpdate {
-    rating?: RoundPosition[] | undefined;
-}
-
-export class RoundPosition implements IRoundPosition {
-    lapCount?: number;
-    laps?: Lap[] | undefined;
-    duration?: Duration;
-    start?: DateTime;
-    end?: DateTime;
-    finished?: boolean;
-    started?: boolean;
-    rider?: Rider | undefined;
-
-    constructor(data?: IRoundPosition) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.lapCount = _data["lapCount"];
-            if (Array.isArray(_data["laps"])) {
-                this.laps = [] as any;
-                for (let item of _data["laps"])
-                    this.laps!.push(Lap.fromJS(item));
-            }
-            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
-            this.start = _data["start"] ? DateTime.fromISO(_data["start"].toString()) : <any>undefined;
-            this.end = _data["end"] ? DateTime.fromISO(_data["end"].toString()) : <any>undefined;
-            this.finished = _data["finished"];
-            this.started = _data["started"];
-            this.rider = _data["rider"] ? Rider.fromJS(_data["rider"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): RoundPosition {
-        data = typeof data === 'object' ? data : {};
-        let result = new RoundPosition();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["lapCount"] = this.lapCount;
-        if (Array.isArray(this.laps)) {
-            data["laps"] = [];
-            for (let item of this.laps)
-                data["laps"].push(item.toJSON());
-        }
-        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
-        data["start"] = this.start ? this.start.toString() : <any>undefined;
-        data["end"] = this.end ? this.end.toString() : <any>undefined;
-        data["finished"] = this.finished;
-        data["started"] = this.started;
-        data["rider"] = this.rider ? this.rider.toJSON() : <any>undefined;
-        return data;
-    }
-}
-
-export interface IRoundPosition {
-    lapCount?: number;
-    laps?: Lap[] | undefined;
-    duration?: Duration;
-    start?: DateTime;
-    end?: DateTime;
-    finished?: boolean;
-    started?: boolean;
-    rider?: Rider | undefined;
-}
-
-export class Lap implements ILap {
-    start?: DateTime;
-    end?: DateTime;
-    duration?: Duration;
-    aggDuration?: Duration;
-    sequentialNumber?: number;
-
-    constructor(data?: ILap) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.start = _data["start"] ? DateTime.fromISO(_data["start"].toString()) : <any>undefined;
-            this.end = _data["end"] ? DateTime.fromISO(_data["end"].toString()) : <any>undefined;
-            this.duration = _data["duration"] ? Duration.fromISO(_data["duration"].toString()) : <any>undefined;
-            this.aggDuration = _data["aggDuration"] ? Duration.fromISO(_data["aggDuration"].toString()) : <any>undefined;
-            this.sequentialNumber = _data["sequentialNumber"];
-        }
-    }
-
-    static fromJS(data: any): Lap {
-        data = typeof data === 'object' ? data : {};
-        let result = new Lap();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["start"] = this.start ? this.start.toString() : <any>undefined;
-        data["end"] = this.end ? this.end.toString() : <any>undefined;
-        data["duration"] = this.duration ? this.duration.toString() : <any>undefined;
-        data["aggDuration"] = this.aggDuration ? this.aggDuration.toString() : <any>undefined;
-        data["sequentialNumber"] = this.sequentialNumber;
-        return data;
-    }
-}
-
-export interface ILap {
-    start?: DateTime;
-    end?: DateTime;
-    duration?: Duration;
-    aggDuration?: Duration;
-    sequentialNumber?: number;
-}
-
-export class Rider implements IRider {
-    id?: string | undefined;
-    firstName?: string | undefined;
-    parentName?: string | undefined;
-    lastName?: string | undefined;
-    class?: Class | undefined;
-    isWrongSession?: boolean;
-
-    constructor(data?: IRider) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.firstName = _data["firstName"];
-            this.parentName = _data["parentName"];
-            this.lastName = _data["lastName"];
-            this.class = _data["class"] ? Class.fromJS(_data["class"]) : <any>undefined;
-            this.isWrongSession = _data["isWrongSession"];
-        }
-    }
-
-    static fromJS(data: any): Rider {
-        data = typeof data === 'object' ? data : {};
-        let result = new Rider();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["firstName"] = this.firstName;
-        data["parentName"] = this.parentName;
-        data["lastName"] = this.lastName;
-        data["class"] = this.class ? this.class.toJSON() : <any>undefined;
-        data["isWrongSession"] = this.isWrongSession;
-        return data;
-    }
-}
-
-export interface IRider {
-    id?: string | undefined;
-    firstName?: string | undefined;
-    parentName?: string | undefined;
-    lastName?: string | undefined;
-    class?: Class | undefined;
-    isWrongSession?: boolean;
-}
-
-export class Class implements IClass {
-    id?: string | undefined;
-    name?: string | undefined;
-
-    constructor(data?: IClass) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.name = _data["name"];
-        }
-    }
-
-    static fromJS(data: any): Class {
-        data = typeof data === 'object' ? data : {};
-        let result = new Class();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        return data;
-    }
-}
-
-export interface IClass {
-    id?: string | undefined;
-    name?: string | undefined;
 }
 
 export class RfidOptions implements IRfidOptions {

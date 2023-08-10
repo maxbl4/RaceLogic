@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
@@ -13,10 +14,12 @@ using maxbl4.Race.Logic.ServiceBase;
 using maxbl4.Race.Logic.UpstreamData;
 using maxbl4.Race.Tests.CheckpointService.Client;
 using maxbl4.Race.Tests.Infrastructure;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
+using SystemClock = System.Reactive.PlatformServices.SystemClock;
 
 namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
 {
@@ -38,7 +41,8 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             var messageHub = new ChannelMessageHub();
             using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
             var upstreamDataStorage = new UpstreamDataRepository(storageService);
-            var eventRepository = new EventRepository(storageService, upstreamDataStorage);
+            var checkpointRepository = new CheckpointRepository(Options.Create(new ServiceOptions()), storageService, messageHub, SystemClock);
+            var eventRepository = new EventRepository(storageService, upstreamDataStorage, new AutoMapperProvider());
             var upstreamDataSyncService = new UpstreamDataSyncService(Options.Create(upstreamDataSyncServiceOptions), new FakeMainClient(), 
                 upstreamDataStorage, messageHub);
             var downloadResult = await upstreamDataSyncService.Download(true);
@@ -56,14 +60,14 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
             // using var recordingService = new RecordingService(Options.Create(new RecordingServiceOptions{CheckpointServiceAddress = "http://localhost:6000"}), recordingRepository, eventRepository, cpf, new AutoMapperProvider(), 
             //     messageHub, SystemClock);
             
-            var timingSessionService = new TimingSessionService(eventRepository, MessageHub, new AutoMapperProvider(),
+            var timingSessionService = new TimingSessionService(checkpointRepository, eventRepository, MessageHub, new AutoMapperProvider(),
                 new DefaultSystemClock());
 
             var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");
             
             var session = upstreamDataStorage.ListSessions(ev.Id).First(x => x.Name == "Эксперт и Опен");
             timingSessionService.StartNewSession("timing sess", session.Id);
-            var timingSession = timingSessionService.ActiveSession;
+            //var timingSession = timingSessionService.ActiveSession;
             //timingSession.Start(tagSub.Now.AddSeconds(-10));
             await Task.Delay(100);
             tagSub.SendTags((1, "11"), (2, "12"));

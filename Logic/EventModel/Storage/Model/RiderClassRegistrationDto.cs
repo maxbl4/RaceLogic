@@ -28,4 +28,23 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Model
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
     }
+    
+    public class RiderEventInfoDto : IHasPersonName
+    {
+        public Id<RiderClassRegistrationDto> Id { get; set; }
+        public Id<RiderProfileDto> RiderProfileId { get; set; }
+        public Id<ClassDto> ClassId { get; set; }
+        public string FirstName { get; set; }
+        public string ParentName { get; set; }
+        public string LastName { get; set; }
+        public string ClassName { get; set; }
+        public int Number { get; set; }
+        public bool IsDisqualified { get; set; }
+
+        public RiderEventInfoDto SetClassName(string name)
+        {
+            ClassName = name;
+            return this;
+        }
+    }
 }
