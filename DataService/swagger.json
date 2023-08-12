@@ -559,7 +559,7 @@
         }
       }
     },
-    "/_metadata": {
+    "/_metadata/getTimingSessionUpdate": {
       "get": {
         "tags": [
           "Metadata"
@@ -572,6 +572,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TimingSessionUpdate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_metadata/getActiveTimingSessionsUpdate": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "Metadata_GetActiveTimingSessionsUpdate",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActiveTimingSessionsUpdate"
                 }
               }
             }
@@ -1567,6 +1587,19 @@
           "updated": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "ActiveTimingSessionsUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/TimingSessionDto"
+            }
           }
         }
       },

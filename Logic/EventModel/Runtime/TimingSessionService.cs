@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.PlatformServices;
+using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
@@ -52,17 +53,21 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void Initialize()
         {
-            var sessionsToResume = eventRepository.ListStoredActiveTimingSessions();
+            var sessionsToResume = eventRepository
+                .ListStoredActiveTimingSessions().ToList();
             foreach (var dto in sessionsToResume)
             {
                 ResumeSession(dto);
             }
+            messageHub.Publish(new ActiveTimingSessionsUpdate{Sessions = sessionsToResume});
         }
 
         public void ResumeSession(Id<TimingSessionDto> id)
         {
             using var _ = sync.Use();
             ResumeSession(eventRepository.StorageService.Get(id));
+            
+            ListActiveTimingSessions();
         }
 
         private void ResumeSession(TimingSessionDto dto)
@@ -108,9 +113,11 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public List<TimingSessionDto> ListActiveTimingSessions()
         {
             using var _ = sync.Use();
-            return activeSessions
+            var s = activeSessions
                 .Select(x => eventRepository.StorageService.Get(x.Id))
                 .ToList();
+            messageHub.Publish(new ActiveTimingSessionsUpdate{Sessions = s});
+            return s;
         }
 
         public void StopSession(Id<SessionDto> sessionId)
@@ -129,6 +136,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             messageHub.Publish(rating);
             activeSessions.Remove(activeSession);
             activeSession.DisposeSafe();
+            
+            ListActiveTimingSessions();
         }
 
         public Id<TimingSessionDto> StartNewSession(string name, Id<SessionDto> sessionId)
@@ -151,6 +160,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 eventRepository, messageHub, autoMapperProvider);
 
             activeSessions.Add(newSession);
+            
+            ListActiveTimingSessions();
             return newSession.Id;
         }
 

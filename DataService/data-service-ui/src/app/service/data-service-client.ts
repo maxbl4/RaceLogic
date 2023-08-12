@@ -1043,7 +1043,7 @@ export class MetadataClient {
     }
 
     getTimingSessionUpdate(): Observable<TimingSessionUpdate> {
-        let url_ = this.baseUrl + "/_metadata";
+        let url_ = this.baseUrl + "/_metadata/getTimingSessionUpdate";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -1080,6 +1080,54 @@ export class MetadataClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = TimingSessionUpdate.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getActiveTimingSessionsUpdate(): Observable<ActiveTimingSessionsUpdate> {
+        let url_ = this.baseUrl + "/_metadata/getActiveTimingSessionsUpdate";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetActiveTimingSessionsUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetActiveTimingSessionsUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ActiveTimingSessionsUpdate>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ActiveTimingSessionsUpdate>;
+        }));
+    }
+
+    protected processGetActiveTimingSessionsUpdate(response: HttpResponseBase): Observable<ActiveTimingSessionsUpdate> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ActiveTimingSessionsUpdate.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -2745,6 +2793,50 @@ export interface IClassDto {
     isSeed?: boolean;
     created?: DateTime;
     updated?: DateTime;
+}
+
+export class ActiveTimingSessionsUpdate implements IActiveTimingSessionsUpdate {
+    sessions?: TimingSessionDto[] | undefined;
+
+    constructor(data?: IActiveTimingSessionsUpdate) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["sessions"])) {
+                this.sessions = [] as any;
+                for (let item of _data["sessions"])
+                    this.sessions!.push(TimingSessionDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ActiveTimingSessionsUpdate {
+        data = typeof data === 'object' ? data : {};
+        let result = new ActiveTimingSessionsUpdate();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.sessions)) {
+            data["sessions"] = [];
+            for (let item of this.sessions)
+                data["sessions"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IActiveTimingSessionsUpdate {
+    sessions?: TimingSessionDto[] | undefined;
 }
 
 export class RfidOptions implements IRfidOptions {

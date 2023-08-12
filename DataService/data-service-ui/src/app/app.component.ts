@@ -1,9 +1,10 @@
-import {ChangeDetectorRef, Component} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
 import {DataClient, SeriesDto} from "@app/service/data-service-client";
 import {Observable} from "rxjs";
 import {MediaMatcher} from "@angular/cdk/layout";
 import { OptionsService } from './service/options.service';
 import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
+import {TimingSessionsService} from "@app/service/timingSessionsService";
 
 @Component({
   selector: 'app-root',
@@ -13,7 +14,7 @@ import {WebSocketConnectionService} from "@app/service/web-socket-connection-ser
             <a class="navbar-brand" routerLink="">BRAAAP</a>
         </span>
       <div class="flex-grow-1">
-        Timing: {{activeSessionsCount}}
+        Timing: {{ts.activeSessionsCount}}
       </div>
       <mat-divider></mat-divider>
       <button mat-icon-button (click)="sidenav.toggle()"
@@ -45,19 +46,16 @@ import {WebSocketConnectionService} from "@app/service/web-socket-connection-ser
   `,
   styles: []
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy{
   public mobileQuery: MediaQueryList;
   private readonly _mobileQueryListener = () => {};
-  public activeSessionsCount: number = 0;
 
 
   constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
               public optionsService: OptionsService,
-              private dataClient: DataClient) {
+              public ts: TimingSessionsService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQuery.addEventListener("change", this._mobileQueryListener);
-    this.dataClient.listActiveTimingSessions()
-      .subscribe(x => this.activeSessionsCount = x.length);
   }
 
   ngOnDestroy(): void {

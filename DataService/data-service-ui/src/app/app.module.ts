@@ -32,6 +32,7 @@ import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/ti
 import {TimingSessionViewComponent} from "@app/timing-session-view/timing-session-view.component";
 import {OptionsViewComponent} from "@app/options-view/options-view.component";
 import {OptionsService} from "@app/service/options.service";
+import {TimingSessionsService} from "@app/service/timingSessionsService";
 
 @NgModule({
   declarations: [
@@ -77,6 +78,7 @@ import {OptionsService} from "@app/service/options.service";
   ],
   providers: [
     DataClient, StoreClient, WebSocketConnectionService,
+    TimingSessionsService,
     {provide: DateAdapter, useClass: PickDateAdapter},
     {provide: MAT_DATE_FORMATS, useValue: PICK_FORMATS},
     OptionsService

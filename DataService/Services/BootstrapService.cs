@@ -19,7 +19,8 @@ namespace maxbl4.Race.DataService.Services
 
         public BootstrapService(ISeedDataLoader seedDataLoader, 
             ITimingSessionService timingSessionService, 
-            IHubContext<RaceHub> raceHub, IMessageHub messageHub)
+            IHubContext<RaceHub> raceHub, 
+            IMessageHub messageHub)
         {
             this.seedDataLoader = seedDataLoader;
             this.timingSessionService = timingSessionService;
@@ -37,8 +38,14 @@ namespace maxbl4.Race.DataService.Services
 
         private void SetupWsProxy()
         {
-            messageHub.SubscribeAsync<TimingSessionUpdate>(async x => 
-                await raceHub.Clients.All.SendAsync(nameof(TimingSessionUpdate), x));
+            CreateWsProxy<TimingSessionUpdate>();
+            CreateWsProxy<ActiveTimingSessionsUpdate>();
+        }
+
+        private void CreateWsProxy<T>()
+        {
+            messageHub.SubscribeAsync<T>(async x => 
+                await raceHub.Clients.All.SendAsync(typeof(T).Name, x));
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

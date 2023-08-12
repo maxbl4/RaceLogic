@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
+using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
@@ -30,7 +31,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private readonly IAutoMapperProvider autoMapperProvider;
         private CompositeDisposable disposable;
         private TimingCheckpointHandler checkpointHandler;
-        private readonly SemaphoreSlim sync = new(1);
+        private readonly SyncLock sync = new();
         
         public List<RoundPosition> Rating => checkpointHandler.Track.Rating;
 
@@ -51,7 +52,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public void Reload()
         {
-            using var _ = sync.UseOnce();
+            using var _ = sync.Use();
             disposable?.DisposeSafe();
             
             disposable = new CompositeDisposable();

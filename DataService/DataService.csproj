@@ -19,7 +19,7 @@
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
         <PackageReference Include="System.Reactive.Linq" Version="6.0.0" />
         <PackageReference Include="LiteDB" Version="5.0.16" />
-        <PackageReference Include="maxbl4.Infrastructure" Version="1.0.46" />
+        <PackageReference Include="maxbl4.Infrastructure" Version="1.0.47" />
         <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     </ItemGroup>
 
