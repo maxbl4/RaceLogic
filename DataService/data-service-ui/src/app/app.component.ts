@@ -27,6 +27,7 @@ import {TimingSessionsService} from "@app/service/timingSessionsService";
                    (click)="mobileQuery.matches ? sidenav.toggle() : false">
         <mat-nav-list>
           <a mat-list-item routerLinkActive="text-danger" routerLink="/main">Main</a>
+          <a mat-list-item routerLinkActive="text-danger" routerLink="/active-timings">Засечки</a>
           <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
           <mat-divider></mat-divider>
           <a mat-list-item href="/files" (click)="goto('/files')">File Browser</a>

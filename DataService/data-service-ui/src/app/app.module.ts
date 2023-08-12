@@ -33,6 +33,7 @@ import {TimingSessionViewComponent} from "@app/timing-session-view/timing-sessio
 import {OptionsViewComponent} from "@app/options-view/options-view.component";
 import {OptionsService} from "@app/service/options.service";
 import {TimingSessionsService} from "@app/service/timingSessionsService";
+import { ActiveTimingSessionsViewComponent } from './active-timing-sessions-view/active-timing-sessions-view.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import {TimingSessionsService} from "@app/service/timingSessionsService";
     SessionViewComponent,
     TimingSessionViewComponent,
     TimingSessionAddDialogComponent,
-    OptionsViewComponent
+    OptionsViewComponent,
+    ActiveTimingSessionsViewComponent
   ],
   imports: [
     BrowserModule,

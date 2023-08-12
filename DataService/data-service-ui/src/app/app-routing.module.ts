@@ -5,6 +5,9 @@ import {TimingSessionViewComponent} from "@app/timing-session-view/timing-sessio
 import {SessionViewComponent} from "@app/session-view/session-view.component";
 import {EventViewComponent} from "@app/event-view/event-view.component";
 import {OptionsViewComponent} from "@app/options-view/options-view.component";
+import {
+  ActiveTimingSessionsViewComponent
+} from "@app/active-timing-sessions-view/active-timing-sessions-view.component";
 
 const routes: Routes = [
   {path: '', pathMatch: 'prefix', redirectTo: 'main'},
@@ -12,6 +15,7 @@ const routes: Routes = [
   {path: 'event/:eventId/session/:sessionId/timing/:timingSessionId', component: TimingSessionViewComponent},
   {path: 'event/:eventId/session/:sessionId', component: SessionViewComponent},
   {path: 'event/:eventId', component: EventViewComponent},
+  {path: 'active-timings', component: ActiveTimingSessionsViewComponent},
   {path: 'options', component: OptionsViewComponent},
 ];
 

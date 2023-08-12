@@ -60,7 +60,6 @@ export class SessionViewComponent implements OnInit {
       if (newTimingSession)
       {
         this.dataClient.startNewTimingSession(newTimingSession).subscribe(createdSessionId => {
-          console.log(createdSessionId);
           this.router.navigate(['timing', createdSessionId], {relativeTo: this.route});
         });
       }
