@@ -1,6 +1,4 @@
 import {ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
-import {DataClient, SeriesDto} from "@app/service/data-service-client";
-import {Observable} from "rxjs";
 import {MediaMatcher} from "@angular/cdk/layout";
 import { OptionsService } from './service/options.service';
 import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
@@ -15,14 +13,24 @@ import {EventSelectorService} from "@app/service/event-selector-service";
             <a class="navbar-brand" routerLink="">BRAAAP</a>
         </span>
       <div class="flex-grow-1">
-        Timing: {{ts.activeSessionsCount}}
+        <i class="material-icons" [class.text-success]="ws.isConnected"
+           [class.text-danger]="!ws.isConnected"
+           ngbTooltip="Соединение с сайтом">public</i>
+        <i class="material-icons" [class.text-success]="(optionsService.$options|async)?.enabled"
+           [class.text-danger]="!(optionsService.$options|async)?.enabled"
+           ngbTooltip="RFID включен">network_check</i>
+        <i class="material-icons"
+           *ngIf="ts.activeSessionsCount > 0"
+           [class.text-success]="ts.activeSessionsCount > 0"
+           ngbTooltip="Идёт запись заездов {{ts.activeSessionsCount}}">receipt_long</i>
       </div>
       <mat-divider></mat-divider>
       <button mat-icon-button (click)="sidenav.toggle()"
               [hidden]="!mobileQuery.matches"><i class="material-icons">menu</i></button>
     </mat-toolbar>
     <mat-sidenav-container class="h-100">
-      <mat-sidenav #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches" position="end"
+      <mat-sidenav #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches"
+                   position="end"
                    [fixedInViewport]="mobileQuery.matches"
                    [fixedTopGap]="mobileQuery.matches ? 56 : 64"
                    (click)="mobileQuery.matches ? sidenav.toggle() : false">
@@ -59,7 +67,8 @@ export class AppComponent implements OnDestroy{
   constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
               public optionsService: OptionsService,
               public ts: TimingSessionsService,
-              public ec: EventSelectorService) {
+              public ec: EventSelectorService,
+              public ws: WebSocketConnectionService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQuery.addEventListener("change", this._mobileQueryListener);
   }

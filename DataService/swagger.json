@@ -631,6 +631,26 @@
         }
       }
     },
+    "/_metadata/getRiderEventInfoUpdate": {
+      "get": {
+        "tags": [
+          "Metadata"
+        ],
+        "operationId": "Metadata_GetRiderEventInfoUpdate",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderEventInfoUpdate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/options": {
       "get": {
         "tags": [
@@ -1632,6 +1652,23 @@
             "items": {
               "$ref": "#/components/schemas/TimingSessionDto"
             }
+          }
+        }
+      },
+      "RiderEventInfoUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "riders": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/RiderEventInfoDto"
+            }
+          },
+          "timingSessionId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },

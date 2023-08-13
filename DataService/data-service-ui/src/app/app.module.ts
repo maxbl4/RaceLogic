@@ -36,6 +36,7 @@ import {TimingSessionsService} from "@app/service/timingSessionsService";
 import { ActiveTimingSessionsViewComponent } from './active-timing-sessions-view/active-timing-sessions-view.component';
 import { EventSelectorViewComponent } from './event-selector-view/event-selector-view.component';
 import {EventSelectorService} from "@app/service/event-selector-service";
+import {MatTooltip, MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [
@@ -58,6 +59,7 @@ import {EventSelectorService} from "@app/service/event-selector-service";
     MatButtonModule,
     MatButtonToggleModule,
     MatToolbarModule,
+    MatTooltipModule,
     MatDividerModule,
     MatSidenavModule,
     MatListModule,

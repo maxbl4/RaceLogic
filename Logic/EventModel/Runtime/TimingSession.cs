@@ -62,6 +62,13 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
             disposable.Add(checkpointHandler = new TimingCheckpointHandler(timingSession.StartTime, Id, session,
                 eventRepository.GetRiderIdentifiers(timingSession.SessionId)));
+
+            messageHub.Publish(new RiderEventInfoUpdate
+            {
+                TimingSessionId = Id,
+                Riders = eventRepository.ListRiderEventInfo(Id) 
+            });
+            
             var ratingUpdates = new Subject<RatingUpdatedMessage>();
             disposable.Add(ratingUpdates);
             disposable.Add(ratingUpdates

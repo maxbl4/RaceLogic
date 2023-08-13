@@ -80,6 +80,13 @@ export class TimingSessionViewComponent implements OnInit {
 
       this.loadSession();
 
+      this.ws.$riderEventInfoUpdate.subscribe(x => {
+        if (x?.timingSessionId != this.id || !x?.riders)
+          return;
+        this.mapRiders(x.riders);
+        this.joinRiders(this.update);
+      });
+
       this.dataClient.listRiderEventInfo(this.id)
         .pipe(switchMap(x => {
           this.mapRiders(x);

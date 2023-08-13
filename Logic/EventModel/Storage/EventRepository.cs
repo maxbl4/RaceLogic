@@ -65,7 +65,6 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         {
             var timingSession = StorageService.Get(timingSessionId);
             var session = GetWithUpstream(timingSession.SessionId);
-            var ev = GetWithUpstream(session.EventId);
             var classes = upstreamDataRepository.ListClasses(session.ClassIds)
                 .ToDictionary(x => x.Id);
             var riders = upstreamDataRepository

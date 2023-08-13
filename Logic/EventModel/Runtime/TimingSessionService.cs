@@ -97,6 +97,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
 
         public TimingSessionUpdate GetTimingSessionRating(Id<TimingSessionDto> id)
         {
+            using var _ = sync.Use();
+            var activeSession = activeSessions
+                .FirstOrDefault(x => x.Id == id);
+            if (activeSession != null)
+            {
+                var rating1 = TimingSessionUpdate.From(id, activeSession.Rating, autoMapperProvider);
+                eventRepository.StorageService.Save(rating1);
+                return rating1;
+            }
              var rating = eventRepository.StorageService.Get<TimingSessionUpdate>(id.Value);
              if (rating != null) return rating;
              var ts = eventRepository.StorageService.Get(id);

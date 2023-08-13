@@ -16,14 +16,16 @@ import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/ti
       <thead>
       <tr>
         <td>Название</td>
+        <td>Активна</td>
         <td>Начало</td>
         <td>Конец</td>
         <td>_</td>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let s of timingSessions|async">
+      <tr *ngFor="let s of timingSessions|async" [class.table-primary]="s.isRunning">
         <td><a [routerLink]="['timing', s.id]">{{s.name}}</a></td>
+        <td>{{s.isRunning ? "Да" : ""}}</td>
         <td>{{s.startTime?.toFormat("HH:mm")}}</td>
         <td>{{s.stopTime?.toFormat("HH:mm")}}</td>
         <td>

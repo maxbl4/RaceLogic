@@ -1191,6 +1191,54 @@ export class MetadataClient {
         }
         return _observableOf(null as any);
     }
+
+    getRiderEventInfoUpdate(): Observable<RiderEventInfoUpdate> {
+        let url_ = this.baseUrl + "/_metadata/getRiderEventInfoUpdate";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetRiderEventInfoUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetRiderEventInfoUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RiderEventInfoUpdate>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RiderEventInfoUpdate>;
+        }));
+    }
+
+    protected processGetRiderEventInfoUpdate(response: HttpResponseBase): Observable<RiderEventInfoUpdate> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RiderEventInfoUpdate.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 @Injectable({
@@ -2891,6 +2939,54 @@ export class ActiveTimingSessionsUpdate implements IActiveTimingSessionsUpdate {
 
 export interface IActiveTimingSessionsUpdate {
     sessions?: TimingSessionDto[] | undefined;
+}
+
+export class RiderEventInfoUpdate implements IRiderEventInfoUpdate {
+    riders?: RiderEventInfoDto[] | undefined;
+    timingSessionId?: string;
+
+    constructor(data?: IRiderEventInfoUpdate) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["riders"])) {
+                this.riders = [] as any;
+                for (let item of _data["riders"])
+                    this.riders!.push(RiderEventInfoDto.fromJS(item));
+            }
+            this.timingSessionId = _data["timingSessionId"];
+        }
+    }
+
+    static fromJS(data: any): RiderEventInfoUpdate {
+        data = typeof data === 'object' ? data : {};
+        let result = new RiderEventInfoUpdate();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.riders)) {
+            data["riders"] = [];
+            for (let item of this.riders)
+                data["riders"].push(item.toJSON());
+        }
+        data["timingSessionId"] = this.timingSessionId;
+        return data;
+    }
+}
+
+export interface IRiderEventInfoUpdate {
+    riders?: RiderEventInfoDto[] | undefined;
+    timingSessionId?: string;
 }
 
 export class RfidOptions implements IRfidOptions {

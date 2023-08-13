@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.CompilerServices;
 using maxbl4.Race.Logic.WebModel;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +17,12 @@ namespace maxbl4.Race.DataService.Controllers
         
         [HttpGet("get" + nameof(ActiveTimingSessionsUpdate))]
         public ActiveTimingSessionsUpdate GetActiveTimingSessionsUpdate()
+        {
+            return default;
+        }
+        
+        [HttpGet("get" + nameof(RiderEventInfoUpdate))]
+        public RiderEventInfoUpdate GetRiderEventInfoUpdate()
         {
             return default;
         }
