@@ -8,6 +8,7 @@ import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/ti
 @Component({
   selector: 'app-session-view',
   template: `
+    <a [routerLink]="['/event', eventId]">Назад к гонке</a>
     <h3>{{sessionDto.name}}</h3>
     <h4>Засечки</h4>
     <button mat-raised-button color="primary" (click)="addTimingSession()">Начать новую засечку</button>
@@ -36,7 +37,8 @@ import {TimingSessionAddDialogComponent} from "@app/timing-session-add-dialog/ti
   ]
 })
 export class SessionViewComponent implements OnInit {
-  private id: string = "";
+  public id: string = "";
+  public eventId: string = "";
   sessionDto: SessionDto = new SessionDto();
   timingSessions: Observable<TimingSessionDto[]>|undefined;
 
@@ -44,6 +46,7 @@ export class SessionViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
+      this.eventId = params.get("eventId")!;
       this.id = params.get("sessionId")!;
       this.dataClient.getSession(this.id).subscribe(x => {
         this.sessionDto = x;

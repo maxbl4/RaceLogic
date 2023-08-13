@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.EventModel.Runtime;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
@@ -19,16 +20,19 @@ namespace maxbl4.Race.DataService.Controllers
         private readonly IUpstreamDataRepository upstreamRepository;
         private readonly IEventRepository eventRepository;
         private readonly ITimingSessionService timingSessionService;
+        private readonly IRfidService rfidService;
 
         public DataController(IUpstreamDataSyncService syncService, 
             IUpstreamDataRepository upstreamRepository, 
             IEventRepository eventRepository,
-            ITimingSessionService timingSessionService)
+            ITimingSessionService timingSessionService,
+            IRfidService rfidService)
         {
             this.syncService = syncService;
             this.upstreamRepository = upstreamRepository;
             this.eventRepository = eventRepository;
             this.timingSessionService = timingSessionService;
+            this.rfidService = rfidService;
         }
 
         [HttpGet("event")]
@@ -114,6 +118,13 @@ namespace maxbl4.Race.DataService.Controllers
             return Ok();
         }
 
+        [HttpPost("manual-checkpoint")]
+        public ActionResult ManualCheckpoint(string riderId)
+        {
+            rfidService.AppendRiderId(riderId);
+            return Ok();
+        }
+        
         [HttpPost("upstream")]
         public async Task<bool> DownloadUpstreamData(bool forceFullSync = false)
         {

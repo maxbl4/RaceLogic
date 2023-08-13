@@ -18,13 +18,13 @@ public class TimingCheckpointHandler: IDisposable
 {
     public Id<TimingSessionDto> TimingSessionId { get; }
     private readonly CompositeDisposable disposable;
-    public ReadOnlyDictionary<string, List<Id<RiderClassRegistrationDto>>> RiderIdMap { get; }
+    public ReadOnlyDictionary<string, List<RiderClassRegistrationDto>> RiderIdMap { get; }
     
     public TimingCheckpointHandler(DateTime startTime, Id<TimingSessionDto> timingSessionId, SessionDto session, 
-        IDictionary<string, List<Id<RiderClassRegistrationDto>>> riderIdMap)
+        IDictionary<string, List<RiderClassRegistrationDto>> riderIdMap)
     {
         this.TimingSessionId = timingSessionId;
-        RiderIdMap = new ReadOnlyDictionary<string, List<Id<RiderClassRegistrationDto>>>(riderIdMap);
+        RiderIdMap = new ReadOnlyDictionary<string, List<RiderClassRegistrationDto>>(riderIdMap);
         disposable = new CompositeDisposable();
         Track = new TrackOfCheckpoints(startTime, new FinishCriteria(session.FinishCriteria));
         CheckpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
@@ -44,9 +44,9 @@ public class TimingCheckpointHandler: IDisposable
     {
         if (RiderIdMap.TryGetValue(rawCheckpoint.RiderId, out var riderIds))
         {
-            foreach (var riderId in riderIds)
+            foreach (var rider in riderIds)
             {
-                observer.OnNext(rawCheckpoint.WithRiderId(riderId.ToString()));
+                observer.OnNext(rawCheckpoint.WithRiderId(rider.Id.ToString()));
             }
         }
         else

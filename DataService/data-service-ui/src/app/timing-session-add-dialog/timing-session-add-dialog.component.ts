@@ -15,12 +15,12 @@ import {SessionDto, TimingSessionDto} from "@app/service/data-service-client";
           <input matInput type="text" placeholder="" [(ngModel)]="timingSession.name">
         </mat-form-field>
         <mat-slide-toggle class="w-100" >Использовать RFID</mat-slide-toggle>
-        <mat-form-field class="w-100">
-          <mat-label>Дата бетонирования</mat-label>
-          <input matInput [matDatepicker]="picker1" >
-          <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
-          <mat-datepicker #picker1></mat-datepicker>
-        </mat-form-field>
+<!--        <mat-form-field class="w-100">-->
+<!--          <mat-label>Дата бетонирования</mat-label>-->
+<!--          <input matInput [matDatepicker]="picker1" >-->
+<!--          <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>-->
+<!--          <mat-datepicker #picker1></mat-datepicker>-->
+<!--        </mat-form-field>-->
         <br/>
         <br/>
         <button mat-raised-button color="primary" (click)="save()" [disabled]="!isFormValid">Дальше</button>

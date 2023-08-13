@@ -80,6 +80,10 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             
             var newSession = new TimingSession(dto.Id, dto.SessionId, checkpointStorage, eventRepository, messageHub, autoMapperProvider);
             activeSessions.Add(newSession);
+            
+            var rating = TimingSessionUpdate.From(newSession.Id, newSession.Rating, autoMapperProvider);
+            eventRepository.StorageService.Save(rating);
+            messageHub.Publish(rating);
         }
 
         public void StopSession(Id<TimingSessionDto> id)

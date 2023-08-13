@@ -82,13 +82,23 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
             return upstreamDataRepository.ListClassRegistrations(championshipId).ToList();
         }
 
-        public Dictionary<string, List<Id<RiderClassRegistrationDto>>> GetRiderIdentifiers(Id<SessionDto> sessionId)
+        public Dictionary<string, List<RiderClassRegistrationDto>> GetRiderIdentifiers(Id<SessionDto> sessionId)
         {
             var session = GetWithUpstream(sessionId);
+            var classRiders = upstreamDataRepository
+                .ListClassRegistrations(session.ClassIds)
+                .ToDictionary(x => x.Id);
             var t = upstreamDataRepository.ListEventRegistrations(session.ClassIds)
-                .SelectMany(x => x.Identifiers, (dto, id) => new {RiderId = dto.RiderClassRegistrationId, Identifier = id})
+                .SelectMany(x => x.Identifiers, (dto, id) => 
+                    new {RiderId = dto.RiderClassRegistrationId,
+                        Rider = classRiders.Get(dto.RiderClassRegistrationId)
+                        ?? new RiderClassRegistrationDto
+                        {
+                            Id = dto.RiderClassRegistrationId
+                        },
+                        Identifier = id})
                 .Where(x => x.Identifier != null)
-                .GroupBy(x => x.Identifier, x => x.RiderId)
+                .GroupBy(x => x.Identifier, x => x.Rider)
                 .ToDictionary(x => x.Key, x => x.ToList());
             return t;
         }

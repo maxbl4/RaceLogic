@@ -70,4 +70,15 @@ ngb-modal-backdrop, ngb-modal-window {
 }
 
 /* Importing Bootstrap SCSS file. */
-@import 'bootstrap/scss/bootstrap';
+//@import 'bootstrap/scss/bootstrap';
+
+input::-webkit-outer-spin-button.hide-arrows,
+input::-webkit-inner-spin-button.hide-arrows {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number].hide-arrows {
+  -moz-appearance: textfield;
+}

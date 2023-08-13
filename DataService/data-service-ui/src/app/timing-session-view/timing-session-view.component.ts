@@ -14,13 +14,24 @@ import {switchMap} from "rxjs";
 @Component({
   selector: 'app-timing-session-view',
   template: `
+    <a [routerLink]="['/event', eventId, 'session', sessionId]">Назад к заезду</a>
     <h3>{{timingSessionDto.name}}</h3>
-    <h4>Засечки</h4>
     <button mat-raised-button color="accent" [hidden]="timingSessionDto.isRunning" (click)="resumeTimingSession()">
       Старт
     </button>
     <button mat-raised-button color="accent" [hidden]="!timingSessionDto.isRunning" (click)="stopTimingSession()">Стоп
     </button>
+    <form (submit)="appendRiderId()">
+      <div class="input-group mb-3">
+        <input type="number" class="form-control hide-arrows"
+               name="manualRiderId"
+               [(ngModel)]="manualRiderId" placeholder="Номер гонщика" aria-label="Номер гонщика">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="submit"
+            [disabled]="!manualRiderId">++</button>
+        </div>
+      </div>
+    </form>
     <table class="table table-bordered" *ngIf="update && update.rating">
       <thead>
       <tr>
@@ -46,9 +57,10 @@ import {switchMap} from "rxjs";
   ]
 })
 export class TimingSessionViewComponent implements OnInit {
-  private id: string = "";
-  private sessionId: string = "";
-  private eventId: string = "";
+  public id: string = "";
+  public sessionId: string = "";
+  public eventId: string = "";
+  public manualRiderId = "";
   private riders?: Map<string, RiderEventInfoDto>;
   timingSessionDto: TimingSessionDto = new TimingSessionDto();
   update?: TimingSessionUpdate;
@@ -131,6 +143,11 @@ export class TimingSessionViewComponent implements OnInit {
 
   stopTimingSession() {
     this.dataClient.stopTimingSession(this.id).subscribe(() => this.loadSession());
+  }
+
+  appendRiderId() {
+    this.dataClient.manualCheckpoint(this.manualRiderId).subscribe()
+    this.manualRiderId = "";
   }
 }
 

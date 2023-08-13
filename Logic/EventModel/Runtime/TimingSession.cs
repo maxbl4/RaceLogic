@@ -76,9 +76,12 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             disposable.Add(cpSubject);
             disposable.Add(messageHub.Subscribe<Checkpoint>(cpSubject.OnNext));
 
-            disposable.Add(checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime)
-                .ToObservable()
-                .Concat(cpSubject)
+            var cps = checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime);
+            foreach (var cp in cps)
+            {
+                checkpointHandler.AppendCheckpoint(cp);
+            }
+            disposable.Add(cpSubject
                 .Subscribe(cp =>
                 {
                     checkpointHandler.AppendCheckpoint(cp);

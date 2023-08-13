@@ -34,6 +34,8 @@ import {OptionsViewComponent} from "@app/options-view/options-view.component";
 import {OptionsService} from "@app/service/options.service";
 import {TimingSessionsService} from "@app/service/timingSessionsService";
 import { ActiveTimingSessionsViewComponent } from './active-timing-sessions-view/active-timing-sessions-view.component';
+import { EventSelectorViewComponent } from './event-selector-view/event-selector-view.component';
+import {EventSelectorService} from "@app/service/event-selector-service";
 
 @NgModule({
   declarations: [
@@ -44,7 +46,8 @@ import { ActiveTimingSessionsViewComponent } from './active-timing-sessions-view
     TimingSessionViewComponent,
     TimingSessionAddDialogComponent,
     OptionsViewComponent,
-    ActiveTimingSessionsViewComponent
+    ActiveTimingSessionsViewComponent,
+    EventSelectorViewComponent
   ],
   imports: [
     BrowserModule,
@@ -80,7 +83,7 @@ import { ActiveTimingSessionsViewComponent } from './active-timing-sessions-view
   ],
   providers: [
     DataClient, StoreClient, WebSocketConnectionService,
-    TimingSessionsService,
+    TimingSessionsService, EventSelectorService,
     {provide: DateAdapter, useClass: PickDateAdapter},
     {provide: MAT_DATE_FORMATS, useValue: PICK_FORMATS},
     OptionsService

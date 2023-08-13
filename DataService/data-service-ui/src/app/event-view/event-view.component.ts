@@ -3,6 +3,7 @@ import {ActivatedRoute} from "@angular/router";
 import {DataClient, EventDto, SessionDto} from "@app/service/data-service-client";
 import {GridOptions} from "ag-grid-community";
 import {Observable} from "rxjs";
+import {EventSelectorService} from "@app/service/event-selector-service";
 
 @Component({
   selector: 'app-event-view',
@@ -22,7 +23,7 @@ import {Observable} from "rxjs";
           <td><a [routerLink]="['session', s.id]">{{s.name}}</a></td>
           <td>{{s.startTime?.toFormat("HH:mm")}}</td>
           <td>{{s.minLap?.toFormat("mmм ssс")}}</td>
-          <td>{{s.finishCriteria?.duration?.toFormat("hhч mmм")}}</td>
+          <td>{{s.finishCriteria?.duration?.toFormat("hhч mmм ssс")}}</td>
         </tr>
       </tbody>
     </table>
@@ -68,11 +69,12 @@ export class EventViewComponent implements OnInit {
     onGridSizeChanged: params => params.api.sizeColumnsToFit()
   };
 
-  constructor(private route:ActivatedRoute, private dataClient: DataClient) { }
+  constructor(private route:ActivatedRoute, private dataClient: DataClient,
+              private ec: EventSelectorService) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.id = params.get("eventId")!;
+      this.id = params.get("eventId") ?? this.ec.selectedEventId!;
       this.dataClient.getEvent(this.id).subscribe(x => this.eventDto = x);
       this.sessions = this.dataClient.listSessions(this.id);
     });

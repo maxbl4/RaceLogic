@@ -27,6 +27,13 @@ namespace maxbl4.Race.Logic.EventModel.Storage.Model
         public bool IsSeed { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+
+        public override string ToString()
+        {
+            if (FirstName != null || LastName != null)
+                return string.Join(" ", LastName, FirstName);
+            return Id.ToString();
+        }
     }
     
     public class RiderEventInfoDto : IHasPersonName

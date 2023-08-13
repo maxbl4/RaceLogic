@@ -5,6 +5,7 @@ import {MediaMatcher} from "@angular/cdk/layout";
 import { OptionsService } from './service/options.service';
 import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
 import {TimingSessionsService} from "@app/service/timingSessionsService";
+import {EventSelectorService} from "@app/service/event-selector-service";
 
 @Component({
   selector: 'app-root',
@@ -27,7 +28,10 @@ import {TimingSessionsService} from "@app/service/timingSessionsService";
                    (click)="mobileQuery.matches ? sidenav.toggle() : false">
         <mat-nav-list>
           <a mat-list-item routerLinkActive="text-danger" routerLink="/main">Main</a>
-          <a mat-list-item routerLinkActive="text-danger" routerLink="/active-timings">Засечки</a>
+          <a mat-list-item routerLinkActive="text-danger" routerLink="/event-selector">Выбор гонки</a>
+          <a *ngIf="ec.selectedEventId" mat-list-item routerLinkActive="text-danger"
+             [routerLink]="['/event', ec.selectedEventId]">Заезды</a>
+          <a mat-list-item routerLinkActive="text-danger" routerLink="/active-timings">Активные засечки</a>
           <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
           <mat-divider></mat-divider>
           <a mat-list-item href="/files" (click)="goto('/files')">File Browser</a>
@@ -54,7 +58,8 @@ export class AppComponent implements OnDestroy{
 
   constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
               public optionsService: OptionsService,
-              public ts: TimingSessionsService) {
+              public ts: TimingSessionsService,
+              public ec: EventSelectorService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this.mobileQuery.addEventListener("change", this._mobileQueryListener);
   }
