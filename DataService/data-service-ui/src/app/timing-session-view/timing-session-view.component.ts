@@ -24,7 +24,7 @@ import {switchMap} from "rxjs";
     <button class="ml-2" mat-raised-button color="primary"
             (click)="refreshRating()">
       <i class="material-icons">refresh</i>Пересчитать
-    </button>
+    </button> ({{update?.updated?.toFormat("HH:mm:ss")}})
     <form (submit)="appendRiderId()" *ngIf="timingSessionDto.isRunning">
       <div class="input-group mb-3">
         <input type="number" class="form-control hide-arrows"
@@ -86,7 +86,6 @@ export class TimingSessionViewComponent implements OnInit {
       this.loadSession();
 
       this.ws.$timingSessionUpdates.subscribe(x => {
-        console.log(x);
         if (x?.timingSessionId != this.id)
           return;
         this.update = x;
