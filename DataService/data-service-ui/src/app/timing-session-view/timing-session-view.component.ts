@@ -1,15 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {
-  DataClient, IRiderEventInfoDto,
-  IRoundPosition,
-  RiderEventInfoDto,
+  DataClient, RiderEventInfoDto,
   TimingSessionDto,
   TimingSessionUpdate
 } from "@app/service/data-service-client";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
-import {switchMap} from "rxjs";
 
 @Component({
   selector: 'app-timing-session-view',

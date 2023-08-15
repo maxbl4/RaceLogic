@@ -4,11 +4,9 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using maxbl4.Infrastructure;
 using maxbl4.Infrastructure.Extensions.DictionaryExt;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
-using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
 using maxbl4.Race.Logic.Checkpoints;
@@ -79,8 +77,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 .Throttle(TimeSpan.FromMilliseconds(200))
                 .Subscribe(r =>
                 {
-                    messageHub.Publish(r);
-                    messageHub.Publish(GetTimingSessionUpdate());
+                    try
+                    {
+                        messageHub.Publish(r);
+                        messageHub.Publish(GetTimingSessionUpdate());
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, "Publish session update failed");
+                    }
                 }));
             
             var cps = checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime);
@@ -91,15 +96,15 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             
             if (subscribeToRealtimeData)
             {
+                disposable.Add(checkpointHandler.TrackUpdated.Subscribe(_ =>
+                {
+                    ratingUpdates.OnNext(new RatingUpdatedMessage(checkpointHandler.Track.Rating, Id));
+                }));
                 var cpSubject = new Subject<Checkpoint>();
                 disposable.Add(cpSubject);
                 disposable.Add(messageHub.Subscribe<Checkpoint>(cpSubject.OnNext));
                 disposable.Add(cpSubject
-                    .Subscribe(cp =>
-                    {
-                        checkpointHandler.AppendCheckpoint(cp);
-                        ratingUpdates.OnNext(new RatingUpdatedMessage(checkpointHandler.Track.Rating, Id));
-                    }));
+                    .Subscribe(checkpointHandler.AppendCheckpoint));
             }
         }
 

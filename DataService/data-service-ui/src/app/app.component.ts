@@ -41,7 +41,7 @@ import {EventSelectorService} from "@app/service/event-selector-service";
           <a mat-list-item routerLinkActive="text-danger" routerLink="/event-selector">Выбор гонки</a>
           <a *ngIf="ec.selectedEventId" mat-list-item routerLinkActive="text-danger"
              [routerLink]="['/event', ec.selectedEventId]">Заезды</a>
-          <a mat-list-item routerLinkActive="text-danger" routerLink="/active-timings">Активные засечки</a>
+          <a mat-list-item routerLinkActive="text-danger" routerLink="/active-timings">Активные засечки<ng-container *ngIf="ts.activeSessionsCount"> ({{ts.activeSessionsCount}})</ng-container></a>
           <a mat-list-item routerLinkActive="text-danger" routerLink="/options">Options</a>
           <mat-divider></mat-divider>
           <a mat-list-item href="/files" (click)="goto('/files')">File Browser</a>

@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
-using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.EventModel.Storage.Identifier;
 using maxbl4.Race.Logic.EventModel.Storage.Model;
 using maxbl4.Race.Logic.RoundTiming;
-using maxbl4.Race.Logic.WebModel;
-using RoundPosition = maxbl4.Race.Logic.RoundTiming.RoundPosition;
 
 namespace maxbl4.Race.Logic.EventModel.Runtime;
 
@@ -22,6 +16,8 @@ public class TimingCheckpointHandler: IDisposable
     public Id<TimingSessionDto> TimingSessionId { get; }
     private readonly CompositeDisposable disposable;
     public ReadOnlyDictionary<string, List<RiderClassRegistrationDto>> RiderIdMap { get; }
+    private readonly Subject<DateTime> trackUpdated = new();
+    public IObservable<DateTime> TrackUpdated => trackUpdated;
     
     public TimingCheckpointHandler(DateTime startTime, Id<TimingSessionDto> timingSessionId, SessionDto session, 
         IDictionary<string, List<RiderClassRegistrationDto>> riderIdMap)
@@ -31,7 +27,13 @@ public class TimingCheckpointHandler: IDisposable
         disposable = new CompositeDisposable();
         Track = new TrackOfCheckpoints(startTime, new FinishCriteria(session.FinishCriteria));
         CheckpointAggregator = TimestampAggregatorConfigurations.ForCheckpoint(session.MinLap);
-        disposable.Add(CheckpointAggregator.Subscribe(Track.Append));
+        disposable.Add(CheckpointAggregator.Subscribe(AddCheckpointToTrack));
+    }
+
+    public void AddCheckpointToTrack(Checkpoint cp)
+    {
+        Track.Append(cp);
+        trackUpdated.OnNext(cp.Timestamp);
     }
 
     public TimestampAggregator<Checkpoint> CheckpointAggregator { get; }
