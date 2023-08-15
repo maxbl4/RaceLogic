@@ -1,7 +1,7 @@
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {BehaviorSubject} from "rxjs";
 import {Injectable} from "@angular/core";
-import {ActiveTimingSessionsUpdate, RiderEventInfoUpdate, TimingSessionUpdate} from "@app/service/data-service-client";
+import {ActiveTimingSessionsUpdate, TimingSessionUpdate} from "@app/service/data-service-client";
 
 @Injectable()
 export class WebSocketConnectionService {
@@ -9,10 +9,10 @@ export class WebSocketConnectionService {
   private connection: HubConnection;
   readonly $timingSessionUpdates = new BehaviorSubject<TimingSessionUpdate>(new TimingSessionUpdate());
   readonly $activeTimingSessionsUpdates = new BehaviorSubject<ActiveTimingSessionsUpdate>(new ActiveTimingSessionsUpdate());
-  readonly $riderEventInfoUpdate = new BehaviorSubject<RiderEventInfoUpdate>(new RiderEventInfoUpdate());
 
   constructor() {
-    this.connection = new HubConnectionBuilder().withUrl("/_ws/race").build();
+    this.connection = new HubConnectionBuilder()
+      .withUrl("/_ws/race").build();
     this.connection.onclose(err => {
       this.isConnected = false;
       console.log("Ws Connection closed: ", err);
@@ -25,10 +25,6 @@ export class WebSocketConnectionService {
     this.connection.on("ActiveTimingSessionsUpdate",
       (x:ActiveTimingSessionsUpdate) => {
         this.$activeTimingSessionsUpdates.next(ActiveTimingSessionsUpdate.fromJS(x))
-      });
-    this.connection.on("RiderEventInfoUpdate",
-      (x:RiderEventInfoUpdate) => {
-        this.$riderEventInfoUpdate.next(RiderEventInfoUpdate.fromJS(x))
       });
     this.startConnection();
   }

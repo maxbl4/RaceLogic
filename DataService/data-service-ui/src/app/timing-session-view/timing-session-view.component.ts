@@ -21,14 +21,18 @@ import {switchMap} from "rxjs";
     </button>
     <button mat-raised-button color="accent" [hidden]="!timingSessionDto.isRunning" (click)="stopTimingSession()">Стоп
     </button>
-    <form (submit)="appendRiderId()">
+    <button class="ml-2" mat-raised-button color="primary"
+            (click)="refreshRating()">
+      <i class="material-icons">refresh</i>Пересчитать
+    </button>
+    <form (submit)="appendRiderId()" *ngIf="timingSessionDto.isRunning">
       <div class="input-group mb-3">
         <input type="number" class="form-control hide-arrows"
                name="manualRiderId"
                [(ngModel)]="manualRiderId" placeholder="Номер гонщика" aria-label="Номер гонщика">
         <div class="input-group-append">
           <button class="btn btn-outline-secondary" type="submit"
-            [disabled]="!manualRiderId">++</button>
+                  [disabled]="!manualRiderId"><i class="material-icons">send</i></button>
         </div>
       </div>
     </form>
@@ -36,13 +40,15 @@ import {switchMap} from "rxjs";
       <thead>
       <tr>
         <td>№</td>
+        <td>Класс</td>
         <td>ФИО</td>
         <td>Круги</td>
-        <td *ngFor="let l of laps;let i = index">Круг {{i+1}}</td>
+        <td *ngFor="let l of laps;let i = index">Круг {{i + 1}}</td>
       </tr>
       </thead>
-      <tr *ngFor="let r of rating">
+      <tr *ngFor="let r of update.rating">
         <td>{{r.rider?.number}}</td>
+        <td>{{r.rider?.class?.name}}</td>
         <td>{{r.rider?.lastName}} {{r.rider?.firstName}}</td>
         <td>{{r.lapCount}}</td>
         <td *ngFor="let l of laps;let i = index">
@@ -64,7 +70,6 @@ export class TimingSessionViewComponent implements OnInit {
   private riders?: Map<string, RiderEventInfoDto>;
   timingSessionDto: TimingSessionDto = new TimingSessionDto();
   update?: TimingSessionUpdate;
-  rating: IRoundPositionWithRider[] = [];
   laps: any[] = [];
 
   constructor(private route:ActivatedRoute, private dataClient: DataClient,
@@ -80,61 +85,59 @@ export class TimingSessionViewComponent implements OnInit {
 
       this.loadSession();
 
-      this.ws.$riderEventInfoUpdate.subscribe(x => {
-        if (x?.timingSessionId != this.id || !x?.riders)
+      this.ws.$timingSessionUpdates.subscribe(x => {
+        console.log(x);
+        if (x?.timingSessionId != this.id)
           return;
-        this.mapRiders(x.riders);
-        this.joinRiders(this.update);
+        this.update = x;
+        this.laps = new Array(x.maxLapCount);
+      });
+      this.dataClient.getTimingSessionRating(this.id).subscribe(x => {
+        if (x?.timingSessionId != this.id)
+          return;
+        this.update = x;
+        this.laps = new Array(x.maxLapCount);
       });
 
-      this.dataClient.listRiderEventInfo(this.id)
-        .pipe(switchMap(x => {
-          this.mapRiders(x);
-          return this.dataClient.getTimingSessionRating(this.id);
-        }))
-        .subscribe(x => {
-          this.update = x;
-          this.joinRiders(x);
-          this.ws.$timingSessionUpdates.subscribe(x => {
-            if (x?.timingSessionId != this.id)
-              return;
-            this.update = x;
-            this.joinRiders(x);
-          });
-        });
+      // this.dataClient.listRiderEventInfo(this.id)
+      //   .pipe(switchMap(x => {
+      //     this.mapRiders(x);
+      //     return this.dataClient.getTimingSessionRating(this.id);
+      //   }))
+      //   .subscribe();
     });
   }
 
-  private joinRiders(x?: TimingSessionUpdate) {
-    if (!x){
-      this.rating = [];
-      return;
-    }
-    this.rating = <IRoundPositionWithRider[]>x.rating ?? [];
-    let maxLaps = 0;
-    for (let r of this.rating) {
-      r.rider = this.getRider(r.riderId);
-      if (maxLaps < (r.laps?.length ?? 0)) {
-        maxLaps = r.laps!.length;
-      }
-    }
-    this.laps = new Array(maxLaps);
-  }
+  // private joinRiders(x?: TimingSessionUpdate) {
+  //   if (!x){
+  //     this.rating = [];
+  //     return;
+  //   }
+  //   this.rating = <IRoundPositionWithRider[]>x.rating ?? [];
+  //   let maxLaps = 0;
+  //   for (let r of this.rating) {
+  //     r.rider = this.getRider(r.riderId);
+  //     if (maxLaps < (r.laps?.length ?? 0)) {
+  //       maxLaps = r.laps!.length;
+  //     }
+  //   }
+  //   this.laps = new Array(maxLaps);
+  // }
 
   loadSession(){
     this.dataClient.getTimingSession(this.id)
       .subscribe(x => this.timingSessionDto = x);
   }
 
-  mapRiders(riderInfos: RiderEventInfoDto[]){
-    let map = new Map<string, RiderEventInfoDto>();
-    for (let r of riderInfos){
-      if (r.id) {
-        map.set(r.id, r);
-      }
-    }
-    this.riders = map;
-  }
+  // mapRiders(riderInfos: RiderEventInfoDto[]){
+  //   let map = new Map<string, RiderEventInfoDto>();
+  //   for (let r of riderInfos){
+  //     if (r.id) {
+  //       map.set(r.id, r);
+  //     }
+  //   }
+  //   this.riders = map;
+  // }
 
   getRider(id?:string):RiderEventInfoDto{
     if (id) {
@@ -156,8 +159,8 @@ export class TimingSessionViewComponent implements OnInit {
     this.dataClient.manualCheckpoint(this.manualRiderId).subscribe()
     this.manualRiderId = "";
   }
-}
 
-interface IRoundPositionWithRider extends IRoundPosition{
-  rider?: IRiderEventInfoDto;
+  refreshRating() {
+    this.dataClient.getTimingSessionRating(this.id, true).subscribe();
+  }
 }

@@ -14,6 +14,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         void StopSession(Id<TimingSessionDto> id);
         List<TimingSessionDto> ListActiveTimingSessions();
         void ResumeSession(Id<TimingSessionDto> id);
-        TimingSessionUpdate GetTimingSessionRating(Id<TimingSessionDto> id);
+        TimingSessionUpdate GetTimingSessionRating(Id<TimingSessionDto> id, bool forceUpdate = false);
     }
 }

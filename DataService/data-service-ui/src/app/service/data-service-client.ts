@@ -584,12 +584,16 @@ export class DataClient {
         return _observableOf(null as any);
     }
 
-    getTimingSessionRating(timingSessionId?: string | undefined): Observable<TimingSessionUpdate> {
+    getTimingSessionRating(timingSessionId?: string | undefined, forceUpdate?: boolean | undefined): Observable<TimingSessionUpdate> {
         let url_ = this.baseUrl + "/data/timing-session-rating?";
         if (timingSessionId === null)
             throw new Error("The parameter 'timingSessionId' cannot be null.");
         else if (timingSessionId !== undefined)
             url_ += "timingSessionId=" + encodeURIComponent("" + timingSessionId) + "&";
+        if (forceUpdate === null)
+            throw new Error("The parameter 'forceUpdate' cannot be null.");
+        else if (forceUpdate !== undefined)
+            url_ += "forceUpdate=" + encodeURIComponent("" + forceUpdate) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -1182,54 +1186,6 @@ export class MetadataClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = ActiveTimingSessionsUpdate.fromJS(resultData200);
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    getRiderEventInfoUpdate(): Observable<RiderEventInfoUpdate> {
-        let url_ = this.baseUrl + "/_metadata/getRiderEventInfoUpdate";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetRiderEventInfoUpdate(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetRiderEventInfoUpdate(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<RiderEventInfoUpdate>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<RiderEventInfoUpdate>;
-        }));
-    }
-
-    protected processGetRiderEventInfoUpdate(response: HttpResponseBase): Observable<RiderEventInfoUpdate> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = RiderEventInfoUpdate.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -2525,6 +2481,11 @@ export class TimingSessionUpdate implements ITimingSessionUpdate {
     id?: string;
     timingSessionId?: string;
     rating?: RoundPosition[] | undefined;
+    resolvedCheckpoints?: Checkpoint[] | undefined;
+    riders?: Rider[] | undefined;
+    created?: DateTime;
+    updated?: DateTime;
+    maxLapCount?: number;
 
     constructor(data?: ITimingSessionUpdate) {
         if (data) {
@@ -2544,6 +2505,19 @@ export class TimingSessionUpdate implements ITimingSessionUpdate {
                 for (let item of _data["rating"])
                     this.rating!.push(RoundPosition.fromJS(item));
             }
+            if (Array.isArray(_data["resolvedCheckpoints"])) {
+                this.resolvedCheckpoints = [] as any;
+                for (let item of _data["resolvedCheckpoints"])
+                    this.resolvedCheckpoints!.push(Checkpoint.fromJS(item));
+            }
+            if (Array.isArray(_data["riders"])) {
+                this.riders = [] as any;
+                for (let item of _data["riders"])
+                    this.riders!.push(Rider.fromJS(item));
+            }
+            this.created = _data["created"] ? DateTime.fromISO(_data["created"].toString()) : <any>undefined;
+            this.updated = _data["updated"] ? DateTime.fromISO(_data["updated"].toString()) : <any>undefined;
+            this.maxLapCount = _data["maxLapCount"];
         }
     }
 
@@ -2563,6 +2537,19 @@ export class TimingSessionUpdate implements ITimingSessionUpdate {
             for (let item of this.rating)
                 data["rating"].push(item.toJSON());
         }
+        if (Array.isArray(this.resolvedCheckpoints)) {
+            data["resolvedCheckpoints"] = [];
+            for (let item of this.resolvedCheckpoints)
+                data["resolvedCheckpoints"].push(item.toJSON());
+        }
+        if (Array.isArray(this.riders)) {
+            data["riders"] = [];
+            for (let item of this.riders)
+                data["riders"].push(item.toJSON());
+        }
+        data["created"] = this.created ? this.created.toString() : <any>undefined;
+        data["updated"] = this.updated ? this.updated.toString() : <any>undefined;
+        data["maxLapCount"] = this.maxLapCount;
         return data;
     }
 }
@@ -2571,6 +2558,11 @@ export interface ITimingSessionUpdate {
     id?: string;
     timingSessionId?: string;
     rating?: RoundPosition[] | undefined;
+    resolvedCheckpoints?: Checkpoint[] | undefined;
+    riders?: Rider[] | undefined;
+    created?: DateTime;
+    updated?: DateTime;
+    maxLapCount?: number;
 }
 
 export class RoundPosition implements IRoundPosition {
@@ -2582,6 +2574,7 @@ export class RoundPosition implements IRoundPosition {
     finished?: boolean;
     started?: boolean;
     riderId?: string | undefined;
+    rider?: Rider | undefined;
 
     constructor(data?: IRoundPosition) {
         if (data) {
@@ -2606,6 +2599,7 @@ export class RoundPosition implements IRoundPosition {
             this.finished = _data["finished"];
             this.started = _data["started"];
             this.riderId = _data["riderId"];
+            this.rider = _data["rider"] ? Rider.fromJS(_data["rider"]) : <any>undefined;
         }
     }
 
@@ -2630,6 +2624,7 @@ export class RoundPosition implements IRoundPosition {
         data["finished"] = this.finished;
         data["started"] = this.started;
         data["riderId"] = this.riderId;
+        data["rider"] = this.rider ? this.rider.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -2643,6 +2638,7 @@ export interface IRoundPosition {
     finished?: boolean;
     started?: boolean;
     riderId?: string | undefined;
+    rider?: Rider | undefined;
 }
 
 export class Lap implements ILap {
@@ -2695,6 +2691,170 @@ export interface ILap {
     duration?: Duration;
     aggDuration?: Duration;
     sequentialNumber?: number;
+}
+
+export class Rider implements IRider {
+    id?: string | undefined;
+    number?: string | undefined;
+    firstName?: string | undefined;
+    parentName?: string | undefined;
+    lastName?: string | undefined;
+    class?: Class | undefined;
+    isWrongSession?: boolean;
+
+    constructor(data?: IRider) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.number = _data["number"];
+            this.firstName = _data["firstName"];
+            this.parentName = _data["parentName"];
+            this.lastName = _data["lastName"];
+            this.class = _data["class"] ? Class.fromJS(_data["class"]) : <any>undefined;
+            this.isWrongSession = _data["isWrongSession"];
+        }
+    }
+
+    static fromJS(data: any): Rider {
+        data = typeof data === 'object' ? data : {};
+        let result = new Rider();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["number"] = this.number;
+        data["firstName"] = this.firstName;
+        data["parentName"] = this.parentName;
+        data["lastName"] = this.lastName;
+        data["class"] = this.class ? this.class.toJSON() : <any>undefined;
+        data["isWrongSession"] = this.isWrongSession;
+        return data;
+    }
+}
+
+export interface IRider {
+    id?: string | undefined;
+    number?: string | undefined;
+    firstName?: string | undefined;
+    parentName?: string | undefined;
+    lastName?: string | undefined;
+    class?: Class | undefined;
+    isWrongSession?: boolean;
+}
+
+export class Class implements IClass {
+    id?: string | undefined;
+    name?: string | undefined;
+
+    constructor(data?: IClass) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): Class {
+        data = typeof data === 'object' ? data : {};
+        let result = new Class();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        return data;
+    }
+}
+
+export interface IClass {
+    id?: string | undefined;
+    name?: string | undefined;
+}
+
+export class Checkpoint implements ICheckpoint {
+    timestamp?: DateTime;
+    riderId?: string | undefined;
+    lastSeen?: DateTime;
+    count?: number;
+    aggregated?: boolean;
+    isManual?: boolean;
+    rps?: number;
+    id?: string;
+
+    constructor(data?: ICheckpoint) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.timestamp = _data["timestamp"] ? DateTime.fromISO(_data["timestamp"].toString()) : <any>undefined;
+            this.riderId = _data["riderId"];
+            this.lastSeen = _data["lastSeen"] ? DateTime.fromISO(_data["lastSeen"].toString()) : <any>undefined;
+            this.count = _data["count"];
+            this.aggregated = _data["aggregated"];
+            this.isManual = _data["isManual"];
+            this.rps = _data["rps"];
+            this.id = _data["id"];
+        }
+    }
+
+    static fromJS(data: any): Checkpoint {
+        data = typeof data === 'object' ? data : {};
+        let result = new Checkpoint();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["timestamp"] = this.timestamp ? this.timestamp.toString() : <any>undefined;
+        data["riderId"] = this.riderId;
+        data["lastSeen"] = this.lastSeen ? this.lastSeen.toString() : <any>undefined;
+        data["count"] = this.count;
+        data["aggregated"] = this.aggregated;
+        data["isManual"] = this.isManual;
+        data["rps"] = this.rps;
+        data["id"] = this.id;
+        return data;
+    }
+}
+
+export interface ICheckpoint {
+    timestamp?: DateTime;
+    riderId?: string | undefined;
+    lastSeen?: DateTime;
+    count?: number;
+    aggregated?: boolean;
+    isManual?: boolean;
+    rps?: number;
+    id?: string;
 }
 
 export class SeriesDto implements ISeriesDto {
@@ -2939,54 +3099,6 @@ export class ActiveTimingSessionsUpdate implements IActiveTimingSessionsUpdate {
 
 export interface IActiveTimingSessionsUpdate {
     sessions?: TimingSessionDto[] | undefined;
-}
-
-export class RiderEventInfoUpdate implements IRiderEventInfoUpdate {
-    riders?: RiderEventInfoDto[] | undefined;
-    timingSessionId?: string;
-
-    constructor(data?: IRiderEventInfoUpdate) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["riders"])) {
-                this.riders = [] as any;
-                for (let item of _data["riders"])
-                    this.riders!.push(RiderEventInfoDto.fromJS(item));
-            }
-            this.timingSessionId = _data["timingSessionId"];
-        }
-    }
-
-    static fromJS(data: any): RiderEventInfoUpdate {
-        data = typeof data === 'object' ? data : {};
-        let result = new RiderEventInfoUpdate();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.riders)) {
-            data["riders"] = [];
-            for (let item of this.riders)
-                data["riders"].push(item.toJSON());
-        }
-        data["timingSessionId"] = this.timingSessionId;
-        return data;
-    }
-}
-
-export interface IRiderEventInfoUpdate {
-    riders?: RiderEventInfoDto[] | undefined;
-    timingSessionId?: string;
 }
 
 export class RfidOptions implements IRfidOptions {

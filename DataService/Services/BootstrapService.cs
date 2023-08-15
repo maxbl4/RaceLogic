@@ -40,7 +40,6 @@ namespace maxbl4.Race.DataService.Services
         {
             CreateWsProxy<TimingSessionUpdate>();
             CreateWsProxy<ActiveTimingSessionsUpdate>();
-            CreateWsProxy<RiderEventInfoUpdate>();
         }
 
         private void CreateWsProxy<T>()

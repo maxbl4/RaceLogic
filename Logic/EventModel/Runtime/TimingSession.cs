@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using maxbl4.Infrastructure;
+using maxbl4.Infrastructure.Extensions.DictionaryExt;
 using maxbl4.Infrastructure.Extensions.DisposableExt;
 using maxbl4.Infrastructure.Extensions.SemaphoreExt;
 using maxbl4.Infrastructure.MessageHub;
@@ -32,8 +34,10 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         private CompositeDisposable disposable;
         private TimingCheckpointHandler checkpointHandler;
         private readonly SyncLock sync = new();
-        
+        private Dictionary<string,Rider> riderLookup;
+
         public List<RoundPosition> Rating => checkpointHandler.Track.Rating;
+        public List<Checkpoint> Checkpoints => checkpointHandler.Track.Checkpoints;
 
         public TimingSession(Id<TimingSessionDto> id,
             Id<SessionDto> sessionId,
@@ -47,10 +51,14 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             this.eventRepository = eventRepository;
             this.messageHub = messageHub;
             this.autoMapperProvider = autoMapperProvider;
+        }
+
+        public void Start()
+        {
             Reload();
         }
 
-        public void Reload()
+        public void Reload(bool subscribeToRealtimeData = true)
         {
             using var _ = sync.Use();
             disposable?.DisposeSafe();
@@ -58,16 +66,12 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             disposable = new CompositeDisposable();
             var timingSession = eventRepository.StorageService.Get(Id);
             logger.Information("Activating {name} {id}", timingSession.Name, Id);
-            
+
+            var riderIdMap = eventRepository.GetRidersWithIdentifiers(timingSession.SessionId);
+            CreateRiderIdLookups(riderIdMap);
             var session = eventRepository.GetWithUpstream(timingSession.SessionId);
             disposable.Add(checkpointHandler = new TimingCheckpointHandler(timingSession.StartTime, Id, session,
-                eventRepository.GetRiderIdentifiers(timingSession.SessionId)));
-
-            messageHub.Publish(new RiderEventInfoUpdate
-            {
-                TimingSessionId = Id,
-                Riders = eventRepository.ListRiderEventInfo(Id) 
-            });
+                riderIdMap));
             
             var ratingUpdates = new Subject<RatingUpdatedMessage>();
             disposable.Add(ratingUpdates);
@@ -76,24 +80,76 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 .Subscribe(r =>
                 {
                     messageHub.Publish(r);
-                    var update = TimingSessionUpdate.From(this.Id, this.Rating, autoMapperProvider);
-                    messageHub.Publish(update);
+                    messageHub.Publish(GetTimingSessionUpdate());
                 }));
-            var cpSubject = new Subject<Checkpoint>();
-            disposable.Add(cpSubject);
-            disposable.Add(messageHub.Subscribe<Checkpoint>(cpSubject.OnNext));
-
+            
             var cps = checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime);
             foreach (var cp in cps)
             {
                 checkpointHandler.AppendCheckpoint(cp);
             }
-            disposable.Add(cpSubject
-                .Subscribe(cp =>
+            
+            if (subscribeToRealtimeData)
+            {
+                var cpSubject = new Subject<Checkpoint>();
+                disposable.Add(cpSubject);
+                disposable.Add(messageHub.Subscribe<Checkpoint>(cpSubject.OnNext));
+                disposable.Add(cpSubject
+                    .Subscribe(cp =>
+                    {
+                        checkpointHandler.AppendCheckpoint(cp);
+                        ratingUpdates.OnNext(new RatingUpdatedMessage(checkpointHandler.Track.Rating, Id));
+                    }));
+            }
+        }
+
+        private void CreateRiderIdLookups(Dictionary<string, List<RiderClassRegistrationDto>> riderIdMap)
+        {
+            var session = eventRepository.GetWithUpstream(SessionId);
+            var classes = session.ClassIds.Select(x => eventRepository.GetWithUpstream(x))
+                .GroupBy(x => x.Id)
+                .ToDictionary(x => x.Key, x => x.First());
+            riderLookup = riderIdMap.Values.SelectMany(x => x)
+                .GroupBy(x => x.Id)
+                .ToDictionary(x => x.Key.ToString(), x =>
                 {
-                    checkpointHandler.AppendCheckpoint(cp);
-                    ratingUpdates.OnNext(new RatingUpdatedMessage(checkpointHandler.Track.Rating, Id));    
-                }));
+                    var r = x.First();
+                    return new Rider
+                    {
+                        Id = r.Id.ToString(),
+                        Class = new Class
+                        {
+                            Id = r.ClassId.ToString(),
+                            Name = classes.Get(r.ClassId)?.Name ?? "<НЕТ>"
+                        },
+                        FirstName = r.FirstName,
+                        ParentName = r.ParentName,
+                        LastName = r.LastName,
+                        Number = r.Number.ToString()
+                    };
+                });
+        }
+
+        public TimingSessionUpdate GetTimingSessionUpdate()
+        {
+            var update = new TimingSessionUpdate
+            {
+                Id = Id.Value,
+                TimingSessionId = Id,
+                Rating = Rating.Select(MapRating).ToList(),
+                ResolvedCheckpoints = Checkpoints,
+                Riders = riderLookup.Values.ToList(),
+                MaxLapCount = Rating.Count > 0 ? Rating.Max(x => x.LapCount) : 0
+            };
+            return update;
+        }
+
+        private WebModel.RoundPosition MapRating(RoundPosition o)
+        {
+            var p = autoMapperProvider.Map<WebModel.RoundPosition>(o);
+            p.RiderId = o.RiderId;
+            p.Rider = riderLookup.Get(o.RiderId) ?? new Rider{Number = o.RiderId,LastName = "#", FirstName = o.RiderId};
+            return p;
         }
 
         public void Dispose()

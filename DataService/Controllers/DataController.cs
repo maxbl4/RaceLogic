@@ -100,9 +100,9 @@ namespace maxbl4.Race.DataService.Controllers
         }
         
         [HttpGet("timing-session-rating")]
-        public ActionResult<TimingSessionUpdate> GetTimingSessionRating(Id<TimingSessionDto> timingSessionId)
+        public ActionResult<TimingSessionUpdate> GetTimingSessionRating(Id<TimingSessionDto> timingSessionId, bool forceUpdate = false)
         {
-            return timingSessionService.GetTimingSessionRating(timingSessionId);
+            return timingSessionService.GetTimingSessionRating(timingSessionId, forceUpdate);
         }
         
         [HttpGet("active-timing-session-rating")]

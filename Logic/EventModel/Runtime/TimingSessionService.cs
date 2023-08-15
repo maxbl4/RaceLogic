@@ -79,9 +79,10 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             eventRepository.StorageService.Save(dto);
             
             var newSession = new TimingSession(dto.Id, dto.SessionId, checkpointStorage, eventRepository, messageHub, autoMapperProvider);
+            newSession.Start();
             activeSessions.Add(newSession);
-            
-            var rating = TimingSessionUpdate.From(newSession.Id, newSession.Rating, autoMapperProvider);
+
+            var rating = newSession.GetTimingSessionUpdate();
             eventRepository.StorageService.Save(rating);
             messageHub.Publish(rating);
         }
@@ -95,32 +96,36 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             StopSession(activeSession.SessionId);
         }
 
-        public TimingSessionUpdate GetTimingSessionRating(Id<TimingSessionDto> id)
+        public TimingSessionUpdate GetTimingSessionRating(Id<TimingSessionDto> id, bool forceUpdate = false)
         {
             using var _ = sync.Use();
+            TimingSessionUpdate rating;
+            
             var activeSession = activeSessions
                 .FirstOrDefault(x => x.Id == id);
             if (activeSession != null)
             {
-                var rating1 = TimingSessionUpdate.From(id, activeSession.Rating, autoMapperProvider);
-                eventRepository.StorageService.Save(rating1);
-                return rating1;
+                rating = activeSession.GetTimingSessionUpdate();
             }
-             var rating = eventRepository.StorageService.Get<TimingSessionUpdate>(id.Value);
-             if (rating != null) return rating;
-             var ts = eventRepository.StorageService.Get(id);
-             var session = eventRepository.GetWithUpstream(ts.SessionId);
-
-             var cpHandler = new TimingCheckpointHandler(ts.StartTime, id, session,
-                 eventRepository.GetRiderIdentifiers(ts.SessionId));
-             var cps = checkpointStorage.ListCheckpoints(ts.StartTime, ts.StopTime);
-             foreach (var cp in cps)
-             {
-                 cpHandler.AppendCheckpoint(cp);
-             }
-             rating = TimingSessionUpdate.From(id, cpHandler.Track.Rating, autoMapperProvider);
-             eventRepository.StorageService.Save(rating);
-             return rating;
+            else
+            {
+                rating = eventRepository.StorageService.Get<TimingSessionUpdate>(id.Value);
+                if (!forceUpdate && rating != null)
+                {
+                    messageHub.Publish(rating);
+                    return rating;
+                }
+                
+                var ts = eventRepository.StorageService.Get(id);
+                var newSession = new TimingSession(id, ts.SessionId, checkpointStorage,
+                    eventRepository, messageHub, autoMapperProvider);
+                newSession.Reload(false);
+                rating = newSession.GetTimingSessionUpdate();
+            }
+            
+            eventRepository.StorageService.Save(rating);
+            messageHub.Publish(rating);
+            return rating;
         }
 
         public List<TimingSessionDto> ListActiveTimingSessions()
@@ -144,7 +149,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             {
                 x.Stop(clock.UtcNow.UtcDateTime);
             });
-            var rating = TimingSessionUpdate.From(activeSession.Id, activeSession.Rating, autoMapperProvider);
+            var rating = activeSession.GetTimingSessionUpdate();
             eventRepository.StorageService.Save(rating);
             messageHub.Publish(rating);
             activeSessions.Remove(activeSession);
@@ -171,6 +176,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
             eventRepository.StorageService.Save(dto);
             var newSession = new TimingSession(dto.Id, sessionId, checkpointStorage,
                 eventRepository, messageHub, autoMapperProvider);
+            newSession.Start();
 
             activeSessions.Add(newSession);
             

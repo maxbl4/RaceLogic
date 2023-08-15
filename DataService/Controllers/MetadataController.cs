@@ -21,10 +21,5 @@ namespace maxbl4.Race.DataService.Controllers
             return default;
         }
         
-        [HttpGet("get" + nameof(RiderEventInfoUpdate))]
-        public RiderEventInfoUpdate GetRiderEventInfoUpdate()
-        {
-            return default;
-        }
     }
 }

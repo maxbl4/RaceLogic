@@ -343,6 +343,15 @@
               "format": "uuid"
             },
             "x-position": 1
+          },
+          {
+            "name": "forceUpdate",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "x-position": 2
           }
         ],
         "responses": {
@@ -624,26 +633,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ActiveTimingSessionsUpdate"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/_metadata/getRiderEventInfoUpdate": {
-      "get": {
-        "tags": [
-          "Metadata"
-        ],
-        "operationId": "Metadata_GetRiderEventInfoUpdate",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RiderEventInfoUpdate"
                 }
               }
             }
@@ -1458,6 +1447,32 @@
             "items": {
               "$ref": "#/components/schemas/RoundPosition"
             }
+          },
+          "resolvedCheckpoints": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Checkpoint"
+            }
+          },
+          "riders": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Rider"
+            }
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "maxLapCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1497,6 +1512,14 @@
           "riderId": {
             "type": "string",
             "nullable": true
+          },
+          "rider": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Rider"
+              }
+            ]
           }
         }
       },
@@ -1523,6 +1546,93 @@
           "sequentialNumber": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "Rider": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "class": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Class"
+              }
+            ]
+          },
+          "isWrongSession": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Class": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Checkpoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "riderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastSeen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "aggregated": {
+            "type": "boolean"
+          },
+          "isManual": {
+            "type": "boolean"
+          },
+          "rps": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -1652,23 +1762,6 @@
             "items": {
               "$ref": "#/components/schemas/TimingSessionDto"
             }
-          }
-        }
-      },
-      "RiderEventInfoUpdate": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "riders": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/RiderEventInfoDto"
-            }
-          },
-          "timingSessionId": {
-            "type": "string",
-            "format": "uuid"
           }
         }
       },

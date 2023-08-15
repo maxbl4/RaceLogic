@@ -80,8 +80,8 @@ namespace maxbl4.Race.Logic.EventStorage.Storage
         {
             return upstreamDataRepository.ListClassRegistrations(championshipId).ToList();
         }
-
-        public Dictionary<string, List<RiderClassRegistrationDto>> GetRiderIdentifiers(Id<SessionDto> sessionId)
+        
+        public Dictionary<string, List<RiderClassRegistrationDto>> GetRidersWithIdentifiers(Id<SessionDto> sessionId)
         {
             var session = GetWithUpstream(sessionId);
             var classRiders = upstreamDataRepository

@@ -20,15 +20,4 @@ public class AutoMapperTests
     {
         mapper = new AutoMapperProvider();
     }
-    
-    [Fact]
-    public void MapTimingSessionUpdate()
-    {
-        var rating = new List<RoundPosition>();
-        rating.Add(RoundPosition.FromLaps("1", new []
-        {
-            new Lap(new Checkpoint("1", 1), DateTime.UtcNow)
-        }, true));
-        var update = TimingSessionUpdate.From(Id<TimingSessionDto>.NewId(), rating, mapper);
-    }
 }

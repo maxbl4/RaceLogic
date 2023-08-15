@@ -16,11 +16,13 @@ import {EventSelectorService} from "@app/service/event-selector-service";
         <i class="material-icons" [class.text-success]="ws.isConnected"
            [class.text-danger]="!ws.isConnected"
            ngbTooltip="Соединение с сайтом">public</i>
-        <i class="material-icons" [class.text-success]="(optionsService.$options|async)?.enabled"
+        <i class="material-icons"
+           *ngIf="ws.isConnected"
+           [class.text-success]="(optionsService.$options|async)?.enabled"
            [class.text-danger]="!(optionsService.$options|async)?.enabled"
            ngbTooltip="RFID включен">network_check</i>
         <i class="material-icons"
-           *ngIf="ts.activeSessionsCount > 0"
+           *ngIf="ws.isConnected && ts.activeSessionsCount > 0"
            [class.text-success]="ts.activeSessionsCount > 0"
            ngbTooltip="Идёт запись заездов {{ts.activeSessionsCount}}">receipt_long</i>
       </div>
