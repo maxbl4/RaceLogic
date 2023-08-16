@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using maxbl4.Infrastructure.MessageHub;
 using maxbl4.Race.Logic.AutoMapper;
+using maxbl4.Race.Logic.Checkpoints;
 using maxbl4.Race.Logic.CheckpointService;
 using maxbl4.Race.Logic.CheckpointService.Client;
 using maxbl4.Race.Logic.EventModel.Runtime;
@@ -82,6 +83,38 @@ namespace maxbl4.Race.Tests.Logic.EventModel.Runtime
 
             //recordingService.StopRecording();
             //recordingRepository.GetActiveRecordingSession().Should().BeNull();
+        }
+        
+        [Fact]
+        public async Task Create_and_start_timing_session2()
+        {
+            using var storageService = new StorageService(Options.Create(new StorageServiceOptions{StorageConnectionString = storageConnectionString}), MessageHub);
+            var upstreamDataStorage = new UpstreamDataRepository(storageService);
+            var checkpointRepository = new CheckpointRepository(Options.Create(new ServiceOptions()), storageService, MessageHub, SystemClock);
+            var eventRepository = new EventRepository(storageService, upstreamDataStorage, new AutoMapperProvider());
+            var upstreamDataSyncService = new UpstreamDataSyncService(Options.Create(upstreamDataSyncServiceOptions), new FakeMainClient(), 
+                upstreamDataStorage, MessageHub);
+            var downloadResult = await upstreamDataSyncService.Download(true);
+            downloadResult.Should().BeTrue();
+            upstreamDataStorage.ListSeries().Should().HaveCount(4);
+
+            storageService.Repo.Query<CheckpointDto>().Count().Should().Be(0);
+            
+            var timingSessionService = new TimingSessionService(checkpointRepository, eventRepository, MessageHub, new AutoMapperProvider(),
+                new DefaultSystemClock());
+
+            var ev = upstreamDataStorage.ListEvents().First(x => x.Name == "Тучково кантри 12.09.2020");
+            
+            var session = upstreamDataStorage.ListSessions(ev.Id).First(x => x.Name == "Эксперт и Опен");
+            var tsId = timingSessionService.StartNewSession("timing sess", session.Id);
+            
+            MessageHub.Publish(new Checkpoint("11", DateTime.UtcNow));
+            await Task.Delay(100);
+
+            var update = timingSessionService.GetTimingSessionRating(tsId);
+            update.Rating.Should().HaveCount(1);
+            
+            //storageService.Repo.Query<Checkpoint>().Count().Should().Be(1);
         }
     }
 }

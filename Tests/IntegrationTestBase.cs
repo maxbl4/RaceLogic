@@ -130,8 +130,9 @@ namespace maxbl4.Race.Tests
             var svc = new ServiceRunner<Race.DataService.Startup>();
             svc.Start(new[]
             {
-                $"--ServiceOptions:StorageConnectionString={storageConnectionString}",
+                $"--StorageServiceOptions:StorageConnectionString={storageConnectionString}",
                 $"--ServiceOptions:PauseInStartupMs={pauseStartupMs}",
+                $"--SeedDataLoaderOptions:SeedDataDirectory=.",
                 $"--Environment={Environments.Development}",
                 "--Urls=http://127.0.0.1:0"
             }).Wait(0);
