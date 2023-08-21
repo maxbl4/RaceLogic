@@ -1,0 +1,7 @@
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0-preview
+ADD ./bin/ /app/
+ADD ./var/ /app/var/
+WORKDIR /app
+EXPOSE 80
+ENV ASPNETCORE_URLS=http://*:80
+CMD [ "dotnet", "DataService.dll" ]
