@@ -86,13 +86,13 @@ namespace maxbl4.Race.Logic.CheckpointService
 
         private bool ShouldStartRfid(RfidOptions options)
         {
-            if (options.Enabled
-                && systemClock.UtcNow.UtcDateTime - options.Timestamp > TimeSpan.FromDays(1))
-            {
-                options.Enabled = false;
-                checkpointRepository.SetRfidOptions(options, false);
-                return false;
-            }
+            // if (options.Enabled
+            //     && systemClock.UtcNow.UtcDateTime - options.Timestamp > TimeSpan.FromDays(1))
+            // {
+            //     options.Enabled = false;
+            //     checkpointRepository.SetRfidOptions(options, false);
+            //     return false;
+            // }
 
             return options.Enabled;
         }

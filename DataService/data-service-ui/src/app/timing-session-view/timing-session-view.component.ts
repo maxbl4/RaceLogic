@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {
-  DataClient, RiderEventInfoDto,
+  Checkpoint,
+  DataClient, Rider, RiderEventInfoDto, SessionDto,
   TimingSessionDto,
   TimingSessionUpdate
 } from "@app/service/data-service-client";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {WebSocketConnectionService} from "@app/service/web-socket-connection-service";
+import {DateTime, Duration} from "luxon";
 
 @Component({
   selector: 'app-timing-session-view',
@@ -21,7 +23,10 @@ import {WebSocketConnectionService} from "@app/service/web-socket-connection-ser
     <button class="ml-2" mat-raised-button color="primary"
             (click)="refreshRating()">
       <i class="material-icons">refresh</i>Пересчитать
-    </button> ({{update?.updated?.toFormat("HH:mm:ss")}})
+    </button>
+        Начало: {{timingSessionDto.startTime?.toFormat("HH:MM:ss")}}
+        Осталось: {{durationLeft}}
+        Обновлено: {{update?.updated?.toFormat("HH:mm:ss")}}
     <form (submit)="appendRiderId()" *ngIf="timingSessionDto.isRunning">
       <div class="input-group mb-3">
         <input type="number" class="form-control hide-arrows"
@@ -39,6 +44,7 @@ import {WebSocketConnectionService} from "@app/service/web-socket-connection-ser
         <td>№</td>
         <td>Класс</td>
         <td>ФИО</td>
+        <td>Финиш</td>
         <td>Круги</td>
         <td *ngFor="let l of laps;let i = index">Круг {{i + 1}}</td>
       </tr>
@@ -47,12 +53,28 @@ import {WebSocketConnectionService} from "@app/service/web-socket-connection-ser
         <td>{{r.rider?.number}}</td>
         <td>{{r.rider?.class?.name}}</td>
         <td>{{r.rider?.lastName}} {{r.rider?.firstName}}</td>
+        <td>{{r.finished}}</td>
         <td>{{r.lapCount}}</td>
         <td *ngFor="let l of laps;let i = index">
           <ng-container *ngIf="r.laps && r.laps.length > i">
             {{r.laps[i].duration?.toFormat("hh:mm:ss")}}
           </ng-container>
         </td>
+      </tr>
+    </table>
+    <h3>50 последних отметок</h3>
+    <table class="table table-bordered" *ngIf="recentCheckpoints">
+      <thead>
+      <tr>
+        <td>Время</td>
+        <td>№</td>
+        <td>ФИО</td>
+      </tr>
+      </thead>
+      <tr *ngFor="let r of recentCheckpoints">
+        <td>{{getRelativeTime(r.timestamp)}}</td>
+        <td>{{getRider(r.riderId)?.number ?? r.riderId}}</td>
+        <td>{{getRiderName(r.riderId) ?? "#" + r.riderId}}</td>
       </tr>
     </table>
   `,
@@ -64,10 +86,12 @@ export class TimingSessionViewComponent implements OnInit {
   public sessionId: string = "";
   public eventId: string = "";
   public manualRiderId = "";
-  private riders?: Map<string, RiderEventInfoDto>;
   timingSessionDto: TimingSessionDto = new TimingSessionDto();
   update?: TimingSessionUpdate;
   laps: any[] = [];
+  sessionDto: SessionDto = new SessionDto();
+  private riderMap?: Map<string, Rider>;
+  public recentCheckpoints: Checkpoint[] | undefined;
 
   constructor(private route:ActivatedRoute, private dataClient: DataClient,
               private router: Router,
@@ -86,61 +110,61 @@ export class TimingSessionViewComponent implements OnInit {
         if (x?.timingSessionId != this.id)
           return;
         this.update = x;
+        this.mapRiders(x.riders);
+        this.sliceCheckpoints(x.resolvedCheckpoints);
         this.laps = new Array(x.maxLapCount);
       });
       this.dataClient.getTimingSessionRating(this.id).subscribe(x => {
         if (x?.timingSessionId != this.id)
           return;
         this.update = x;
+        this.mapRiders(x.riders);
+        this.sliceCheckpoints(x.resolvedCheckpoints);
         this.laps = new Array(x.maxLapCount);
       });
-
-      // this.dataClient.listRiderEventInfo(this.id)
-      //   .pipe(switchMap(x => {
-      //     this.mapRiders(x);
-      //     return this.dataClient.getTimingSessionRating(this.id);
-      //   }))
-      //   .subscribe();
     });
   }
 
-  // private joinRiders(x?: TimingSessionUpdate) {
-  //   if (!x){
-  //     this.rating = [];
-  //     return;
-  //   }
-  //   this.rating = <IRoundPositionWithRider[]>x.rating ?? [];
-  //   let maxLaps = 0;
-  //   for (let r of this.rating) {
-  //     r.rider = this.getRider(r.riderId);
-  //     if (maxLaps < (r.laps?.length ?? 0)) {
-  //       maxLaps = r.laps!.length;
-  //     }
-  //   }
-  //   this.laps = new Array(maxLaps);
-  // }
+  private sliceCheckpoints(resolvedCheckpoints: Checkpoint[] | undefined){
+    this.recentCheckpoints = resolvedCheckpoints?.reverse().slice(0, 50);
+  }
+  private mapRiders(riders: Rider[] | undefined) {
+    if (!riders) return;
+    this.riderMap = new Map<string, Rider>();
+    for (let r of riders){
+      if (r.id) this.riderMap.set(r.id, r);
+    }
+  }
+
+  public getRider(id?:string){
+    if (id && this.riderMap) {
+      return this.riderMap.get(id);
+    }
+    return undefined;
+  }
+
+  public getRiderName(id?:string){
+    const r = this.getRider(id);
+    if (!r) return undefined;
+    return `${r.lastName} ${r.firstName}`;
+  }
 
   loadSession(){
     this.dataClient.getTimingSession(this.id)
       .subscribe(x => this.timingSessionDto = x);
+    this.dataClient.getSession(this.sessionId)
+      .subscribe(x => this.sessionDto = x);
   }
 
-  // mapRiders(riderInfos: RiderEventInfoDto[]){
-  //   let map = new Map<string, RiderEventInfoDto>();
-  //   for (let r of riderInfos){
-  //     if (r.id) {
-  //       map.set(r.id, r);
-  //     }
-  //   }
-  //   this.riders = map;
-  // }
-
-  getRider(id?:string):RiderEventInfoDto{
-    if (id) {
-      return this.riders?.get(id) ?? new RiderEventInfoDto({lastName: id});
-    } else {
-      return new RiderEventInfoDto();
+  get durationLeft(): string{
+    if (this.timingSessionDto.startTime && this.sessionDto.finishCriteria?.duration) {
+      const elapsed = DateTime.now().diff(this.timingSessionDto?.startTime);
+      if (elapsed.as('seconds') > this.sessionDto.finishCriteria.duration.as('seconds')) {
+        return "-" + elapsed.plus(this.sessionDto.finishCriteria.duration.negate()).toFormat("hh:mm:ss");
+      }else
+        return this.sessionDto.finishCriteria.duration.plus(elapsed.negate()).toFormat("hh:mm:ss");
     }
+    return "00:00:00";
   }
 
   resumeTimingSession() {
@@ -158,5 +182,12 @@ export class TimingSessionViewComponent implements OnInit {
 
   refreshRating() {
     this.dataClient.getTimingSessionRating(this.id, true).subscribe();
+  }
+
+  getRelativeTime(timestamp: DateTime | undefined) {
+    if (timestamp && this.timingSessionDto.startTime) {
+      return timestamp.diff(this.timingSessionDto.startTime).toFormat("hh:mm:ss");
+    }
+    return "00:00:00";
   }
 }

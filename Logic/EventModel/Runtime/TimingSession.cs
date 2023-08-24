@@ -88,7 +88,8 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                     }
                 }));
             
-            var cps = checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime);
+            var cps = checkpointRepository.ListCheckpoints(timingSession.StartTime, timingSession.StopTime)
+                .Where(x => !x.Aggregated);
             foreach (var cp in cps)
             {
                 checkpointHandler.AppendCheckpoint(cp);
@@ -102,7 +103,10 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
                 }));
                 var cpSubject = new Subject<Checkpoint>();
                 disposable.Add(cpSubject);
-                disposable.Add(messageHub.Subscribe<Checkpoint>(cpSubject.OnNext));
+                disposable.Add(messageHub.Subscribe<Checkpoint>(cp =>
+                {
+                    if (!cp.Aggregated) cpSubject.OnNext(cp);
+                }));
                 disposable.Add(cpSubject
                     .Subscribe(checkpointHandler.AppendCheckpoint));
             }
@@ -136,7 +140,7 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         }
 
         public TimingSessionUpdate GetTimingSessionUpdate()
-        {
+        { 
             var update = new TimingSessionUpdate
             {
                 Id = Id.Value,
@@ -160,7 +164,6 @@ namespace maxbl4.Race.Logic.EventModel.Runtime
         public void Dispose()
         {
             disposable.DisposeSafe();
-            checkpointHandler.DisposeSafe();
         }
     }
 }
