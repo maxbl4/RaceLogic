@@ -24,7 +24,7 @@ import {DateTime, Duration} from "luxon";
             (click)="refreshRating()">
       <i class="material-icons">refresh</i>Пересчитать
     </button>
-        Начало: {{timingSessionDto.startTime?.toFormat("HH:MM:ss")}}
+        Начало: {{timingSessionDto.startTime?.toFormat("HH:mm:ss")}}
         Осталось: {{durationLeft}}
         Обновлено: {{update?.updated?.toFormat("HH:mm:ss")}}
     <form (submit)="appendRiderId()" *ngIf="timingSessionDto.isRunning">
@@ -158,7 +158,8 @@ export class TimingSessionViewComponent implements OnInit {
 
   get durationLeft(): string{
     if (this.timingSessionDto.startTime && this.sessionDto.finishCriteria?.duration) {
-      const elapsed = DateTime.now().diff(this.timingSessionDto?.startTime);
+      const now = this.timingSessionDto.isRunning ? DateTime.now() : this.timingSessionDto.stopTime!;
+      const elapsed = now.diff(this.timingSessionDto.startTime);
       if (elapsed.as('seconds') > this.sessionDto.finishCriteria.duration.as('seconds')) {
         return "-" + elapsed.plus(this.sessionDto.finishCriteria.duration.negate()).toFormat("hh:mm:ss");
       }else

@@ -31,7 +31,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NJsonSchema;
 using NJsonSchema.Generation.TypeMappers;
-using ServiceOptions = maxbl4.Race.DataService.Options.ServiceOptions;
 
 namespace maxbl4.Race.DataService
 {
