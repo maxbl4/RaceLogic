@@ -140,7 +140,8 @@ namespace maxbl4.Race.DataService.Controllers
         [HttpGet("championships")]
         public ActionResult<List<ChampionshipDto>> ListChampionships([FromQuery]Id<SeriesDto> value)
         {
-            return upstreamRepository.ListChampionships(value).ToList();
+            return upstreamRepository.ListChampionships(value)
+                .OrderBy(x => x.Name).ToList();
         }
         
         [HttpGet("classes")]
@@ -152,7 +153,8 @@ namespace maxbl4.Race.DataService.Controllers
         [HttpGet("events")]
         public ActionResult<List<EventDto>> ListEvents([FromQuery]Id<ChampionshipDto> value)
         {
-            return upstreamRepository.ListEvents(value).ToList();
+            return upstreamRepository.ListEvents(value)
+                .OrderByDescending(x => x.EndOfRegistration).ToList();
         }
     }
 }

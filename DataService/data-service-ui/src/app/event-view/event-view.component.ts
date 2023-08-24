@@ -9,7 +9,7 @@ import {EventSelectorService} from "@app/service/event-selector-service";
   selector: 'app-event-view',
   template: `
     <h3>{{eventDto.name}}</h3>
-    <table class="table table-bordered">
+    <table class="table table-bordered" *ngIf="sessions">
       <thead>
         <tr>
           <th>Название</th>
